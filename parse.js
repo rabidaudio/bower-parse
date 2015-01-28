@@ -1,10 +1,10 @@
 /*!
  * Parse JavaScript SDK
- * Version: 1.3.3
- * Built: Mon Dec 29 2014 17:41:46
+ * Version: 1.3.4
+ * Built: Fri Jan 23 2015 12:45:28
  * http://parse.com
  *
- * Copyright 2014 Parse, Inc.
+ * Copyright 2015 Parse, Inc.
  * The Parse JavaScript SDK is freely distributable under the MIT license.
  *
  * Includes: Underscore.js
@@ -13,7 +13,7 @@
  */
 (function(root) {
   root.Parse = root.Parse || {};
-  root.Parse.VERSION = "js1.3.3";
+  root.Parse.VERSION = "js1.3.4";
 }(this));
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
@@ -1256,21 +1256,24 @@
    */
   var Parse = root.Parse;
 
-  // Import Parse's local copy of underscore.
-  if (typeof(exports) !== "undefined" && exports._) {
-    // We're running in Node.js.  Pull in the dependencies.
-    Parse._ = exports._.noConflict();
+  // Load references to other dependencies
+  if (typeof(localStorage) !== 'undefined') {
+    Parse.localStorage = localStorage;  
+  } else if (typeof(require) !== 'undefined') {
     Parse.localStorage = require('localStorage');
+  }
+  if (typeof(XMLHttpRequest) !== 'undefined') {
+    Parse.XMLHttpRequest = XMLHttpRequest;
+  } else if (typeof(require) !== 'undefined') {
     Parse.XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+  }
+  // Import Parse's local copy of underscore.
+  if (typeof(exports) !== 'undefined' && exports._) {
+    // We're running in a CommonJS environment
+    Parse._ = exports._.noConflict();
     exports.Parse = Parse;
   } else {
     Parse._ = _.noConflict();
-    if (typeof(localStorage) !== "undefined") {
-      Parse.localStorage = localStorage;
-    }
-    if (typeof(XMLHttpRequest) !== "undefined") {
-      Parse.XMLHttpRequest = XMLHttpRequest;
-    }
   }
 
   // If jQuery or Zepto has been included, grab a reference to it.
@@ -2330,8 +2333,8 @@
     FILE_DELETE_ERROR: 153,
 
     /**
-     * Error code indicating that the application has exceeded its analytics
-     * request limit.
+     * Error code indicating that the application has exceeded its request
+     * limit.
      * @constant
      */
     REQUEST_LIMIT_EXCEEDED: 155,
