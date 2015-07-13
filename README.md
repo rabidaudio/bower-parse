@@ -14,11 +14,10 @@ sometimes I forget to check.
 
 If you notice the package is out-of-date:
 
+- fork this and create a new branch
 - download the latest version (you can use `download_latest.sh` if you 
 have `wget`)
-- update `bower.json` so version number matches the one at the top of 
-`parse.js`
 - commit
-- tag the commit with the version number (`git tag vX.X.X`) and push 
-(`git push --tags`)
+- `bower version [version number from parse.js]`
+- push with tags (`git push --tags`)
 - send a PR
