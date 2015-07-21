@@ -1,11 +1,10 @@
 /*!
  * Parse JavaScript SDK
- * Version: 1.4.2
- * Built: Thu Apr 09 2015 17:20:31
+ * Version: 1.5.0
+ * Built: Fri Jul 10 2015 17:05:46
  * http://parse.com
  *
- * Copyright 2015 Parse, Inc.
- * The Parse JavaScript SDK is freely distributable under the MIT license.
+ * Copyright 2015 Parse, LLC
  *
  * Includes: Underscore.js
  * Copyright 2009-2012 Jeremy Ashkenas, DocumentCloud Inc.
@@ -13,7 +12,7 @@
  */
 (function(root) {
   root.Parse = root.Parse || {};
-  root.Parse.VERSION = "js1.4.2";
+  root.Parse.VERSION = "js1.5.0";
 }(this));
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
@@ -1284,7 +1283,7 @@
   // Shared empty constructor function to aid in prototype-chain creation.
   var EmptyConstructor = function() {};
 
-
+  
   // Helper function to correctly set up the prototype chain, for subclasses.
   // Similar to `goog.inherits`, but uses a hash of prototype properties and
   // class properties to be extended.
@@ -1510,7 +1509,7 @@
     return false;
   };
 
-
+  
   Parse._ajax = function(method, url, data, success, error) {
     var options = {
       success: success,
@@ -1574,7 +1573,7 @@
     };
 
     dispatch();
-    return promise._thenRunCallbacks(options);
+    return promise._thenRunCallbacks(options); 
   };
 
   // A self-propagating extend function.
@@ -1610,7 +1609,7 @@
       throw "You must specify a key using Parse.initialize.";
     }
 
-
+    
     if (route !== "batch" &&
         route !== "classes" &&
         route !== "events" &&
@@ -1654,6 +1653,8 @@
     dataObject._ApplicationId = Parse.applicationId;
     if (!useMasterKey) {
       dataObject._JavaScriptKey = Parse.javaScriptKey;
+    } else if (!Parse.masterKey) {
+      throw new Error('Cannot use the Master Key, it has not been provided.');
     } else {
       dataObject._MasterKey = Parse.masterKey;
     }
@@ -1665,6 +1666,9 @@
 
       if (sessionToken) {
         return Parse.Promise.as({ _sessionToken: sessionToken });
+      }
+      if (!Parse.User._canUseCurrentUser()) {
+        return Parse.Promise.as(null);
       }
 
       return Parse.User._currentAsync();
@@ -1745,6 +1749,9 @@
       return value.toJSON();
     }
     if (_.isDate(value)) {
+      if (isNaN(value)) {
+        throw new Error('Cannot encode invalid Date');
+      }
       return { "__type": "Date", "iso": value.toJSON() };
     }
     if (value instanceof Parse.GeoPoint) {
@@ -1929,7 +1936,7 @@
 (function(root) {
   root.Parse = root.Parse || {};
   var Parse = root.Parse;
-
+  
   var Storage = {
     async: false,
   };
@@ -2158,7 +2165,7 @@
     var configData = Parse.Storage.getItem(Parse._getParsePath(
           Parse.Config._CURRENT_CONFIG_KEY));
 
-    if (configData) {
+    if (configData) {  
       config._finishFetch(JSON.parse(configData));
       Parse.Config._currentConfig = config;
     }
@@ -2272,7 +2279,7 @@
 
     /**
      * Error code indicating that something has gone wrong with the server.
-     * If you get this error code, it is Parse's fault. Contact us at
+     * If you get this error code, it is Parse's fault. Contact us at 
      * https://parse.com/help
      * @constant
      */
@@ -2768,7 +2775,7 @@
 
       return this;
     }
-  };
+  };  
 
   /**
    * @function
@@ -3136,12 +3143,12 @@
   Parse.ACL.prototype.getPublicWriteAccess = function() {
     return this.getWriteAccess(PUBLIC_KEY);
   };
-
+  
   /**
    * Get whether users belonging to the given role are allowed
    * to read this object. Even if this returns false, the role may
    * still be able to write it if a parent role has read access.
-   *
+   * 
    * @param role The name of the role, or a Parse.Role object.
    * @return {Boolean} true if the role has read access. false otherwise.
    * @throws {String} If role is neither a Parse.Role nor a String.
@@ -3156,12 +3163,12 @@
     }
     throw "role must be a Parse.Role or a String";
   };
-
+  
   /**
    * Get whether users belonging to the given role are allowed
    * to write this object. Even if this returns false, the role may
    * still be able to write it if a parent role has write access.
-   *
+   * 
    * @param role The name of the role, or a Parse.Role object.
    * @return {Boolean} true if the role has write access. false otherwise.
    * @throws {String} If role is neither a Parse.Role nor a String.
@@ -3176,11 +3183,11 @@
     }
     throw "role must be a Parse.Role or a String";
   };
-
+  
   /**
    * Set whether users belonging to the given role are allowed
    * to read this object.
-   *
+   * 
    * @param role The name of the role, or a Parse.Role object.
    * @param {Boolean} allowed Whether the given role can read this object.
    * @throws {String} If role is neither a Parse.Role nor a String.
@@ -3196,11 +3203,11 @@
     }
     throw "role must be a Parse.Role or a String";
   };
-
+  
   /**
    * Set whether users belonging to the given role are allowed
    * to write this object.
-   *
+   * 
    * @param role The name of the role, or a Parse.Role object.
    * @param {Boolean} allowed Whether the given role can write this object.
    * @throws {String} If role is neither a Parse.Role nor a String.
@@ -4156,7 +4163,7 @@
     },
 
     /**
-     * Add handlers to be called when the promise
+     * Add handlers to be called when the promise 
      * is either resolved or rejected
      */
     always: function(callback) {
@@ -4295,207 +4302,6 @@
     return chunks.join("");
   };
 
-
-  // A list of file extensions to mime types as found here:
-  // http://stackoverflow.com/questions/58510/using-net-how-can-you-find-the-
-  //     mime-type-of-a-file-based-on-the-file-signature
-  var mimeTypes = {
-    ai: "application/postscript",
-    aif: "audio/x-aiff",
-    aifc: "audio/x-aiff",
-    aiff: "audio/x-aiff",
-    asc: "text/plain",
-    atom: "application/atom+xml",
-    au: "audio/basic",
-    avi: "video/x-msvideo",
-    bcpio: "application/x-bcpio",
-    bin: "application/octet-stream",
-    bmp: "image/bmp",
-    cdf: "application/x-netcdf",
-    cgm: "image/cgm",
-    "class": "application/octet-stream",
-    cpio: "application/x-cpio",
-    cpt: "application/mac-compactpro",
-    csh: "application/x-csh",
-    css: "text/css",
-    dcr: "application/x-director",
-    dif: "video/x-dv",
-    dir: "application/x-director",
-    djv: "image/vnd.djvu",
-    djvu: "image/vnd.djvu",
-    dll: "application/octet-stream",
-    dmg: "application/octet-stream",
-    dms: "application/octet-stream",
-    doc: "application/msword",
-    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml." +
-          "document",
-    dotx: "application/vnd.openxmlformats-officedocument.wordprocessingml." +
-          "template",
-    docm: "application/vnd.ms-word.document.macroEnabled.12",
-    dotm: "application/vnd.ms-word.template.macroEnabled.12",
-    dtd: "application/xml-dtd",
-    dv: "video/x-dv",
-    dvi: "application/x-dvi",
-    dxr: "application/x-director",
-    eps: "application/postscript",
-    etx: "text/x-setext",
-    exe: "application/octet-stream",
-    ez: "application/andrew-inset",
-    gif: "image/gif",
-    gram: "application/srgs",
-    grxml: "application/srgs+xml",
-    gtar: "application/x-gtar",
-    hdf: "application/x-hdf",
-    hqx: "application/mac-binhex40",
-    htm: "text/html",
-    html: "text/html",
-    ice: "x-conference/x-cooltalk",
-    ico: "image/x-icon",
-    ics: "text/calendar",
-    ief: "image/ief",
-    ifb: "text/calendar",
-    iges: "model/iges",
-    igs: "model/iges",
-    jnlp: "application/x-java-jnlp-file",
-    jp2: "image/jp2",
-    jpe: "image/jpeg",
-    jpeg: "image/jpeg",
-    jpg: "image/jpeg",
-    js: "application/x-javascript",
-    kar: "audio/midi",
-    latex: "application/x-latex",
-    lha: "application/octet-stream",
-    lzh: "application/octet-stream",
-    m3u: "audio/x-mpegurl",
-    m4a: "audio/mp4a-latm",
-    m4b: "audio/mp4a-latm",
-    m4p: "audio/mp4a-latm",
-    m4u: "video/vnd.mpegurl",
-    m4v: "video/x-m4v",
-    mac: "image/x-macpaint",
-    man: "application/x-troff-man",
-    mathml: "application/mathml+xml",
-    me: "application/x-troff-me",
-    mesh: "model/mesh",
-    mid: "audio/midi",
-    midi: "audio/midi",
-    mif: "application/vnd.mif",
-    mov: "video/quicktime",
-    movie: "video/x-sgi-movie",
-    mp2: "audio/mpeg",
-    mp3: "audio/mpeg",
-    mp4: "video/mp4",
-    mpe: "video/mpeg",
-    mpeg: "video/mpeg",
-    mpg: "video/mpeg",
-    mpga: "audio/mpeg",
-    ms: "application/x-troff-ms",
-    msh: "model/mesh",
-    mxu: "video/vnd.mpegurl",
-    nc: "application/x-netcdf",
-    oda: "application/oda",
-    ogg: "application/ogg",
-    pbm: "image/x-portable-bitmap",
-    pct: "image/pict",
-    pdb: "chemical/x-pdb",
-    pdf: "application/pdf",
-    pgm: "image/x-portable-graymap",
-    pgn: "application/x-chess-pgn",
-    pic: "image/pict",
-    pict: "image/pict",
-    png: "image/png",
-    pnm: "image/x-portable-anymap",
-    pnt: "image/x-macpaint",
-    pntg: "image/x-macpaint",
-    ppm: "image/x-portable-pixmap",
-    ppt: "application/vnd.ms-powerpoint",
-    pptx: "application/vnd.openxmlformats-officedocument.presentationml." +
-          "presentation",
-    potx: "application/vnd.openxmlformats-officedocument.presentationml." +
-          "template",
-    ppsx: "application/vnd.openxmlformats-officedocument.presentationml." +
-          "slideshow",
-    ppam: "application/vnd.ms-powerpoint.addin.macroEnabled.12",
-    pptm: "application/vnd.ms-powerpoint.presentation.macroEnabled.12",
-    potm: "application/vnd.ms-powerpoint.template.macroEnabled.12",
-    ppsm: "application/vnd.ms-powerpoint.slideshow.macroEnabled.12",
-    ps: "application/postscript",
-    qt: "video/quicktime",
-    qti: "image/x-quicktime",
-    qtif: "image/x-quicktime",
-    ra: "audio/x-pn-realaudio",
-    ram: "audio/x-pn-realaudio",
-    ras: "image/x-cmu-raster",
-    rdf: "application/rdf+xml",
-    rgb: "image/x-rgb",
-    rm: "application/vnd.rn-realmedia",
-    roff: "application/x-troff",
-    rtf: "text/rtf",
-    rtx: "text/richtext",
-    sgm: "text/sgml",
-    sgml: "text/sgml",
-    sh: "application/x-sh",
-    shar: "application/x-shar",
-    silo: "model/mesh",
-    sit: "application/x-stuffit",
-    skd: "application/x-koan",
-    skm: "application/x-koan",
-    skp: "application/x-koan",
-    skt: "application/x-koan",
-    smi: "application/smil",
-    smil: "application/smil",
-    snd: "audio/basic",
-    so: "application/octet-stream",
-    spl: "application/x-futuresplash",
-    src: "application/x-wais-source",
-    sv4cpio: "application/x-sv4cpio",
-    sv4crc: "application/x-sv4crc",
-    svg: "image/svg+xml",
-    swf: "application/x-shockwave-flash",
-    t: "application/x-troff",
-    tar: "application/x-tar",
-    tcl: "application/x-tcl",
-    tex: "application/x-tex",
-    texi: "application/x-texinfo",
-    texinfo: "application/x-texinfo",
-    tif: "image/tiff",
-    tiff: "image/tiff",
-    tr: "application/x-troff",
-    tsv: "text/tab-separated-values",
-    txt: "text/plain",
-    ustar: "application/x-ustar",
-    vcd: "application/x-cdlink",
-    vrml: "model/vrml",
-    vxml: "application/voicexml+xml",
-    wav: "audio/x-wav",
-    wbmp: "image/vnd.wap.wbmp",
-    wbmxl: "application/vnd.wap.wbxml",
-    wml: "text/vnd.wap.wml",
-    wmlc: "application/vnd.wap.wmlc",
-    wmls: "text/vnd.wap.wmlscript",
-    wmlsc: "application/vnd.wap.wmlscriptc",
-    wrl: "model/vrml",
-    xbm: "image/x-xbitmap",
-    xht: "application/xhtml+xml",
-    xhtml: "application/xhtml+xml",
-    xls: "application/vnd.ms-excel",
-    xml: "application/xml",
-    xpm: "image/x-xpixmap",
-    xsl: "application/xml",
-    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    xltx: "application/vnd.openxmlformats-officedocument.spreadsheetml." +
-          "template",
-    xlsm: "application/vnd.ms-excel.sheet.macroEnabled.12",
-    xltm: "application/vnd.ms-excel.template.macroEnabled.12",
-    xlam: "application/vnd.ms-excel.addin.macroEnabled.12",
-    xlsb: "application/vnd.ms-excel.sheet.binary.macroEnabled.12",
-    xslt: "application/xslt+xml",
-    xul: "application/vnd.mozilla.xul+xml",
-    xwd: "image/x-xwindowdump",
-    xyz: "chemical/x-xyz",
-    zip: "application/zip"
-  };
-
   /**
    * Reads a File using a FileReader.
    * @param file {File} the File to read.
@@ -4573,10 +4379,10 @@
     if (extension) {
       extension = extension[1].toLowerCase();
     }
-    var guessedType = type || mimeTypes[extension] || "text/plain";
+    var specifiedType = type || '';
 
     if (_.isArray(data)) {
-      this._source = Parse.Promise.as(encodeBase64(data), guessedType);
+      this._source = Parse.Promise.as(encodeBase64(data), specifiedType);
     } else if (data && data.base64) {
       // if it contains data uri, extract based64 and the type out of it.
       /*jslint maxlen: 1000*/
@@ -4590,7 +4396,7 @@
           (matches.length === 4 ? matches[3] : matches[2]), matches[1]
         );
       } else {
-        this._source = Parse.Promise.as(data.base64, guessedType);
+        this._source = Parse.Promise.as(data.base64, specifiedType);
       }
     } else if (typeof(File) !== "undefined" && data instanceof File) {
       this._source = readAsync(data, type);
@@ -4772,12 +4578,15 @@
    * Valid options are:<ul>
    *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
    *     be used for this request.
+   *   <li>sessionToken: A valid session token, used for making a request on
+   *       behalf of a specific user.
    * </ul>
    */
   Parse.Object.saveAll = function(list, options) {
     options = options || {};
     return Parse.Object._deepSaveAsync(list, {
-      useMasterKey: options.useMasterKey
+      useMasterKey: options.useMasterKey,
+      sessionToken: options.sessionToken
     })._thenRunCallbacks(options);
   };
 
@@ -4830,6 +4639,8 @@
    * Valid options are:<ul>
    *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
    *     be used for this request.
+   *   <li>sessionToken: A valid session token, used for making a request on
+   *       behalf of a specific user.
    * </ul>
    * @return {Parse.Promise} A promise that is fulfilled when the destroyAll
    *     completes.
@@ -4851,6 +4662,7 @@
             route: "batch",
             method: "POST",
             useMasterKey: options.useMasterKey,
+            sessionToken: options.sessionToken,
             data: {
               requests: _.map(batch, function(object) {
                 return {
@@ -5193,7 +5005,7 @@
       // Refresh the attributes.
       this._rebuildAllEstimatedData();
 
-
+      
       // Clear out any changes the user might have made previously.
       this._refreshCache();
       this._opSetQueue = [{}];
@@ -5301,7 +5113,7 @@
      * the given object.
      */
     _finishFetch: function(serverData, hasData) {
-
+      
       this._opSetQueue = [{}];
 
       // Bring in all the new server data.
@@ -5655,6 +5467,8 @@
      *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
      * </ul>
      * @return {Parse.Promise} A promise that is fulfilled when the fetch
      *     completes.
@@ -5667,7 +5481,8 @@
         route: "classes",
         className: this.className,
         objectId: this.id,
-        useMasterKey: options.useMasterKey
+        useMasterKey: options.useMasterKey,
+        sessionToken: options.sessionToken
       });
       return request.then(function(response, status, xhr) {
         self._finishFetch(self.parse(response, status, xhr), true);
@@ -5718,6 +5533,8 @@
      *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
      * </ul>
      * @return {Parse.Promise} A promise that is fulfilled when the save
      *     completes.
@@ -5777,7 +5594,7 @@
       // If there is any unsaved child, save it first.
       model._refreshCache();
 
-
+      
 
       var unsavedChildren = [];
       var unsavedFiles = [];
@@ -5786,7 +5603,8 @@
                                         unsavedFiles);
       if (unsavedChildren.length + unsavedFiles.length > 0) {
         return Parse.Object._deepSaveAsync(this.attributes, {
-          useMasterKey: options.useMasterKey
+          useMasterKey: options.useMasterKey,
+          sessionToken: options.sessionToken
         }).then(function() {
           return model.save(null, options);
         }, function(error) {
@@ -5816,6 +5634,7 @@
           objectId: model.id,
           method: method,
           useMasterKey: options.useMasterKey,
+          sessionToken: options.sessionToken,
           data: json
         });
 
@@ -5855,6 +5674,8 @@
      *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
      * </ul>
      * @return {Parse.Promise} A promise that is fulfilled when the destroy
      *     completes.
@@ -5880,7 +5701,8 @@
         className: this.className,
         objectId: this.id,
         method: 'DELETE',
-        useMasterKey: options.useMasterKey
+        useMasterKey: options.useMasterKey,
+        sessionToken: options.sessionToken
       });
       return request.then(function() {
         if (options.wait) {
@@ -6352,7 +6174,7 @@
   };
 
   Parse.Object._canBeSerializedAsValue = function(object) {
-
+    
     if (object instanceof Parse.Object) {
       return !!object.id;
     }
@@ -6443,6 +6265,7 @@
             route: "batch",
             method: "POST",
             useMasterKey: options.useMasterKey,
+            sessionToken: options.sessionToken,
             data: {
               requests: _.map(batch, function(object) {
                 var json = object._getSaveJSON();
@@ -6515,10 +6338,10 @@
    */
   Parse.Role = Parse.Object.extend("_Role", /** @lends Parse.Role.prototype */ {
     // Instance Methods
-
+    
     /**
      * Constructs a new ParseRole with the given name and ACL.
-     *
+     * 
      * @param {String} name The name of the Role to create.
      * @param {Parse.ACL} acl The ACL for this role. Roles must have an ACL.
      */
@@ -6531,28 +6354,28 @@
         Parse.Object.prototype.constructor.call(this, name, acl);
       }
     },
-
+    
     /**
      * Gets the name of the role.  You can alternatively call role.get("name")
-     *
+     * 
      * @return {String} the name of the role.
      */
     getName: function() {
       return this.get("name");
     },
-
+    
     /**
      * Sets the name for a role. This value must be set before the role has
      * been saved to the server, and cannot be set once the role has been
      * saved.
-     *
+     * 
      * <p>
      *   A role's name can only contain alphanumeric characters, _, -, and
      *   spaces.
      * </p>
      *
      * <p>This is equivalent to calling role.set("name", name)</p>
-     *
+     * 
      * @param {String} name The name of the role.
      * @param {Object} options Standard options object with success and error
      *     callbacks.
@@ -6560,37 +6383,37 @@
     setName: function(name, options) {
       return this.set("name", name, options);
     },
-
+    
     /**
      * Gets the Parse.Relation for the Parse.Users that are direct
      * children of this role. These users are granted any privileges that this
      * role has been granted (e.g. read or write access through ACLs). You can
      * add or remove users from the role through this relation.
-     *
+     * 
      * <p>This is equivalent to calling role.relation("users")</p>
-     *
+     * 
      * @return {Parse.Relation} the relation for the users belonging to this
      *     role.
      */
     getUsers: function() {
       return this.relation("users");
     },
-
+    
     /**
      * Gets the Parse.Relation for the Parse.Roles that are direct
      * children of this role. These roles' users are granted any privileges that
      * this role has been granted (e.g. read or write access through ACLs). You
      * can add or remove child roles from this role through this relation.
-     *
+     * 
      * <p>This is equivalent to calling role.relation("roles")</p>
-     *
+     * 
      * @return {Parse.Relation} the relation for the roles belonging to this
      *     role.
      */
     getRoles: function() {
       return this.relation("roles");
     },
-
+    
     /**
      * @ignore
      */
@@ -6676,7 +6499,7 @@
 
     // The default model for a collection is just a Parse.Object.
     // This should be overridden in most cases.
-
+    
     model: Parse.Object,
 
     /**
@@ -6746,7 +6569,7 @@
       // Insert models into the collection, re-sorting if needed, and triggering
       // `add` events unless silenced.
       this.length += length;
-      index = Parse._isNullOrUndefined(options.at) ?
+      index = Parse._isNullOrUndefined(options.at) ? 
           this.models.length : options.at;
       this.models.splice.apply(this.models, [index, 0].concat(models));
       if (this.comparator) {
@@ -6901,6 +6724,8 @@
      *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, uses the Master Key for
      *       this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
      * </ul>
      */
     fetch: function(options) {
@@ -6911,7 +6736,8 @@
       var collection = this;
       var query = this.query || new Parse.Query(this.model);
       return query.find({
-        useMasterKey: options.useMasterKey
+        useMasterKey: options.useMasterKey,
+        sessionToken: options.sessionToken
       }).then(function(results) {
         if (options.add) {
           collection.add(results, options);
@@ -6938,6 +6764,8 @@
      *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, uses the Master Key for
      *       this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
      * </ul>
      */
     create: function(model, options) {
@@ -7117,7 +6945,7 @@
   var eventSplitter = /^(\S+)\s*(.*)$/;
 
   // List of view options to be merged as properties.
-
+  
   var viewOptions = ['model', 'collection', 'el', 'id', 'attributes',
                      'className', 'tagName'];
 
@@ -7314,16 +7142,16 @@
 
 
     // Instance Methods
-
+    
     /**
      * Merges another object's attributes into this object.
      */
     _mergeFromObject: function(other) {
       if (other.getSessionToken()) {
-        this._sessionToken = other.getSessionToken();
-      }
+        this._sessionToken = other.getSessionToken();      
+      }    
       Parse.User.__super__._mergeFromObject.call(this, other);
-    },
+    },    
 
     /**
      * Internal method to handle special fields in a _User response.
@@ -7573,7 +7401,7 @@
       // Overridden so that the user can be made the current user.
       var newOptions = _.clone(options);
       newOptions.success = function(model) {
-        model._handleSaveResult(true);
+        model._handleSaveResult(Parse.User._canUseCurrentUser());
         if (options.success) {
           options.success.apply(this, arguments);
         }
@@ -7596,6 +7424,11 @@
      *     the login is complete.
      */
     logIn: function(options) {
+      if (!Parse.User._canUseCurrentUser()) {
+        throw new Error(
+          'It is not possible to log in on a server environment.'
+        );
+      }
       var model = this;
       options = options || {};
       var request = Parse._request({
@@ -7782,6 +7615,9 @@
     // Whether to send a Revocable Session header
     _isRevocableSessionEnabled: false,
 
+    // Whether to enable a memory-unsafe current user in node.js
+    _enableUnsafeCurrentUser: false,
+
 
     // Class Methods
 
@@ -7842,6 +7678,11 @@
      *     the login completes.
      */
     become: function(sessionToken, options) {
+      if (!Parse.User._canUseCurrentUser()) {
+        throw new Error(
+          'It is not secure to become a user on a node.js server environment.'
+        );
+      }
       options = options || {};
 
       var user = Parse.Object._create("_User");
@@ -7868,6 +7709,11 @@
      *   destroyed on the server.
      */
     logOut: function() {
+      if (!Parse.User._canUseCurrentUser()) {
+        throw new Error(
+          'There is no current user user on a node.js server environment.'
+        );
+      }
       return Parse.User._currentAsync().then(function(currentUser) {
         var promise = Parse.Storage.removeItemAsync(
           Parse._getParsePath(Parse.User._CURRENT_USER_KEY));
@@ -7921,18 +7767,23 @@
      * @return {Parse.Object} The currently logged in Parse.User.
      */
     current: function() {
+      if (!Parse.User._canUseCurrentUser()) {
+        throw new Error(
+          'There is no current user user on a node.js server environment.'
+        );
+      }
       if (Parse.Storage.async) {
         // We can't return the current user synchronously
         Parse.User._currentAsync();
         return Parse.User._currentUser;
       }
-
+      
       if (Parse.User._currentUser) {
         return Parse.User._currentUser;
       }
 
       if (Parse.User._currentUserMatchesDisk) {
-
+        
         return Parse.User._currentUser;
       }
 
@@ -7942,7 +7793,7 @@
       var userData = Parse.Storage.getItem(Parse._getParsePath(
           Parse.User._CURRENT_USER_KEY));
       if (!userData) {
-
+        
         return null;
       }
       Parse.User._currentUser = Parse.Object._create("_User");
@@ -8026,10 +7877,21 @@
     enableRevocableSession: function(options) {
       options = options || {};
       Parse.User._isRevocableSessionEnabled = true;
-      if (!Parse._isNode && Parse.User.current()) {
+      if (Parse.User._canUseCurrentUser() && Parse.User.current()) {
         return Parse.User.current()._upgradeToRevocableSession(options);
       }
       return Parse.Promise.as()._thenRunCallbacks(options);
+    },
+
+    /**
+     *
+     */
+    enableUnsafeCurrentUser: function() {
+      Parse.User._enableUnsafeCurrentUser = true;
+    },
+
+    _canUseCurrentUser: function() {
+      return !Parse._isNode || Parse.User._enableUnsafeCurrentUser;
     },
 
     /**
@@ -8185,7 +8047,7 @@
    * <code>find</code> method. For example, this sample code fetches all objects
    * of class <code>MyClass</code>. It calls a different function depending on
    * whether the fetch succeeded or not.
-   *
+   * 
    * <pre>
    * var query = new Parse.Query(MyClass);
    * query.find({
@@ -8197,12 +8059,12 @@
    *     // error is an instance of Parse.Error.
    *   }
    * });</pre></p>
-   *
+   * 
    * <p>A Parse.Query can also be used to retrieve a single object whose id is
    * known, through the get method. For example, this sample code fetches an
    * object of class <code>MyClass</code> and id <code>myId</code>. It calls a
    * different function depending on whether the fetch succeeded or not.
-   *
+   * 
    * <pre>
    * var query = new Parse.Query(MyClass);
    * query.get(myId, {
@@ -8214,7 +8076,7 @@
    *     // error is an instance of Parse.Error.
    *   }
    * });</pre></p>
-   *
+   * 
    * <p>A Parse.Query can also be used to count the number of objects that match
    * the query without retrieving all of those objects. For example, this
    * sample code counts the number of objects of the class <code>MyClass</code>
@@ -8286,6 +8148,8 @@
      *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
      * </ul>
      */
     get: function(objectId, options) {
@@ -8295,6 +8159,9 @@
       var firstOptions = {};
       if (options && _.has(options, 'useMasterKey')) {
         firstOptions = { useMasterKey: options.useMasterKey };
+      }
+      if (options && _.has(options, 'sessionToken')) {
+        firstOptions.sessionToken = options.sessionToken;
       }
 
       return self.first(firstOptions).then(function(response) {
@@ -8352,6 +8219,8 @@
      *   <li>error: Function to call when the find fails.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
      * </ul>
      *
      * @return {Parse.Promise} A promise that is resolved with the results when
@@ -8366,6 +8235,7 @@
         className: this.className,
         method: "GET",
         useMasterKey: options.useMasterKey,
+        sessionToken: options.sessionToken,
         data: this.toJSON()
       });
 
@@ -8394,6 +8264,8 @@
      *   <li>error: Function to call when the find fails.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
      * </ul>
      *
      * @return {Parse.Promise} A promise that is resolved with the count when
@@ -8408,9 +8280,10 @@
       params.count = 1;
       var request = Parse._request({
         route: "classes",
-        className: self.className,
+        className: self.className, 
         method: "GET",
         useMasterKey: options.useMasterKey,
+        sessionToken: options.sessionToken,
         data: params
       });
 
@@ -8431,6 +8304,8 @@
      *   <li>error: Function to call when the find fails.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
      * </ul>
      *
      * @return {Parse.Promise} A promise that is resolved with the object when
@@ -8444,9 +8319,10 @@
       params.limit = 1;
       var request = Parse._request({
         route: "classes",
-        className: this.className,
+        className: this.className, 
         method: "GET",
         useMasterKey: options.useMasterKey,
+        sessionToken: options.sessionToken,
         data: params
       });
 
@@ -8517,7 +8393,7 @@
     equalTo: function(key, value) {
       if (_.isUndefined(value)) {
         return this.doesNotExist(key);
-      }
+      } 
 
       this._where[key] = Parse._encode(value);
       return this;
@@ -8663,7 +8539,7 @@
     matches: function(key, regex, modifiers) {
       this._addCondition(key, "$regex", regex);
       if (!modifiers) { modifiers = ""; }
-      // Javascript regex options support mig as inline options but store them
+      // Javascript regex options support mig as inline options but store them 
       // as properties of the object. We support mi & should migrate them to
       // modifiers
       if (regex.ignoreCase) { modifiers += 'i'; }
@@ -8804,8 +8680,8 @@
 
     /**
      * Sorts the results in ascending order by the given key.
-     *
-     * @param {(String|String[]|...String} key The key to order by, which is a
+     * 
+     * @param {(String|String[]|...String} key The key to order by, which is a 
      * string of comma separated values, or an Array of keys, or multiple keys.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8815,15 +8691,15 @@
     },
 
     /**
-     * Sorts the results in ascending order by the given key,
+     * Sorts the results in ascending order by the given key, 
      * but can also add secondary sort descriptors without overwriting _order.
-     *
+     * 
      * @param {(String|String[]|...String} key The key to order by, which is a
      * string of comma separated values, or an Array of keys, or multiple keys.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
     addAscending: function(key) {
-      var self = this;
+      var self = this; 
       if (!this._order) {
         this._order = [];
       }
@@ -8838,7 +8714,7 @@
 
     /**
      * Sorts the results in descending order by the given key.
-     *
+     * 
      * @param {(String|String[]|...String} key The key to order by, which is a
      * string of comma separated values, or an Array of keys, or multiple keys.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8851,13 +8727,13 @@
     /**
      * Sorts the results in descending order by the given key,
      * but can also add secondary sort descriptors without overwriting _order.
-     *
+     * 
      * @param {(String|String[]|...String} key The key to order by, which is a
      * string of comma separated values, or an Array of keys, or multiple keys.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
     addDescending: function(key) {
-      var self = this;
+      var self = this; 
       if (!this._order) {
         this._order = [];
       }
@@ -8866,7 +8742,7 @@
           key = key.join();
         }
         self._order = self._order.concat(
-          _.map(key.replace(/\s/g, "").split(","),
+          _.map(key.replace(/\s/g, "").split(","), 
             function(k) { return "-" + k; }));
       });
       return this;
@@ -9033,6 +8909,9 @@
       if (_.has(options, "useMasterKey")) {
         findOptions.useMasterKey = options.useMasterKey;
       }
+      if (_.has(options, 'sessionToken')) {
+        findOptions.sessionToken = options.sessionToken;
+      }
 
       var finished = false;
       return Parse.Promise._continueWhile(function() {
@@ -9155,7 +9034,7 @@
     init: function(options) {
       if (typeof(FB) === 'undefined') {
         throw "The Facebook JavaScript SDK must be loaded before calling init.";
-      }
+      } 
       initOptions = _.clone(options) || {};
       if (initOptions.status && typeof(console) !== "undefined") {
         var warn = console.warn || console.log || function() {};
@@ -9172,7 +9051,7 @@
 
     /**
      * Gets whether the user has their account linked to Facebook.
-     *
+     * 
      * @param {Parse.User} user User to check for a facebook link.
      *     The user must be logged in on this device.
      * @return {Boolean} <code>true</code> if the user has their account
@@ -9186,7 +9065,7 @@
      * Logs in a user using Facebook. This method delegates to the Facebook
      * SDK to authenticate the user, and then automatically logs in (or
      * creates, in the case where it is a new user) a Parse.User.
-     *
+     * 
      * @param {String, Object} permissions The permissions required for Facebook
      *    log in.  This is a comma-separated string of permissions.
      *    Alternatively, supply a Facebook authData object as described in our
@@ -9217,7 +9096,7 @@
      * @param {Parse.User} user User to link to Facebook. This must be the
      *     current user.
      * @param {String, Object} permissions The permissions required for Facebook
-     *    log in.  This is a comma-separated string of permissions.
+     *    log in.  This is a comma-separated string of permissions. 
      *    Alternatively, supply a Facebook authData object as described in our
      *    REST API docs if you want to handle getting facebook auth tokens
      *    yourself.
@@ -9239,8 +9118,8 @@
     },
 
     /**
-     * Unlinks the Parse.User from a Facebook account.
-     *
+     * Unlinks the Parse.User from a Facebook account. 
+     * 
      * @param {Parse.User} user User to unlink from Facebook. This must be the
      *     current user.
      * @param {Object} options Standard options object with success and error
@@ -9253,7 +9132,7 @@
       return user._unlinkFrom("facebook", options);
     }
   };
-
+  
 }(this));
 
 /*global _: false, document: false, window: false, navigator: false */
@@ -9267,12 +9146,12 @@
    * events or pushState, match the appropriate route, and trigger
    * callbacks. You shouldn't ever have to create one of these yourself
    * — you should use the reference to <code>Parse.history</code>
-   * that will be created for you automatically if you make use of
+   * that will be created for you automatically if you make use of 
    * Routers with routes.
    * @class
-   *
-   * <p>A fork of Backbone.History, provided for your convenience.  If you
-   * use this class, you must also include jQuery, or another library
+   *   
+   * <p>A fork of Backbone.History, provided for your convenience.  If you 
+   * use this class, you must also include jQuery, or another library 
    * that provides a jQuery-compatible $ function.  For more information,
    * see the <a href="http://documentcloud.github.com/backbone/#History">
    * Backbone documentation</a>.</p>
@@ -9343,7 +9222,7 @@
       this.options = _.extend({}, {root: '/'}, this.options, options);
       this._wantsHashChange = this.options.hashChange !== false;
       this._wantsPushState = !!this.options.pushState;
-      this._hasPushState = !!(this.options.pushState &&
+      this._hasPushState = !!(this.options.pushState && 
                               window.history &&
                               window.history.pushState);
       var fragment = this.getFragment();
@@ -9378,8 +9257,8 @@
 
       // If we've started off with a route from a `pushState`-enabled browser,
       // but we're currently in a browser that doesn't support it...
-      if (this._wantsHashChange &&
-          this._wantsPushState &&
+      if (this._wantsHashChange && 
+          this._wantsPushState && 
           !this._hasPushState &&
           !atRoot) {
         this.fragment = this.getFragment(null, true);
@@ -9390,7 +9269,7 @@
       // Or if we've started out with a hash-based route, but we're currently
       // in a browser where it could be `pushState`-based instead...
       } else if (this._wantsPushState &&
-                 this._hasPushState &&
+                 this._hasPushState && 
                  atRoot &&
                  loc.hash) {
         this.fragment = this.getHash().replace(routeStripper, '');
@@ -9571,7 +9450,7 @@
       Parse.history = Parse.history || new Parse.History();
       if (!_.isRegExp(route)) {
         route = this._routeToRegExp(route);
-      }
+      } 
       if (!callback) {
         callback = this[name];
       }
@@ -9589,7 +9468,7 @@
     /**
      * Whenever you reach a point in your application that you'd
      * like to save as a URL, call navigate in order to update the
-     * URL. If you wish to also call the route function, set the
+     * URL. If you wish to also call the route function, set the 
      * trigger option to true. To update the URL without creating
      * an entry in the browser's history, set the replace option
      * to true.
@@ -9602,7 +9481,7 @@
     // order of the routes here to support behavior where the most general
     // routes can be defined at the bottom of the route map.
     _bindRoutes: function() {
-      if (!this.routes) {
+      if (!this.routes) { 
         return;
       }
       var routes = [];
@@ -9675,6 +9554,7 @@
         className: name,
         method: 'POST',
         useMasterKey: options.useMasterKey,
+        sessionToken: options.sessionToken,
         data: Parse._encode(data, null, true)
       });
 

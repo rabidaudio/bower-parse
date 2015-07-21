@@ -1,7 +1,7 @@
 bower-parse
 ===========
 
-[Bower](http://bower.io) package for [Parse](http://parse.com)
+[Bower](http://bower.io) package for [Parse.com](http://parse.com) Javascript SDK
 
       bower install parse
 
