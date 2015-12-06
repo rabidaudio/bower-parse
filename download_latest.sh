@@ -1,5 +1,5 @@
 #!/bin/bash
-LATEST=`wget -q -O - https://parse.com/docs/downloads | grep -A5 "JavaScript Changelog" | grep -o -e 'v[0-9\.]\{5,\}'`
+LATEST=`wget -q -O - https://parse.com/docs/downloads | grep -A5 "JavaScript Changelog" | grep -o -m 1 -e 'v[0-9\.]\{5,\}'`
 CURRENT=`git describe --abbrev=0 --tags`
 if [[ "$LATEST" == "$CURRENT" ]]; then
     echo "Already up to date ($CURRENT)."
