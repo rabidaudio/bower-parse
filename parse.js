@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v1.6.7
+ * Parse JavaScript SDK v1.6.9
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -165,9 +165,15 @@ function run(name, data, options) {
     throw new TypeError('Cloud function name must be a string.');
   }
 
-  return _CoreManager2['default'].getCloudController().run(name, data, {
-    useMasterKey: options.useMasterKey
-  })._thenRunCallbacks(options);
+  var requestOptions = {};
+  if (options.useMasterKey) {
+    requestOptions.useMasterKey = options.useMasterKey;
+  }
+  if (options.sessionToken) {
+    requestOptions.sessionToken = options.sessionToken;
+  }
+
+  return _CoreManager2['default'].getCloudController().run(name, data, requestOptions)._thenRunCallbacks(options);
 }
 
 _CoreManager2['default'].setCloudController({
@@ -176,7 +182,15 @@ _CoreManager2['default'].setCloudController({
 
     var payload = (0, _encode2['default'])(data, true);
 
-    var request = RESTController.request('POST', 'functions/' + name, payload, { useMasterKey: !!options.useMasterKey });
+    var requestOptions = {};
+    if (options.hasOwnProperty('useMasterKey')) {
+      requestOptions.useMasterKey = options.useMasterKey;
+    }
+    if (options.hasOwnProperty('sessionToken')) {
+      requestOptions.sessionToken = options.sessionToken;
+    }
+
+    var request = RESTController.request('POST', 'functions/' + name, payload, requestOptions);
 
     return request.then(function (res) {
       var decoded = (0, _decode2['default'])(res);
@@ -207,7 +221,7 @@ var config = {
   IS_NODE: typeof process !== 'undefined' && !!process.versions && !!process.versions.node,
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com',
-  VERSION: '1.6.7',
+  VERSION: '1.6.9',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -696,7 +710,7 @@ var iidCache = null;
 
 function hexOctet() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-};
+}
 
 function generateId() {
   return hexOctet() + hexOctet() + '-' + hexOctet() + '-' + hexOctet() + '-' + hexOctet() + '-' + hexOctet() + hexOctet() + hexOctet();
@@ -2893,10 +2907,11 @@ var singleInstance = !_CoreManager2['default'].get('IS_NODE');
  * @constructor
  * @param {String} className The class name for the object
  * @param {Object} attributes The initial set of data to store in the object.
+ * @param {Object} options The options for this object instance.
  */
 
 var ParseObject = (function () {
-  function ParseObject(className, attributes) {
+  function ParseObject(className, attributes, options) {
     _classCallCheck(this, ParseObject);
 
     var toSet = null;
@@ -2914,8 +2929,11 @@ var ParseObject = (function () {
           toSet[attr] = className[attr];
         }
       }
+      if (attributes && typeof attributes === 'object') {
+        options = attributes;
+      }
     }
-    if (toSet && !this.set(toSet)) {
+    if (toSet && !this.set(toSet, options)) {
       throw new Error('Can\'t create an invalid Parse Object');
     }
     // Enable legacy initializers
@@ -3014,8 +3032,8 @@ var ParseObject = (function () {
     }
   }, {
     key: '_toFullJSON',
-    value: function _toFullJSON() {
-      var json = this.toJSON();
+    value: function _toFullJSON(seen) {
+      var json = this.toJSON(seen);
       json.__type = 'Object';
       json.className = this.className;
       return json;
@@ -3138,10 +3156,7 @@ var ParseObject = (function () {
     key: '_handleSaveError',
     value: function _handleSaveError() {
       var pending = this._getPendingOps();
-      if (pending.length > 2) {
-        // There are more saves on the queue
-        ObjectState.mergeFirstPendingState(this.className, this._getStateIdentifier());
-      }
+      ObjectState.mergeFirstPendingState(this.className, this._getStateIdentifier());
     }
 
     /** Public methods **/
@@ -3159,15 +3174,16 @@ var ParseObject = (function () {
 
   }, {
     key: 'toJSON',
-    value: function toJSON() {
+    value: function toJSON(seen) {
       var seenEntry = this.id ? this.className + ':' + this.id : this;
+      var seen = seen || [seenEntry];
       var json = {};
       var attrs = this.attributes;
       for (var attr in attrs) {
         if ((attr === 'createdAt' || attr === 'updatedAt') && attrs[attr].toJSON) {
           json[attr] = attrs[attr].toJSON();
         } else {
-          json[attr] = (0, _encode2['default'])(attrs[attr], false, false, [seenEntry]);
+          json[attr] = (0, _encode2['default'])(attrs[attr], false, false, seen);
         }
       }
       var pending = this._getPendingOps();
@@ -3424,12 +3440,14 @@ var ParseObject = (function () {
       }
 
       // Validate changes
-      var validation = this.validate(newValues);
-      if (validation) {
-        if (typeof options.error === 'function') {
-          options.error(this, validation);
+      if (!options.ignoreValidation) {
+        var validation = this.validate(newValues);
+        if (validation) {
+          if (typeof options.error === 'function') {
+            options.error(this, validation);
+          }
+          return false;
         }
-        return false;
       }
 
       // Consolidate Ops
@@ -4209,11 +4227,11 @@ var ParseObject = (function () {
       } else if (classMap[adjustedClassName]) {
         parentProto = classMap[adjustedClassName].prototype;
       }
-      var ParseObjectSubclass = function ParseObjectSubclass(attributes) {
+      var ParseObjectSubclass = function ParseObjectSubclass(attributes, options) {
         this.className = adjustedClassName;
         this._objCount = objectCount++;
         if (attributes && typeof attributes === 'object') {
-          if (!this.set(attributes || {})) {
+          if (!this.set(attributes || {}, options)) {
             throw new Error('Can\'t create an invalid Parse Object');
           }
         }
@@ -5136,6 +5154,7 @@ var RelationOp = (function (_Op7) {
 
 exports.RelationOp = RelationOp;
 },{"./ParseObject":14,"./ParseRelation":18,"./arrayContainsObject":27,"./decode":29,"./encode":30,"./unique":35,"babel-runtime/helpers/class-call-check":43,"babel-runtime/helpers/create-class":44,"babel-runtime/helpers/get":45,"babel-runtime/helpers/inherits":46,"babel-runtime/helpers/interop-require-default":47}],16:[function(_dereq_,module,exports){
+(function (process){
 /**
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
@@ -5145,8 +5164,6 @@ exports.RelationOp = RelationOp;
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
-// We may want to expose this value at a later time, so that Promises/A+ style
-// can be employed instead
 'use strict';
 
 var _createClass = _dereq_('babel-runtime/helpers/create-class')['default'];
@@ -5265,7 +5282,15 @@ var ParsePromise = (function () {
         }
 
         if (typeof resolvedCallback === 'function') {
-          results = [resolvedCallback.apply(this, results)];
+          if (_isPromisesAPlusCompliant) {
+            try {
+              results = [resolvedCallback.apply(this, results)];
+            } catch (e) {
+              results = [ParsePromise.error(e)];
+            }
+          } else {
+            results = [resolvedCallback.apply(this, results)];
+          }
         }
         if (results.length === 1 && ParsePromise.is(results[0])) {
           results[0].then(function () {
@@ -5281,8 +5306,15 @@ var ParsePromise = (function () {
       var wrappedRejectedCallback = function wrappedRejectedCallback(error) {
         var result = [];
         if (typeof rejectedCallback === 'function') {
-          result = [rejectedCallback(error)];
-
+          if (_isPromisesAPlusCompliant) {
+            try {
+              result = [rejectedCallback(error)];
+            } catch (e) {
+              result = [ParsePromise.error(e)];
+            }
+          } else {
+            result = [rejectedCallback(error)];
+          }
           if (result.length === 1 && ParsePromise.is(result[0])) {
             result[0].then(function () {
               promise.resolve.apply(promise, arguments);
@@ -5290,7 +5322,11 @@ var ParsePromise = (function () {
               promise.reject(error);
             });
           } else {
-            promise.reject(result[0]);
+            if (_isPromisesAPlusCompliant) {
+              promise.resolve.apply(promise, result);
+            } else {
+              promise.reject(result[0]);
+            }
           }
         } else {
           promise.reject(error);
@@ -5300,6 +5336,17 @@ var ParsePromise = (function () {
       var runLater = function runLater(fn) {
         fn.call();
       };
+      if (_isPromisesAPlusCompliant) {
+        if (typeof process !== 'undefined' && typeof process.nextTick === 'function') {
+          runLater = function (fn) {
+            process.nextTick(fn);
+          };
+        } else if (typeof setTimeout === 'function') {
+          runLater = function (fn) {
+            setTimeout(fn, 0);
+          };
+        }
+      }
 
       if (this._resolved) {
         runLater(function () {
@@ -5477,8 +5524,9 @@ var ParsePromise = (function () {
     /**
      * Returns a new promise that is fulfilled when all of the input promises
      * are resolved. If any promise in the list fails, then the returned promise
-     * will fail with the last error. If they all succeed, then the returned
-     * promise will succeed, with the results being the results of all the input
+     * will be rejected with an array containing the error from each promise.
+     * If they all succeed, then the returned promise will succeed, with the
+     * results being the results of all the input
      * promises. For example: <pre>
      *   var p1 = Parse.Promise.as(1);
      *   var p2 = Parse.Promise.as(2);
@@ -5583,6 +5631,16 @@ var ParsePromise = (function () {
     value: function isPromisesAPlusCompliant() {
       return _isPromisesAPlusCompliant;
     }
+  }, {
+    key: 'enableAPlusCompliant',
+    value: function enableAPlusCompliant() {
+      _isPromisesAPlusCompliant = true;
+    }
+  }, {
+    key: 'disableAPlusCompliant',
+    value: function disableAPlusCompliant() {
+      _isPromisesAPlusCompliant = false;
+    }
   }]);
 
   return ParsePromise;
@@ -5590,7 +5648,8 @@ var ParsePromise = (function () {
 
 exports['default'] = ParsePromise;
 module.exports = exports['default'];
-},{"babel-runtime/helpers/class-call-check":43,"babel-runtime/helpers/create-class":44}],17:[function(_dereq_,module,exports){
+}).call(this,_dereq_('_process'))
+},{"_process":49,"babel-runtime/helpers/class-call-check":43,"babel-runtime/helpers/create-class":44}],17:[function(_dereq_,module,exports){
 /**
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
@@ -7575,6 +7634,13 @@ var ParseUser = (function (_ParseObject) {
   }, {
     key: 'setUsername',
     value: function setUsername(username) {
+      // Strip anonymity, even we do not support anonymous user in js SDK, we may
+      // encounter anonymous user created by android/iOS in cloud code.
+      var authData = this.get('authData');
+      if (authData && authData.hasOwnProperty('anonymous')) {
+        // We need to set anonymous to null instead of deleting it in order to remove it from Parse.
+        authData.anonymous = null;
+      }
       this.set('username', username);
     }
 
@@ -7696,6 +7762,48 @@ var ParseUser = (function (_ParseObject) {
 
       var controller = _CoreManager2['default'].getUserController();
       return controller.logIn(this, loginOptions)._thenRunCallbacks(options, this);
+    }
+
+    /**
+     * Wrap the default save behavior with functionality to save to local
+     * storage if this is current user.
+     */
+  }, {
+    key: 'save',
+    value: function save() {
+      var _this3 = this;
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _get(Object.getPrototypeOf(ParseUser.prototype), 'save', this).apply(this, args).then(function () {
+        if (_this3.isCurrent()) {
+          return _CoreManager2['default'].getUserController().updateUserOnDisk(_this3);
+        }
+        return _this3;
+      });
+    }
+
+    /**
+     * Wrap the default fetch behavior with functionality to save to local
+     * storage if this is current user.
+     */
+  }, {
+    key: 'fetch',
+    value: function fetch() {
+      var _this4 = this;
+
+      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        args[_key2] = arguments[_key2];
+      }
+
+      return _get(Object.getPrototypeOf(ParseUser.prototype), 'fetch', this).apply(this, args).then(function () {
+        if (_this4.isCurrent()) {
+          return _CoreManager2['default'].getUserController().updateUserOnDisk(_this4);
+        }
+        return _this4;
+      });
     }
   }], [{
     key: 'readOnlyAttributes',
@@ -8018,16 +8126,20 @@ exports['default'] = ParseUser;
 _ParseObject3['default'].registerSubclass('_User', ParseUser);
 
 var DefaultController = {
-  setCurrentUser: function setCurrentUser(user) {
-    currentUserCache = user;
-    user._cleanupAuthData();
-    user._synchronizeAllAuthData();
+  updateUserOnDisk: function updateUserOnDisk(user) {
     var path = _Storage2['default'].generatePath(CURRENT_USER_KEY);
     var json = user.toJSON();
     json.className = '_User';
     return _Storage2['default'].setItemAsync(path, JSON.stringify(json)).then(function () {
       return user;
     });
+  },
+
+  setCurrentUser: function setCurrentUser(user) {
+    currentUserCache = user;
+    user._cleanupAuthData();
+    user._synchronizeAllAuthData();
+    return DefaultController.updateUserOnDisk(user);
   },
 
   currentUser: function currentUser() {
@@ -8163,7 +8275,7 @@ var DefaultController = {
       if (currentUser !== null) {
         var currentSession = currentUser.getSessionToken();
         if (currentSession && (0, _isRevocableSession2['default'])(currentSession)) {
-          promise.then(function () {
+          promise = promise.then(function () {
             return RESTController.request('POST', 'logout', {}, { sessionToken: currentSession });
           });
         }
@@ -8410,12 +8522,14 @@ var RESTController = {
             promise.reject(e);
           }
           promise.resolve(response, xhr.status, xhr);
-        } else if (xhr.status >= 500) {
-          // retry on 5XX
+        } else if (xhr.status >= 500 || xhr.status === 0) {
+          // retry on 5XX or node-xmlhttprequest error
           if (++attempts < _CoreManager2['default'].get('REQUEST_ATTEMPT_LIMIT')) {
             // Exponentially-growing random delay
             var delay = Math.round(Math.random() * 125 * Math.pow(2, attempts));
             setTimeout(dispatch, delay);
+          } else if (xhr.status === 0) {
+            promise.reject('Unable to connect to the Parse API');
           } else {
             // After the retry limit is reached, fail
             promise.reject(xhr);
@@ -9005,19 +9119,7 @@ function encode(value, disallowObjects, forcePointers, seen) {
       return value.toPointer();
     }
     seen = seen.concat(seenEntry);
-    var json = encode(value.attributes, disallowObjects, forcePointers, seen);
-    if (json.createdAt) {
-      json.createdAt = json.createdAt.iso;
-    }
-    if (json.updatedAt) {
-      json.updatedAt = json.updatedAt.iso;
-    }
-    json.className = value.className;
-    json.__type = 'Object';
-    if (value.id) {
-      json.objectId = value.id;
-    }
-    return json;
+    return value._toFullJSON(seen);
   }
   if (value instanceof _ParseOp.Op || value instanceof _ParseACL2['default'] || value instanceof _ParseGeoPoint2['default'] || value instanceof _ParseRelation2['default']) {
     return value.toJSON();
@@ -9436,7 +9538,6 @@ exports["default"] = function get(_x, _x2, _x3) {
     var object = _x,
         property = _x2,
         receiver = _x3;
-    desc = parent = getter = undefined;
     _again = false;
     if (object === null) object = Function.prototype;
 
@@ -9452,6 +9553,7 @@ exports["default"] = function get(_x, _x2, _x3) {
         _x2 = property;
         _x3 = receiver;
         _again = true;
+        desc = parent = undefined;
         continue _function;
       }
     } else if ("value" in desc) {
@@ -9569,7 +9671,7 @@ module.exports = function(it){
   return toString.call(it).slice(8, -1);
 };
 },{}],59:[function(_dereq_,module,exports){
-var core = module.exports = {version: '1.2.1'};
+var core = module.exports = {version: '1.2.3'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 },{}],60:[function(_dereq_,module,exports){
 // optional / simple context binding
@@ -9656,14 +9758,13 @@ module.exports = function(exec){
 };
 },{}],64:[function(_dereq_,module,exports){
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
-var UNDEFINED = 'undefined';
-var global = module.exports = typeof window != UNDEFINED && window.Math == Math
-  ? window : typeof self != UNDEFINED && self.Math == Math ? self : Function('return this')();
+var global = module.exports = typeof window != 'undefined' && window.Math == Math
+  ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
 if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
 },{}],65:[function(_dereq_,module,exports){
-// indexed object, fallback for non-array-like ES3 strings
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
 var cof = _dereq_('./$.cof');
-module.exports = 0 in Object('z') ? Object : function(it){
+module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
   return cof(it) == 'String' ? it.split('') : Object(it);
 };
 },{"./$.cof":58}],66:[function(_dereq_,module,exports){
@@ -9704,7 +9805,7 @@ var check = function(O, proto){
   if(!isObject(proto) && proto !== null)throw TypeError(proto + ": can't set as prototype!");
 };
 module.exports = {
-  set: Object.setPrototypeOf || ('__proto__' in {} ? // eslint-disable-line no-proto
+  set: Object.setPrototypeOf || ('__proto__' in {} ? // eslint-disable-line
     function(test, buggy, set){
       try {
         set = _dereq_('./$.ctx')(Function.call, getDesc(Object.prototype, '__proto__').set, 2);
