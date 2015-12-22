@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v1.6.9
+ * Parse JavaScript SDK v1.6.11
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -220,8 +220,8 @@ var config = {
   // Defaults
   IS_NODE: typeof process !== 'undefined' && !!process.versions && !!process.versions.node,
   REQUEST_ATTEMPT_LIMIT: 5,
-  SERVER_URL: 'https://api.parse.com',
-  VERSION: '1.6.9',
+  SERVER_URL: 'https://api.parse.com/1',
+  VERSION: 'js' + '1.6.11',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -5478,7 +5478,7 @@ var ParsePromise = (function () {
   }], [{
     key: 'is',
     value: function is(promise) {
-      return typeof promise !== 'undefined' && typeof promise.then === 'function';
+      return promise != null && typeof promise.then === 'function';
     }
 
     /**
@@ -5710,8 +5710,7 @@ function quote(s) {
  * Creates a new parse Parse.Query for the given Parse.Object subclass.
  * @class Parse.Query
  * @constructor
- * @param objectClass -
- *   An instance of a subclass of Parse.Object, or a Parse className string.
+ * @param {} objectClass An instance of a subclass of Parse.Object, or a Parse className string.
  *
  * <p>Parse.Query defines a query that is used to fetch Parse.Objects. The
  * most common use case is finding all objects that match a query through the
@@ -8094,10 +8093,11 @@ var ParseUser = (function (_ParseObject) {
     value: function _registerAuthenticationProvider(provider) {
       authProviders[provider.getAuthType()] = provider;
       // Synchronize the current user with the auth provider.
-      var current = ParseUser.current();
-      if (current) {
-        current._synchronizeAuthData(provider.getAuthType());
-      }
+      ParseUser.currentAsync().then(function (current) {
+        if (current) {
+          current._synchronizeAuthData(provider.getAuthType());
+        }
+      });
     }
   }, {
     key: '_logInWith',
@@ -8559,7 +8559,10 @@ var RESTController = {
   request: function request(method, path, data, options) {
     options = options || {};
     var url = _CoreManager2['default'].get('SERVER_URL');
-    url += '/1/' + path;
+    if (url[url.length - 1] !== '/') {
+      url += '/';
+    }
+    url += path;
 
     var payload = {};
     if (data && typeof data === 'object') {
@@ -8575,7 +8578,7 @@ var RESTController = {
 
     payload._ApplicationId = _CoreManager2['default'].get('APPLICATION_ID');
     payload._JavaScriptKey = _CoreManager2['default'].get('JAVASCRIPT_KEY');
-    payload._ClientVersion = 'js' + _CoreManager2['default'].get('VERSION');
+    payload._ClientVersion = _CoreManager2['default'].get('VERSION');
 
     var useMasterKey = options.useMasterKey;
     if (typeof useMasterKey === 'undefined') {
