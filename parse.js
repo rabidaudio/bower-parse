@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v1.6.11
+ * Parse JavaScript SDK v1.6.13
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -221,7 +221,7 @@ var config = {
   IS_NODE: typeof process !== 'undefined' && !!process.versions && !!process.versions.node,
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
-  VERSION: 'js' + '1.6.11',
+  VERSION: 'js' + '1.6.13',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -2479,7 +2479,10 @@ _CoreManager2['default'].setFileController({
       'X-Parse-JavaScript-Key': _CoreManager2['default'].get('JAVASCRIPT_KEY')
     };
     var url = _CoreManager2['default'].get('SERVER_URL');
-    url += '/1/files/' + name;
+    if (url[url.length - 1] !== '/') {
+      url += '/';
+    }
+    url += 'files/' + name;
     return _CoreManager2['default'].getRESTController().ajax('POST', url, source.file, headers);
   },
 
@@ -3136,6 +3139,8 @@ var ParseObject = (function () {
       for (attr in response) {
         if ((attr === 'createdAt' || attr === 'updatedAt') && typeof response[attr] === 'string') {
           changes[attr] = (0, _parseDate2['default'])(response[attr]);
+        } else if (attr === 'ACL') {
+          changes[attr] = new _ParseACL2['default'](response[attr]);
         } else if (attr !== 'objectId') {
           changes[attr] = (0, _decode2['default'])(response[attr]);
         }
@@ -5540,10 +5545,8 @@ var ParsePromise = (function () {
      *
      * The input promises can also be specified as an array: <pre>
      *   var promises = [p1, p2, p3];
-     *   Parse.Promise.when(promises).then(function(r1, r2, r3) {
-     *     console.log(r1);  // prints 1
-     *     console.log(r2);  // prints 2
-     *     console.log(r3);  // prints 3
+     *   Parse.Promise.when(promises).then(function(results) {
+     *     console.log(results);  // prints [1,2,3]
      *   });
      * </pre>
      * @method when
@@ -5939,7 +5942,9 @@ var ParseQuery = (function () {
 
       return controller.find(this.className, this.toJSON(), findOptions).then(function (response) {
         return response.results.map(function (data) {
-          data.className = _this.className;
+          if (!data.className) {
+            data.className = _this.className;
+          }
           return _ParseObject2['default'].fromJSON(data);
         });
       })._thenRunCallbacks(options);
@@ -6033,7 +6038,9 @@ var ParseQuery = (function () {
         if (!objects[0]) {
           return undefined;
         }
-        objects[0].className = _this2.className;
+        if (!objects[0].className) {
+          objects[0].className = _this2.className;
+        }
         return _ParseObject2['default'].fromJSON(objects[0]);
       })._thenRunCallbacks(options);
     }
