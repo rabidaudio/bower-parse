@@ -1,0 +1,3 @@
+[submodule "Parse-SDK-JS"]
+	path = Parse-SDK-JS
+	url = git@github.com:ParsePlatform/Parse-SDK-JS.git
