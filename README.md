@@ -5,6 +5,8 @@ bower-parse
 
       bower install parse
 
+### NPM Source: [ParsePlatform/Parse-SDK-JS](https://github.com/ParsePlatform/Parse-SDK-JS)
+
 Contributing
 ------------
 
@@ -13,8 +15,8 @@ This package has to be updated manually when new updates are released, and often
 If you notice the package is out-of-date:
 
 - fork this and create a new branch
-- download the latest version (you can use `download_latest.sh` if you have `wget`)
+- download via npm: `./download_npm.js [VERSION]`
 - commit
-- `bower version [version number from parse.js]`
+- `bower version [VERSION]`
 - push with tags (`git push --tags`)
 - send a PR
