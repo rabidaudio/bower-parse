@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v1.7.0
+ * Parse JavaScript SDK v1.7.1
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -218,10 +218,10 @@ _CoreManager2['default'].setCloudController({
 
 var config = {
   // Defaults
-  IS_NODE: typeof process !== 'undefined' && !!process.versions && !!process.versions.node,
+  IS_NODE: typeof process !== 'undefined' && !!process.versions && !!process.versions.node && !process.version.electron,
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
-  VERSION: 'js' + '1.7.0',
+  VERSION: 'js' + '1.7.1',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -2352,12 +2352,21 @@ var ParseFile = (function () {
      * Gets the url of the file. It is only available after you save the file or
      * after you get the file from a Parse.Object.
      * @method url
+     * @param {Object} options An object to specify url options
      * @return {String}
      */
   }, {
     key: 'url',
-    value: function url() {
-      return this._url;
+    value: function url(options) {
+      options = options || {};
+      if (!this._url) {
+        return;
+      }
+      if (options.forceSecure) {
+        return this._url.replace(/^http:\/\//i, 'https://');
+      } else {
+        return this._url;
+      }
     }
 
     /**
@@ -3595,8 +3604,21 @@ var ParseObject = (function () {
       if (!clone.className) {
         clone.className = this.className;
       }
+      var attributes = this.attributes;
+      if (typeof this.constructor.readOnlyAttributes === 'function') {
+        var readonly = this.constructor.readOnlyAttributes() || [];
+        // Attributes are frozen, so we have to rebuild an object,
+        // rather than delete readonly keys
+        var copy = {};
+        for (var a in attributes) {
+          if (readonly.indexOf(a) < 0) {
+            copy[a] = attributes[a];
+          }
+        }
+        attributes = copy;
+      }
       if (clone.set) {
-        clone.set(this.attributes);
+        clone.set(attributes);
       }
       return clone;
     }
@@ -4156,12 +4178,14 @@ var ParseObject = (function () {
      * Creates a new instance of a Parse Object from a JSON representation.
      * @method fromJSON
      * @param {Object} json The JSON map of the Object's data
+     * @param {boolean} override In single instance mode, all old server data
+     *   is overwritten if this is set to true
      * @static
      * @return {Parse.Object} A Parse.Object reference
      */
   }, {
     key: 'fromJSON',
-    value: function fromJSON(json) {
+    value: function fromJSON(json, override) {
       if (!json.className) {
         throw new Error('Cannot create an object without a className');
       }
@@ -4172,6 +4196,13 @@ var ParseObject = (function () {
         if (attr !== 'className' && attr !== '__type') {
           otherAttributes[attr] = json[attr];
         }
+      }
+      if (override) {
+        // id needs to be set before clearServerData can work
+        if (otherAttributes.objectId) {
+          o.id = otherAttributes.objectId;
+        }
+        o._clearServerData();
       }
       o._finishFetch(otherAttributes);
       if (json.objectId) {
@@ -4432,6 +4463,7 @@ _CoreManager2['default'].setObjectController({
       return RESTController.request('GET', 'classes/' + target.className + '/' + target._getId(), {}, options).then(function (response, status, xhr) {
         if (target instanceof ParseObject) {
           target._clearPendingOps();
+          target._clearServerData();
           target._finishFetch(response);
         }
         return target;
@@ -6035,7 +6067,7 @@ var ParseQuery = (function () {
           if (!data.className) {
             data.className = override;
           }
-          return _ParseObject2['default'].fromJSON(data);
+          return _ParseObject2['default'].fromJSON(data, true);
         });
       })._thenRunCallbacks(options);
     }
@@ -6131,7 +6163,7 @@ var ParseQuery = (function () {
         if (!objects[0].className) {
           objects[0].className = _this2.className;
         }
-        return _ParseObject2['default'].fromJSON(objects[0]);
+        return _ParseObject2['default'].fromJSON(objects[0], true);
       })._thenRunCallbacks(options);
     }
 
@@ -8020,6 +8052,11 @@ var ParseUser = (function (_ParseObject) {
   }, {
     key: 'logIn',
     value: function logIn(username, password, options) {
+      if (typeof username !== 'string') {
+        return _ParsePromise2['default'].error(new _ParseError2['default'](_ParseError2['default'].OTHER_CAUSE, 'Username must be a string.'));
+      } else if (typeof password !== 'string') {
+        return _ParsePromise2['default'].error(new _ParseError2['default'](_ParseError2['default'].OTHER_CAUSE, 'Password must be a string.'));
+      }
       var user = new ParseUser();
       user._finishFetch({ username: username, password: password });
       return user.logIn(options);
