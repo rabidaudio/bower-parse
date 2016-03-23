@@ -15,7 +15,7 @@ This package has to be updated manually when new updates are released, and often
 If you notice the package is out-of-date:
 
 - fork this and create a new branch
-- download via npm: `./download_npm.js [VERSION]`
+- download via npm: `./download_npm.sh [VERSION]`
 - commit
 - `bower version [VERSION]`
 - push with tags (`git push --tags`)
