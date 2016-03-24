@@ -10,13 +10,8 @@ bower-parse
 Contributing
 ------------
 
-This package has to be updated manually when new updates are released, and often I forget to check for new versions. [`download_latest.sh`](download_latest.sh) will check for a new version and update if neccessary. You can also manually check for updates [on Parse's website](https://parse.com/docs/downloads).
+This package has to be updated manually when new updates are released, 
+and often I forget to check for new versions. If this happens, simply 
+open an issue and I will update it promptly.
 
-If you notice the package is out-of-date:
-
-- fork this and create a new branch
-- download via npm: `./download_npm.js [VERSION]`
-- commit
-- `bower version [VERSION]`
-- push with tags (`git push --tags`)
-- send a PR
+There's also an `update.sh` script if you want to send a PR.
