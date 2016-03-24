@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v1.8.0
+ * Parse JavaScript SDK v1.8.1
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -222,7 +222,7 @@ var config = {
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + '1.8.0',
+  VERSION: 'js' + '1.8.1',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
