@@ -13,6 +13,5 @@ npm install
 cd ..
 cp ./Parse-SDK-JS/dist/parse-latest.js ./parse.js
 cp ./Parse-SDK-JS/dist/parse-latest.min.js ./parse.min.js
-cd ..
 git commit -a -m "updated to $VERSION"
 bower version "$VERSION"
