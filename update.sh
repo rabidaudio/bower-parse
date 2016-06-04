@@ -1,5 +1,6 @@
 #!/bin/sh
 VERSION="$1"
+MESSAGE="$2"
 if [ -z "$VERSION" ]; then
 	echo "Please supply a version, e.g."
 	echo "    ./update.sh v1.8.0"
@@ -13,5 +14,5 @@ npm install
 cd ..
 cp ./Parse-SDK-JS/dist/parse-latest.js ./parse.js
 cp ./Parse-SDK-JS/dist/parse-latest.min.js ./parse.min.js
-git commit -a -m "updated to $VERSION"
+git commit -a -m "updated to $VERSION \n $MESSAGE"
 bower version "$VERSION"
