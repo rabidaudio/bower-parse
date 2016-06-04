@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v1.8.3
+ * Parse JavaScript SDK v1.8.5
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -222,7 +222,7 @@ var config = {
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + '1.8.3',
+  VERSION: 'js' + '1.8.5',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -3651,8 +3651,14 @@ _CoreManager2['default'].setLiveQueryController({
 
       // If we can not find Parse.liveQueryServerURL, we try to extract it from Parse.serverURL
       if (!liveQueryServerURL) {
-        var host = _CoreManager2['default'].get('SERVER_URL').replace(/^https?:\/\//, '');
-        liveQueryServerURL = 'ws://' + host;
+        var tempServerURL = _CoreManager2['default'].get('SERVER_URL');
+        var protocol = 'ws://';
+        // If Parse is being served over SSL/HTTPS, ensure LiveQuery Server uses 'wss://' prefix
+        if (tempServerURL.indexOf('https') === 0) {
+          protocol = 'wss://';
+        }
+        var host = tempServerURL.replace(/^https?:\/\//, '');
+        liveQueryServerURL = protocol + host;
         _CoreManager2['default'].set('LIVEQUERY_SERVER_URL', liveQueryServerURL);
       }
 
