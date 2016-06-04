@@ -1224,7 +1224,7 @@ var LiveQueryClient = (function (_EventEmitter) {
   }, {
     key: '_getWebSocketImplementation',
     value: function _getWebSocketImplementation() {
-      return typeof WebSocket === 'function' ? WebSocket : null;
+      return typeof WebSocket === 'function' || typeof WebSocket === 'object' ? WebSocket : null;
     }
 
     // ensure we start with valid state if connect is called again after close
