@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v1.8.2
+ * Parse JavaScript SDK v1.8.3
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -222,7 +222,7 @@ var config = {
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + '1.8.2',
+  VERSION: 'js' + '1.8.3',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -3668,11 +3668,14 @@ _CoreManager2['default'].setLiveQueryController({
         sessionToken: sessionToken
       });
       // Register a default onError callback to make sure we do not crash on error
+      // Cannot create these events on a nested way because of EventEmiiter from React Native
       defaultLiveQueryClient.on('error', function (error) {
         LiveQuery.emit('error', error);
-      }).on('open', function () {
+      });
+      defaultLiveQueryClient.on('open', function () {
         LiveQuery.emit('open');
-      }).on('close', function () {
+      });
+      defaultLiveQueryClient.on('close', function () {
         LiveQuery.emit('close');
       });
 
@@ -3713,18 +3716,23 @@ _CoreManager2['default'].setLiveQueryController({
         subscriptionWrap.query = subscription.query;
         subscriptionWrap.sessionToken = subscription.sessionToken;
         subscriptionWrap.unsubscribe = subscription.unsubscribe;
-
+        // Cannot create these events on a nested way because of EventEmiiter from React Native
         subscription.on('open', function () {
           subscriptionWrap.emit('open');
-        }).on('create', function (object) {
+        });
+        subscription.on('create', function (object) {
           subscriptionWrap.emit('create', object);
-        }).on('update', function (object) {
+        });
+        subscription.on('update', function (object) {
           subscriptionWrap.emit('update', object);
-        }).on('enter', function (object) {
+        });
+        subscription.on('enter', function (object) {
           subscriptionWrap.emit('enter', object);
-        }).on('leave', function (object) {
+        });
+        subscription.on('leave', function (object) {
           subscriptionWrap.emit('leave', object);
-        }).on('delete', function (object) {
+        });
+        subscription.on('delete', function (object) {
           subscriptionWrap.emit('delete', object);
         });
 
