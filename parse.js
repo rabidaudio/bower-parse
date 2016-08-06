@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v1.8.5
+ * Parse JavaScript SDK v1.9.1
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -218,11 +218,11 @@ _CoreManager2['default'].setCloudController({
 
 var config = {
   // Defaults
-  IS_NODE: typeof process !== 'undefined' && !!process.versions && !!process.versions.node && !process.version.electron,
+  IS_NODE: typeof process !== 'undefined' && !!process.versions && !!process.versions.node && !process.versions.electron,
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + '1.8.5',
+  VERSION: 'js' + '1.9.1',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -230,6 +230,14 @@ var config = {
   PERFORM_USER_REWRITE: true,
   FORCE_REVOCABLE_SESSION: false
 };
+
+function requireMethods(name, methods, controller) {
+  methods.forEach(function (func) {
+    if (typeof controller[func] !== 'function') {
+      throw new Error(name + ' must implement ' + func + '()');
+    }
+  });
+}
 
 module.exports = {
   get: function get(key) {
@@ -246,9 +254,7 @@ module.exports = {
   /* Specialized Controller Setters/Getters */
 
   setAnalyticsController: function setAnalyticsController(controller) {
-    if (typeof controller.track !== 'function') {
-      throw new Error('AnalyticsController must implement track()');
-    }
+    requireMethods('AnalyticsController', ['track'], controller);
     config['AnalyticsController'] = controller;
   },
 
@@ -257,9 +263,7 @@ module.exports = {
   },
 
   setCloudController: function setCloudController(controller) {
-    if (typeof controller.run !== 'function') {
-      throw new Error('CloudController must implement run()');
-    }
+    requireMethods('CloudController', ['run'], controller);
     config['CloudController'] = controller;
   },
 
@@ -268,12 +272,7 @@ module.exports = {
   },
 
   setConfigController: function setConfigController(controller) {
-    if (typeof controller.current !== 'function') {
-      throw new Error('ConfigController must implement current()');
-    }
-    if (typeof controller.get !== 'function') {
-      throw new Error('ConfigController must implement get()');
-    }
+    requireMethods('ConfigController', ['current', 'get'], controller);
     config['ConfigController'] = controller;
   },
 
@@ -282,12 +281,7 @@ module.exports = {
   },
 
   setFileController: function setFileController(controller) {
-    if (typeof controller.saveFile !== 'function') {
-      throw new Error('FileController must implement saveFile()');
-    }
-    if (typeof controller.saveBase64 !== 'function') {
-      throw new Error('FileController must implement saveBase64()');
-    }
+    requireMethods('FileController', ['saveFile', 'saveBase64'], controller);
     config['FileController'] = controller;
   },
 
@@ -296,9 +290,7 @@ module.exports = {
   },
 
   setInstallationController: function setInstallationController(controller) {
-    if (typeof controller.currentInstallationId !== 'function') {
-      throw new Error('InstallationController must implement currentInstallationId()');
-    }
+    requireMethods('InstallationController', ['currentInstallationId'], controller);
     config['InstallationController'] = controller;
   },
 
@@ -307,15 +299,7 @@ module.exports = {
   },
 
   setObjectController: function setObjectController(controller) {
-    if (typeof controller.save !== 'function') {
-      throw new Error('ObjectController must implement save()');
-    }
-    if (typeof controller.fetch !== 'function') {
-      throw new Error('ObjectController must implement fetch()');
-    }
-    if (typeof controller.destroy !== 'function') {
-      throw new Error('ObjectController must implement destroy()');
-    }
+    requireMethods('ObjectController', ['save', 'fetch', 'destroy'], controller);
     config['ObjectController'] = controller;
   },
 
@@ -324,54 +308,7 @@ module.exports = {
   },
 
   setObjectStateController: function setObjectStateController(controller) {
-    if (typeof controller.getState !== 'function') {
-      throw new Error('ObjectStateController must implement getState()');
-    }
-    if (typeof controller.initializeState !== 'function') {
-      throw new Error('ObjectStateController must implement initializeState()');
-    }
-    if (typeof controller.removeState !== 'function') {
-      throw new Error('ObjectStateController must implement removeState()');
-    }
-    if (typeof controller.getServerData !== 'function') {
-      throw new Error('ObjectStateController must implement getServerData()');
-    }
-    if (typeof controller.setServerData !== 'function') {
-      throw new Error('ObjectStateController must implement setServerData()');
-    }
-    if (typeof controller.getPendingOps !== 'function') {
-      throw new Error('ObjectStateController must implement getPendingOps()');
-    }
-    if (typeof controller.setPendingOp !== 'function') {
-      throw new Error('ObjectStateController must implement setPendingOp()');
-    }
-    if (typeof controller.pushPendingState !== 'function') {
-      throw new Error('ObjectStateController must implement pushPendingState()');
-    }
-    if (typeof controller.popPendingState !== 'function') {
-      throw new Error('ObjectStateController must implement popPendingState()');
-    }
-    if (typeof controller.mergeFirstPendingState !== 'function') {
-      throw new Error('ObjectStateController must implement mergeFirstPendingState()');
-    }
-    if (typeof controller.getObjectCache !== 'function') {
-      throw new Error('ObjectStateController must implement getObjectCache()');
-    }
-    if (typeof controller.estimateAttribute !== 'function') {
-      throw new Error('ObjectStateController must implement estimateAttribute()');
-    }
-    if (typeof controller.estimateAttributes !== 'function') {
-      throw new Error('ObjectStateController must implement estimateAttributes()');
-    }
-    if (typeof controller.commitServerChanges !== 'function') {
-      throw new Error('ObjectStateController must implement commitServerChanges()');
-    }
-    if (typeof controller.enqueueTask !== 'function') {
-      throw new Error('ObjectStateController must implement enqueueTask()');
-    }
-    if (typeof controller.clearAllState !== 'function') {
-      throw new Error('ObjectStateController must implement clearAllState()');
-    }
+    requireMethods('ObjectStateController', ['getState', 'initializeState', 'removeState', 'getServerData', 'setServerData', 'getPendingOps', 'setPendingOp', 'pushPendingState', 'popPendingState', 'mergeFirstPendingState', 'getObjectCache', 'estimateAttribute', 'estimateAttributes', 'commitServerChanges', 'enqueueTask', 'clearAllState'], controller);
 
     config['ObjectStateController'] = controller;
   },
@@ -381,9 +318,7 @@ module.exports = {
   },
 
   setPushController: function setPushController(controller) {
-    if (typeof controller.send !== 'function') {
-      throw new Error('PushController must implement send()');
-    }
+    requireMethods('PushController', ['send'], controller);
     config['PushController'] = controller;
   },
 
@@ -392,9 +327,7 @@ module.exports = {
   },
 
   setQueryController: function setQueryController(controller) {
-    if (typeof controller.find !== 'function') {
-      throw new Error('QueryController must implement find()');
-    }
+    requireMethods('QueryController', ['find'], controller);
     config['QueryController'] = controller;
   },
 
@@ -403,12 +336,7 @@ module.exports = {
   },
 
   setRESTController: function setRESTController(controller) {
-    if (typeof controller.request !== 'function') {
-      throw new Error('RESTController must implement request()');
-    }
-    if (typeof controller.ajax !== 'function') {
-      throw new Error('RESTController must implement ajax()');
-    }
+    requireMethods('RESTController', ['request', 'ajax'], controller);
     config['RESTController'] = controller;
   },
 
@@ -417,9 +345,7 @@ module.exports = {
   },
 
   setSessionController: function setSessionController(controller) {
-    if (typeof controller.getSession !== 'function') {
-      throw new Error('A SessionController must implement getSession()');
-    }
+    requireMethods('SessionController', ['getSession'], controller);
     config['SessionController'] = controller;
   },
 
@@ -429,25 +355,9 @@ module.exports = {
 
   setStorageController: function setStorageController(controller) {
     if (controller.async) {
-      if (typeof controller.getItemAsync !== 'function') {
-        throw new Error('An async StorageController must implement getItemAsync()');
-      }
-      if (typeof controller.setItemAsync !== 'function') {
-        throw new Error('An async StorageController must implement setItemAsync()');
-      }
-      if (typeof controller.removeItemAsync !== 'function') {
-        throw new Error('An async StorageController must implement removeItemAsync()');
-      }
+      requireMethods('An async StorageController', ['getItemAsync', 'setItemAsync', 'removeItemAsync'], controller);
     } else {
-      if (typeof controller.getItem !== 'function') {
-        throw new Error('A synchronous StorageController must implement getItem()');
-      }
-      if (typeof controller.setItem !== 'function') {
-        throw new Error('A synchronous StorageController must implement setItem()');
-      }
-      if (typeof controller.removeItem !== 'function') {
-        throw new Error('A synchonous StorageController must implement removeItem()');
-      }
+      requireMethods('A synchronous StorageController', ['getItem', 'setItem', 'removeItem'], controller);
     }
     config['StorageController'] = controller;
   },
@@ -457,36 +367,7 @@ module.exports = {
   },
 
   setUserController: function setUserController(controller) {
-    if (typeof controller.setCurrentUser !== 'function') {
-      throw new Error('A UserController must implement setCurrentUser()');
-    }
-    if (typeof controller.currentUser !== 'function') {
-      throw new Error('A UserController must implement currentUser()');
-    }
-    if (typeof controller.currentUserAsync !== 'function') {
-      throw new Error('A UserController must implement currentUserAsync()');
-    }
-    if (typeof controller.signUp !== 'function') {
-      throw new Error('A UserController must implement signUp()');
-    }
-    if (typeof controller.logIn !== 'function') {
-      throw new Error('A UserController must implement logIn()');
-    }
-    if (typeof controller.become !== 'function') {
-      throw new Error('A UserController must implement become()');
-    }
-    if (typeof controller.logOut !== 'function') {
-      throw new Error('A UserController must implement logOut()');
-    }
-    if (typeof controller.requestPasswordReset !== 'function') {
-      throw new Error('A UserController must implement requestPasswordReset()');
-    }
-    if (typeof controller.upgradeToRevocableSession !== 'function') {
-      throw new Error('A UserController must implement upgradeToRevocableSession()');
-    }
-    if (typeof controller.linkWith !== 'function') {
-      throw new Error('A UserController must implement linkWith()');
-    }
+    requireMethods('UserController', ['setCurrentUser', 'currentUser', 'currentUserAsync', 'signUp', 'logIn', 'become', 'logOut', 'requestPasswordReset', 'upgradeToRevocableSession', 'linkWith'], controller);
     config['UserController'] = controller;
   },
 
@@ -495,23 +376,21 @@ module.exports = {
   },
 
   setLiveQueryController: function setLiveQueryController(controller) {
-    if (typeof controller.subscribe !== 'function') {
-      throw new Error('LiveQueryController must implement subscribe()');
-    }
-    if (typeof controller.unsubscribe !== 'function') {
-      throw new Error('LiveQueryController must implement unsubscribe()');
-    }
-    if (typeof controller.open !== 'function') {
-      throw new Error('LiveQueryController must implement open()');
-    }
-    if (typeof controller.close !== 'function') {
-      throw new Error('LiveQueryController must implement close()');
-    }
+    requireMethods('LiveQueryController', ['subscribe', 'unsubscribe', 'open', 'close'], controller);
     config['LiveQueryController'] = controller;
   },
 
   getLiveQueryController: function getLiveQueryController() {
     return config['LiveQueryController'];
+  },
+
+  setHooksController: function setHooksController(controller) {
+    requireMethods('HooksController', ['create', 'get', 'update', 'remove'], controller);
+    config['HooksController'] = controller;
+  },
+
+  getHooksController: function getHooksController() {
+    return config['HooksController'];
   }
 };
 }).call(this,_dereq_('_process'))
@@ -1672,7 +1551,9 @@ function estimateAttribute(serverData, pendingOps, className, id, attr) {
   for (var i = 0; i < pendingOps.length; i++) {
     if (pendingOps[i][attr]) {
       if (pendingOps[i][attr] instanceof _ParseOp.RelationOp) {
-        value = pendingOps[i][attr].applyTo(value, { className: className, id: id }, attr);
+        if (id) {
+          value = pendingOps[i][attr].applyTo(value, { className: className, id: id }, attr);
+        }
       } else {
         value = pendingOps[i][attr].applyTo(value);
       }
@@ -1690,7 +1571,9 @@ function estimateAttributes(serverData, pendingOps, className, id) {
   for (var i = 0; i < pendingOps.length; i++) {
     for (attr in pendingOps[i]) {
       if (pendingOps[i][attr] instanceof _ParseOp.RelationOp) {
-        data[attr] = pendingOps[i][attr].applyTo(data[attr], { className: className, id: id }, attr);
+        if (id) {
+          data[attr] = pendingOps[i][attr].applyTo(data[attr], { className: className, id: id }, attr);
+        }
       } else {
         data[attr] = pendingOps[i][attr].applyTo(data[attr]);
       }
@@ -2021,7 +1904,11 @@ var ParseACL = (function () {
       if (userId instanceof _ParseUser2['default']) {
         userId = userId.id;
       } else if (userId instanceof _ParseRole2['default']) {
-        userId = 'role:' + userId.getName();
+        var _name = userId.getName();
+        if (!_name) {
+          throw new TypeError('Role must have a name');
+        }
+        userId = 'role:' + _name;
       }
       if (typeof userId !== 'string') {
         throw new TypeError('userId must be a string.');
@@ -2054,8 +1941,15 @@ var ParseACL = (function () {
     value: function _getAccess(accessType, userId) {
       if (userId instanceof _ParseUser2['default']) {
         userId = userId.id;
+        if (!userId) {
+          throw new Error('Cannot get access for a ParseUser without an ID');
+        }
       } else if (userId instanceof _ParseRole2['default']) {
-        userId = 'role:' + userId.getName();
+        var _name2 = userId.getName();
+        if (!_name2) {
+          throw new TypeError('Role must have a name');
+        }
+        userId = 'role:' + _name2;
       }
       var permissions = this.permissionsById[userId];
       if (!permissions) {
@@ -3067,36 +2961,41 @@ var ParseFile = (function () {
 
     this._name = name;
 
-    if (Array.isArray(data)) {
-      this._source = {
-        format: 'base64',
-        base64: ParseFile.encodeBase64(data),
-        type: specifiedType
-      };
-    } else if (typeof File !== 'undefined' && data instanceof File) {
-      this._source = {
-        format: 'file',
-        file: data,
-        type: specifiedType
-      };
-    } else if (data && data.hasOwnProperty('base64')) {
-      var matches = /^data:([a-zA-Z]*\/[a-zA-Z+.-]*);(charset=[a-zA-Z0-9\-\/\s]*,)?base64,(\S+)/.exec(data.base64);
-      if (matches && matches.length > 0) {
-        // if data URI with type and charset, there will be 4 matches.
+    if (data !== undefined) {
+      if (Array.isArray(data)) {
         this._source = {
           format: 'base64',
-          base64: matches.length === 4 ? matches[3] : matches[2],
-          type: matches[1]
-        };
-      } else {
-        this._source = {
-          format: 'base64',
-          base64: data.base64,
+          base64: ParseFile.encodeBase64(data),
           type: specifiedType
         };
+      } else if (typeof File !== 'undefined' && data instanceof File) {
+        this._source = {
+          format: 'file',
+          file: data,
+          type: specifiedType
+        };
+      } else if (data && typeof data.base64 !== 'undefined') {
+        var _base64 = data.base64;
+        var commaIndex = _base64.indexOf(',');
+
+        if (commaIndex !== -1) {
+          var matches = /^data:([a-zA-Z]*\/[a-zA-Z+.-]*);(charset=[a-zA-Z0-9\-\/\s]*,)?base64,/.exec(_base64.slice(0, commaIndex + 1));
+          // if data URI with type and charset, there will be 4 matches.
+          this._source = {
+            format: 'base64',
+            base64: _base64.slice(commaIndex + 1),
+            type: matches[1]
+          };
+        } else {
+          this._source = {
+            format: 'base64',
+            base64: _base64,
+            type: specifiedType
+          };
+        }
+      } else {
+        throw new TypeError('Cannot create a Parse.File with that data.');
       }
-    } else if (typeof data !== 'undefined') {
-      throw new TypeError('Cannot create a Parse.File with that data.');
     }
   }
 
@@ -3228,7 +3127,8 @@ _CoreManager2['default'].setFileController({
     // To directly upload a File, we use a REST-style AJAX request
     var headers = {
       'X-Parse-Application-ID': _CoreManager2['default'].get('APPLICATION_ID'),
-      'X-Parse-JavaScript-Key': _CoreManager2['default'].get('JAVASCRIPT_KEY')
+      'X-Parse-JavaScript-Key': _CoreManager2['default'].get('JAVASCRIPT_KEY'),
+      'Content-Type': source.type || (source.file ? source.file.type : null)
     };
     var url = _CoreManager2['default'].get('SERVER_URL');
     if (url[url.length - 1] !== '/') {
@@ -3530,6 +3430,17 @@ exports['default'] = Installation;
 _ParseObject3['default'].registerSubclass('_Installation', Installation);
 module.exports = exports['default'];
 },{"./ParseObject":18,"babel-runtime/helpers/class-call-check":52,"babel-runtime/helpers/get":54,"babel-runtime/helpers/inherits":55,"babel-runtime/helpers/interop-require-default":56}],17:[function(_dereq_,module,exports){
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
+
 'use strict';
 
 var _interopRequireDefault = _dereq_('babel-runtime/helpers/interop-require-default')['default'];
@@ -3615,20 +3526,16 @@ LiveQuery.on('error', function () {});
 
 exports['default'] = LiveQuery;
 
-var getSessionToken = function getSessionToken() {
-  var promiseUser = _CoreManager2['default'].getUserController().currentUserAsync();
-  return promiseUser.then(function (currentUser) {
-    return _ParsePromise2['default'].as(currentUser ? currentUser.sessionToken : undefined);
-  }).then(function (sessionToken) {
-    return _ParsePromise2['default'].as(sessionToken);
+function getSessionToken() {
+  var controller = _CoreManager2['default'].getUserController();
+  return controller.currentUserAsync().then(function (currentUser) {
+    return currentUser ? currentUser.getSessionToken() : undefined;
   });
-};
+}
 
-var getLiveQueryClient = function getLiveQueryClient() {
-  return _CoreManager2['default'].getLiveQueryController().getDefaultLiveQueryClient().then(function (defaultLiveQueryClient) {
-    return _ParsePromise2['default'].as(defaultLiveQueryClient);
-  });
-};
+function getLiveQueryClient() {
+  return _CoreManager2['default'].getLiveQueryController().getDefaultLiveQueryClient();
+}
 
 var defaultLiveQueryClient = undefined;
 
@@ -3641,8 +3548,7 @@ _CoreManager2['default'].setLiveQueryController({
       return _ParsePromise2['default'].as(defaultLiveQueryClient);
     }
 
-    var sessionTokenPromise = getSessionToken();
-    return sessionTokenPromise.then(function (sessionToken) {
+    return getSessionToken().then(function (sessionToken) {
       var liveQueryServerURL = _CoreManager2['default'].get('LIVEQUERY_SERVER_URL');
 
       if (liveQueryServerURL && liveQueryServerURL.indexOf('ws') !== 0) {
@@ -3685,7 +3591,7 @@ _CoreManager2['default'].setLiveQueryController({
         LiveQuery.emit('close');
       });
 
-      return _ParsePromise2['default'].as(defaultLiveQueryClient);
+      return defaultLiveQueryClient;
     });
   },
   open: function open() {
@@ -3753,6 +3659,9 @@ _CoreManager2['default'].setLiveQueryController({
     getLiveQueryClient().then(function (liveQueryClient) {
       _this4.resolve(liveQueryClient.unsubscribe(subscription));
     });
+  },
+  _clearCachedDefaultClient: function _clearCachedDefaultClient() {
+    defaultLiveQueryClient = null;
   }
 });
 module.exports = exports['default'];
@@ -3972,12 +3881,12 @@ var ParseObject = (function () {
     key: '_getStateIdentifier',
     value: function _getStateIdentifier() {
       if (singleInstance) {
-        var id = this.id;
-        if (!id) {
-          id = this._getId();
+        var _id = this.id;
+        if (!_id) {
+          _id = this._getId();
         }
         return {
-          id: id,
+          id: _id,
           className: this.className
         };
       } else {
@@ -4163,6 +4072,9 @@ var ParseObject = (function () {
           changes[attr] = new _ParseACL2['default'](response[attr]);
         } else if (attr !== 'objectId') {
           changes[attr] = (0, _decode2['default'])(response[attr]);
+          if (changes[attr] instanceof _ParseOp.UnsetOp) {
+            changes[attr] = undefined;
+          }
         }
       }
       if (changes.createdAt && !changes.updatedAt) {
@@ -4446,7 +4358,9 @@ var ParseObject = (function () {
         } else if (changes[k] && typeof changes[k] === 'object' && typeof changes[k].__op === 'string') {
           newOps[k] = (0, _ParseOp.opFromJSON)(changes[k]);
         } else if (k === 'objectId' || k === 'id') {
-          this.id = changes[k];
+          if (typeof changes[k] === 'string') {
+            this.id = changes[k];
+          }
         } else if (k === 'ACL' && typeof changes[k] === 'object' && !(changes[k] instanceof _ParseACL2['default'])) {
           newOps[k] = new _ParseOp.SetOp(new _ParseACL2['default'](changes[k]));
         } else {
@@ -4635,7 +4549,9 @@ var ParseObject = (function () {
       }
 
       var stateController = _CoreManager2['default'].getObjectStateController();
-      stateController.duplicateState(this._getStateIdentifier(), clone._getStateIdentifier());
+      if (stateController) {
+        stateController.duplicateState(this._getStateIdentifier(), clone._getStateIdentifier());
+      }
       return clone;
     }
 
@@ -4893,9 +4809,9 @@ var ParseObject = (function () {
       options = options || {};
       var saveOptions = {};
       if (options.hasOwnProperty('useMasterKey')) {
-        saveOptions.useMasterKey = options.useMasterKey;
+        saveOptions.useMasterKey = !!options.useMasterKey;
       }
-      if (options.hasOwnProperty('sessionToken')) {
+      if (options.hasOwnProperty('sessionToken') && typeof options.sessionToken === 'string') {
         saveOptions.sessionToken = options.sessionToken;
       }
 
@@ -5322,13 +5238,13 @@ var ParseObject = (function () {
         parentProto = classMap[adjustedClassName].prototype;
       }
       var ParseObjectSubclass = function ParseObjectSubclass(attributes, options) {
+        this.className = adjustedClassName;
+        this._objCount = objectCount++;
         // Enable legacy initializers
         if (typeof this.initialize === 'function') {
           this.initialize.apply(this, arguments);
         }
 
-        this.className = adjustedClassName;
-        this._objCount = objectCount++;
         if (attributes && typeof attributes === 'object') {
           if (!this.set(attributes || {}, options)) {
             throw new Error('Can\'t create an invalid Parse Object');
@@ -6145,6 +6061,9 @@ var RelationOp = (function (_Op7) {
     key: 'applyTo',
     value: function applyTo(value, object, key) {
       if (!value) {
+        if (!object || !key) {
+          throw new Error('Cannot apply a RelationOp without either a previous value, or an object and a key');
+        }
         var parent = new _ParseObject2['default'](object.className);
         if (object.id && object.id.indexOf('local') === 0) {
           parent._localId = object.id;
@@ -6344,7 +6263,7 @@ var ParsePromise = (function () {
     key: 'reject',
     value: function reject(error) {
       if (this._resolved || this._rejected) {
-        throw new Error('A promise was resolved even though it had already been ' + (this._resolved ? 'resolved' : 'rejected') + '.');
+        throw new Error('A promise was rejected even though it had already been ' + (this._resolved ? 'resolved' : 'rejected') + '.');
       }
       this._rejected = true;
       this._error = error;
@@ -7368,9 +7287,15 @@ var ParseQuery = (function () {
      * @method each
      * @param {Function} callback Callback that will be called with each result
      *     of the query.
-     * @param {Object} options An optional Backbone-like options object with
-     *     success and error callbacks that will be invoked once the iteration
-     *     has finished.
+     * @param {Object} options A Backbone-style options object. Valid options
+     * are:<ul>
+     *   <li>success: Function to call when the iteration completes successfully.
+     *   <li>error: Function to call when the iteration fails.
+     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     * </ul>
      * @return {Parse.Promise} A promise that will be fulfilled once the
      *     iteration has completed.
      */
@@ -8222,9 +8147,13 @@ var ParseRelation = (function () {
       }
 
       var change = new _ParseOp.RelationOp(objects, []);
-      this.parent.set(this.key, change);
+      var parent = this.parent;
+      if (!parent) {
+        throw new Error('Cannot add to a Relation without a parent');
+      }
+      parent.set(this.key, change);
       this.targetClassName = change._targetClassName;
-      return this.parent;
+      return parent;
     }
 
     /**
@@ -8240,6 +8169,9 @@ var ParseRelation = (function () {
       }
 
       var change = new _ParseOp.RelationOp([], objects);
+      if (!this.parent) {
+        throw new Error('Cannot remove from a Relation without a parent');
+      }
       this.parent.set(this.key, change);
       this.targetClassName = change._targetClassName;
     }
@@ -8268,16 +8200,20 @@ var ParseRelation = (function () {
     key: 'query',
     value: function query() {
       var query;
+      var parent = this.parent;
+      if (!parent) {
+        throw new Error('Cannot construct a query for a Relation without a parent');
+      }
       if (!this.targetClassName) {
-        query = new _ParseQuery2['default'](this.parent.className);
+        query = new _ParseQuery2['default'](parent.className);
         query._extraOptions.redirectClassNameForKey = this.key;
       } else {
         query = new _ParseQuery2['default'](this.targetClassName);
       }
       query._addCondition('$relatedTo', 'object', {
         __type: 'Pointer',
-        className: this.parent.className,
-        objectId: this.parent.id
+        className: parent.className,
+        objectId: parent.id
       });
       query._addCondition('$relatedTo', 'key', this.key);
 
@@ -8369,7 +8305,11 @@ var ParseRole = (function (_ParseObject) {
   _createClass(ParseRole, [{
     key: 'getName',
     value: function getName() {
-      return this.get('name');
+      var name = this.get('name');
+      if (name == null || typeof name === 'string') {
+        return name;
+      }
+      return '';
     }
 
     /**
@@ -8543,7 +8483,11 @@ var ParseSession = (function (_ParseObject) {
   _createClass(ParseSession, [{
     key: 'getSessionToken',
     value: function getSessionToken() {
-      return this.get('sessionToken');
+      var token = this.get('sessionToken');
+      if (typeof token === 'string') {
+        return token;
+      }
+      return '';
     }
   }], [{
     key: 'readOnlyAttributes',
@@ -8751,6 +8695,9 @@ var ParseUser = (function (_ParseObject) {
       }
       if (options && options.hasOwnProperty('authData')) {
         var authData = this.get('authData') || {};
+        if (typeof authData !== 'object') {
+          throw new Error('Invalid type: authData field should be an object');
+        }
         authData[authType] = options.authData;
 
         var controller = _CoreManager2['default'].getUserController();
@@ -8803,7 +8750,7 @@ var ParseUser = (function (_ParseObject) {
         authType = provider.getAuthType();
       }
       var authData = this.get('authData');
-      if (!provider || typeof authData !== 'object') {
+      if (!provider || !authData || typeof authData !== 'object') {
         return;
       }
       var success = provider.restoreAuthentication(authData[authType]);
@@ -8888,6 +8835,9 @@ var ParseUser = (function (_ParseObject) {
         authType = provider.getAuthType();
       }
       var authData = this.get('authData') || {};
+      if (typeof authData !== 'object') {
+        return false;
+      }
       return !!authData[authType];
     }
 
@@ -8959,7 +8909,11 @@ var ParseUser = (function (_ParseObject) {
   }, {
     key: 'getUsername',
     value: function getUsername() {
-      return this.get('username');
+      var username = this.get('username');
+      if (username == null || typeof username === 'string') {
+        return username;
+      }
+      return '';
     }
 
     /**
@@ -8975,7 +8929,7 @@ var ParseUser = (function (_ParseObject) {
       // Strip anonymity, even we do not support anonymous user in js SDK, we may
       // encounter anonymous user created by android/iOS in cloud code.
       var authData = this.get('authData');
-      if (authData && authData.hasOwnProperty('anonymous')) {
+      if (authData && typeof authData === 'object' && authData.hasOwnProperty('anonymous')) {
         // We need to set anonymous to null instead of deleting it in order to remove it from Parse.
         authData.anonymous = null;
       }
@@ -9003,7 +8957,11 @@ var ParseUser = (function (_ParseObject) {
   }, {
     key: 'getEmail',
     value: function getEmail() {
-      return this.get('email');
+      var email = this.get('email');
+      if (email == null || typeof email === 'string') {
+        return email;
+      }
+      return '';
     }
 
     /**
@@ -9029,7 +8987,11 @@ var ParseUser = (function (_ParseObject) {
   }, {
     key: 'getSessionToken',
     value: function getSessionToken() {
-      return this.get('sessionToken');
+      var token = this.get('sessionToken');
+      if (token == null || typeof token === 'string') {
+        return token;
+      }
+      return '';
     }
 
     /**
@@ -9923,7 +9885,9 @@ var RESTController = {
       };
 
       headers = headers || {};
-      headers['Content-Type'] = 'text/plain'; // Avoid pre-flight
+      if (typeof headers['Content-Type'] !== 'string') {
+        headers['Content-Type'] = 'text/plain'; // Avoid pre-flight
+      }
       if (_CoreManager2['default'].get('IS_NODE')) {
         headers['User-Agent'] = 'Parse/' + _CoreManager2['default'].get('VERSION') + ' (NodeJS ' + process.versions.node + ')';
       }
@@ -10076,6 +10040,7 @@ exports.estimateAttributes = estimateAttributes;
 exports.commitServerChanges = commitServerChanges;
 exports.enqueueTask = enqueueTask;
 exports.clearAllState = clearAllState;
+exports.duplicateState = duplicateState;
 
 var _ObjectStateMutations = _dereq_('./ObjectStateMutations');
 
@@ -10188,6 +10153,10 @@ function enqueueTask(obj, task) {
 
 function clearAllState() {
   objectState = {};
+}
+
+function duplicateState(source, dest) {
+  dest.id = source.id;
 }
 },{"./ObjectStateMutations":9,"babel-runtime/helpers/interop-require-wildcard":57}],29:[function(_dereq_,module,exports){
 /**

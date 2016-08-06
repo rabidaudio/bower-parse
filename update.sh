@@ -12,7 +12,6 @@ git checkout ${VERSION}
 npm install
 ./build_releases.sh
 cd ..
-cp ./Parse-SDK-JS/dist/parse-latest.js ./parse.js
-cp ./Parse-SDK-JS/dist/parse-latest.min.js ./parse.min.js
+cp ./Parse-SDK-JS/dist/* .
 git commit -a -m "updated to $VERSION \n $MESSAGE"
 bower version "$VERSION"
