@@ -11,7 +11,8 @@
     "js"
   ],
   "ignore": [
-    "download_latest.sh",
-    "download_npm.sh"
+    "update.sh",
+    "Parse-SDK-JS",
+    "README.md"
   ]
 }
