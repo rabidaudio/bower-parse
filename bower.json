@@ -2,7 +2,7 @@
   "name": "parse",
   "version": "1.9.1",
   "main": [
-    "parse.min.js"
+    "parse.js"
   ],
   "keywords": [
     "parse",
