@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v1.10.2
+ * Parse JavaScript SDK v1.11.0
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -26,6 +26,7 @@ function _interopRequireDefault(obj) {
  *
  * @class Parse.Analytics
  * @static
+ * @hideconstructor
  */
 
 /**
@@ -51,6 +52,7 @@ function _interopRequireDefault(obj) {
  * There is a default limit of 8 dimensions per event tracked.
  *
  * @method track
+ * @name Parse.Analytics.track
  * @param {String} name The name of the custom event to report to Parse as
  * having happened.
  * @param {Object} dimensions The dictionary of information by which to
@@ -135,11 +137,13 @@ function _interopRequireDefault(obj) {
  *
  * @class Parse.Cloud
  * @static
+ * @hideconstructor
  */
 
 /**
  * Makes a call to a cloud function.
  * @method run
+ * @name Parse.Cloud.run
  * @param {String} name The function name.
  * @param {Object} data The parameters to send to the cloud function.
  * @param {Object} options A Backbone-style options object
@@ -204,20 +208,9 @@ var DefaultController = {
 };
 
 _CoreManager2.default.setCloudController(DefaultController);
-},{"./CoreManager":3,"./ParseError":13,"./ParsePromise":21,"./decode":36,"./encode":37}],3:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./ParsePromise":21,"./decode":37,"./encode":38}],3:[function(_dereq_,module,exports){
 (function (process){
 'use strict';
-
-/**
- * Copyright (c) 2015-present, Parse, LLC.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * 
- */
 
 var config = {
   // Defaults
@@ -225,14 +218,23 @@ var config = {
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + '1.10.2',
+  VERSION: 'js' + '1.11.0',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
   USE_MASTER_KEY: false,
   PERFORM_USER_REWRITE: true,
   FORCE_REVOCABLE_SESSION: false
-};
+}; /*
+    * Copyright (c) 2015-present, Parse, LLC.
+    * All rights reserved.
+    *
+    * This source code is licensed under the BSD-style license found in the
+    * LICENSE file in the root directory of this source tree. An additional grant
+    * of patent rights can be found in the PATENTS file in the same directory.
+    *
+    * 
+    */
 
 function requireMethods(name, methods, controller) {
   methods.forEach(function (func) {
@@ -314,7 +316,7 @@ module.exports = {
     return config['PushController'];
   },
   setQueryController: function (controller) {
-    requireMethods('QueryController', ['find'], controller);
+    requireMethods('QueryController', ['find', 'aggregate'], controller);
     config['QueryController'] = controller;
   },
   getQueryController: function () {
@@ -326,6 +328,13 @@ module.exports = {
   },
   getRESTController: function () {
     return config['RESTController'];
+  },
+  setSchemaController: function (controller) {
+    requireMethods('SchemaController', ['get', 'create', 'update', 'delete', 'send'], controller);
+    config['SchemaController'] = controller;
+  },
+  getSchemaController: function () {
+    return config['SchemaController'];
   },
   setSessionController: function (controller) {
     requireMethods('SessionController', ['getSession'], controller);
@@ -344,6 +353,12 @@ module.exports = {
   },
   getStorageController: function () {
     return config['StorageController'];
+  },
+  setAsyncStorage: function (storage) {
+    config['AsyncStorage'] = storage;
+  },
+  getAsyncStorage: function () {
+    return config['AsyncStorage'];
   },
   setUserController: function (controller) {
     requireMethods('UserController', ['setCurrentUser', 'currentUser', 'currentUserAsync', 'signUp', 'logIn', 'become', 'logOut', 'requestPasswordReset', 'upgradeToRevocableSession', 'linkWith'], controller);
@@ -368,7 +383,7 @@ module.exports = {
   }
 };
 }).call(this,_dereq_('_process'))
-},{"_process":63}],4:[function(_dereq_,module,exports){
+},{"_process":64}],4:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -384,7 +399,7 @@ module.exports = {
 
 module.exports = _dereq_('events').EventEmitter;
 var EventEmitter;
-},{"events":64}],5:[function(_dereq_,module,exports){
+},{"events":65}],5:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -490,6 +505,7 @@ var provider = {
  * Provides a set of utilities for using Parse with Facebook.
  * @class Parse.FacebookUtils
  * @static
+ * @hideconstructor
  */
 var FacebookUtils = {
   /**
@@ -502,6 +518,7 @@ var FacebookUtils = {
    * with these arguments.
    *
    * @method init
+   * @name Parse.FacebookUtils.init
    * @param {Object} options Facebook options argument as described here:
    *   <a href=
    *   "https://developers.facebook.com/docs/reference/javascript/FB.init/">
@@ -533,6 +550,7 @@ var FacebookUtils = {
    * Gets whether the user has their account linked to Facebook.
    *
    * @method isLinked
+   * @name Parse.FacebookUtils.isLinked
    * @param {Parse.User} user User to check for a facebook link.
    *     The user must be logged in on this device.
    * @return {Boolean} <code>true</code> if the user has their account
@@ -548,13 +566,15 @@ var FacebookUtils = {
    * creates, in the case where it is a new user) a Parse.User.
    *
    * @method logIn
-   * @param {String, Object} permissions The permissions required for Facebook
+   * @name Parse.FacebookUtils.logIn
+   * @param {(String|Object)} permissions The permissions required for Facebook
    *    log in.  This is a comma-separated string of permissions.
    *    Alternatively, supply a Facebook authData object as described in our
    *    REST API docs if you want to handle getting facebook auth tokens
    *    yourself.
    * @param {Object} options Standard options object with success and error
    *    callbacks.
+   * @returns {Parse.Promise}
    */
   logIn: function (permissions, options) {
     if (!permissions || typeof permissions === 'string') {
@@ -581,15 +601,17 @@ var FacebookUtils = {
    * the account to the Parse.User.
    *
    * @method link
+   * @name Parse.FacebookUtils.link
    * @param {Parse.User} user User to link to Facebook. This must be the
    *     current user.
-   * @param {String, Object} permissions The permissions required for Facebook
+   * @param {(String|Object)} permissions The permissions required for Facebook
    *    log in.  This is a comma-separated string of permissions.
    *    Alternatively, supply a Facebook authData object as described in our
    *    REST API docs if you want to handle getting facebook auth tokens
    *    yourself.
    * @param {Object} options Standard options object with success and error
    *    callbacks.
+   * @returns {Parse.Promise}
    */
   link: function (user, permissions, options) {
     if (!permissions || typeof permissions === 'string') {
@@ -614,10 +636,12 @@ var FacebookUtils = {
    * Unlinks the Parse.User from a Facebook account.
    *
    * @method unlink
+   * @name Parse.FacebookUtils.unlink
    * @param {Parse.User} user User to unlink from Facebook. This must be the
    *     current user.
    * @param {Object} options Standard options object with success and error
    *    callbacks.
+   * @returns {Parse.Promise}
    */
   unlink: function (user, options) {
     if (!initialized) {
@@ -628,7 +652,7 @@ var FacebookUtils = {
 };
 
 exports.default = FacebookUtils;
-},{"./ParseUser":26,"./parseDate":41}],6:[function(_dereq_,module,exports){
+},{"./ParseUser":27,"./parseDate":42}],6:[function(_dereq_,module,exports){
 'use strict';
 
 var _CoreManager = _dereq_('./CoreManager');
@@ -693,7 +717,7 @@ var InstallationController = {
 };
 
 module.exports = InstallationController;
-},{"./CoreManager":3,"./ParsePromise":21,"./Storage":30}],7:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParsePromise":21,"./Storage":31}],7:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -830,16 +854,6 @@ var generateInterval = function (k) {
  *
  * javascriptKey and masterKey are used for verifying the LiveQueryClient when it tries
  * to connect to the LiveQuery server
- * 
- * @class Parse.LiveQueryClient
- * @constructor
- * @param {Object} options
- * @param {string} options.applicationId - applicationId of your Parse app
- * @param {string} options.serverURL - <b>the URL of your LiveQuery server</b>
- * @param {string} options.javascriptKey (optional)
- * @param {string} options.masterKey (optional) Your Parse Master Key. (Node.js only!)
- * @param {string} options.sessionToken (optional)
- *
  *
  * We expose three events to help you monitor the status of the LiveQueryClient.
  *
@@ -871,13 +885,20 @@ var generateInterval = function (k) {
  * client.on('error', (error) => {
  * 
  * });</pre>
- * 
- * 
+ * @alias Parse.LiveQueryClient
  */
 
 var LiveQueryClient = function (_EventEmitter) {
   (0, _inherits3.default)(LiveQueryClient, _EventEmitter);
 
+  /**
+   * @param {Object} options
+   * @param {string} options.applicationId - applicationId of your Parse app
+   * @param {string} options.serverURL - <b>the URL of your LiveQuery server</b>
+   * @param {string} options.javascriptKey (optional)
+   * @param {string} options.masterKey (optional) Your Parse Master Key. (Node.js only!)
+   * @param {string} options.sessionToken (optional)
+   */
   function LiveQueryClient(_ref) {
     var applicationId = _ref.applicationId;
     var serverURL = _ref.serverURL;
@@ -923,7 +944,6 @@ var LiveQueryClient = function (_EventEmitter) {
      * <a href="https://github.com/ParsePlatform/parse-server/wiki/Parse-LiveQuery-Protocol-Specification">here</a> for more details. The subscription you get is the same subscription you get 
      * from our Standard API.
      * 
-     * @method subscribe
      * @param {Object} query - the ParseQuery you want to subscribe to
      * @param {string} sessionToken (optional) 
      * @return {Object} subscription
@@ -937,14 +957,17 @@ var LiveQueryClient = function (_EventEmitter) {
       if (!query) {
         return;
       }
-      var where = query.toJSON().where;
       var className = query.className;
+      var queryJSON = query.toJSON();
+      var where = queryJSON.where;
+      var fields = queryJSON.keys ? queryJSON.keys.split(',') : undefined;
       var subscribeRequest = {
         op: OP_TYPES.SUBSCRIBE,
         requestId: this.requestId,
         query: {
           className: className,
-          where: where
+          where: where,
+          fields: fields
         }
       };
 
@@ -969,7 +992,6 @@ var LiveQueryClient = function (_EventEmitter) {
     /**
      * After calling unsubscribe you'll stop receiving events from the subscription object.
      * 
-     * @method unsubscribe
      * @param {Object} subscription - subscription you would like to unsubscribe from.
      */
 
@@ -996,7 +1018,6 @@ var LiveQueryClient = function (_EventEmitter) {
      * After open is called, the LiveQueryClient will try to send a connect request
      * to the LiveQuery server.
      * 
-     * @method open
      */
 
   }, {
@@ -1041,7 +1062,9 @@ var LiveQueryClient = function (_EventEmitter) {
 
       this.subscriptions.forEach(function (subscription, requestId) {
         var query = subscription.query;
-        var where = query.toJSON().where;
+        var queryJSON = query.toJSON();
+        var where = queryJSON.where;
+        var fields = queryJSON.keys ? queryJSON.keys.split(',') : undefined;
         var className = query.className;
         var sessionToken = subscription.sessionToken;
         var subscribeRequest = {
@@ -1049,7 +1072,8 @@ var LiveQueryClient = function (_EventEmitter) {
           requestId: requestId,
           query: {
             className: className,
-            where: where
+            where: where,
+            fields: fields
           }
         };
 
@@ -1067,7 +1091,6 @@ var LiveQueryClient = function (_EventEmitter) {
      * This method will close the WebSocket connection to this LiveQueryClient, 
      * cancel the auto reconnect and unsubscribe all subscriptions based on it.
      * 
-     * @method close
      */
 
   }, {
@@ -1289,7 +1312,7 @@ var LiveQueryClient = function (_EventEmitter) {
 }(_EventEmitter3.default);
 
 exports.default = LiveQueryClient;
-},{"./EventEmitter":4,"./LiveQuerySubscription":8,"./ParseObject":18,"./ParsePromise":21,"babel-runtime/core-js/get-iterator":44,"babel-runtime/core-js/json/stringify":45,"babel-runtime/core-js/map":46,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/inherits":60,"babel-runtime/helpers/possibleConstructorReturn":61,"babel-runtime/helpers/typeof":62}],8:[function(_dereq_,module,exports){
+},{"./EventEmitter":4,"./LiveQuerySubscription":8,"./ParseObject":18,"./ParsePromise":21,"babel-runtime/core-js/get-iterator":45,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/map":47,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],8:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1333,10 +1356,6 @@ function _interopRequireDefault(obj) {
  * Extends events.EventEmitter
  * <a href="https://nodejs.org/api/events.html#events_class_eventemitter">cloud functions</a>.
  * 
- * @constructor
- * @param {string} id - subscription id
- * @param {string} query - query to subscribe to
- * @param {string} sessionToken - optional session token
  *
  * <p>Open Event - When you call query.subscribe(), we send a subscribe request to 
  * the LiveQuery server, when we get the confirmation from the LiveQuery server,
@@ -1405,9 +1424,9 @@ function _interopRequireDefault(obj) {
  * 
  * });</pre></p>
  *
- * 
+ * @alias Parse.LiveQuerySubscription
  */
-/**
+/*
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
  *
@@ -1420,6 +1439,11 @@ function _interopRequireDefault(obj) {
 var Subscription = function (_EventEmitter) {
   (0, _inherits3.default)(Subscription, _EventEmitter);
 
+  /*
+   * @param {string} id - subscription id
+   * @param {string} query - query to subscribe to
+   * @param {string} sessionToken - optional session token
+   */
   function Subscription(id, query, sessionToken) {
     (0, _classCallCheck3.default)(this, Subscription);
 
@@ -1432,7 +1456,7 @@ var Subscription = function (_EventEmitter) {
   }
 
   /**
-   * @method unsubscribe
+   * closes the subscription
    */
 
   (0, _createClass3.default)(Subscription, [{
@@ -1452,7 +1476,7 @@ var Subscription = function (_EventEmitter) {
 }(_EventEmitter3.default);
 
 exports.default = Subscription;
-},{"./CoreManager":3,"./EventEmitter":4,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/inherits":60,"babel-runtime/helpers/possibleConstructorReturn":61}],9:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./EventEmitter":4,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62}],9:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1618,7 +1642,7 @@ function commitServerChanges(serverData, objectCache, changes) {
     }
   }
 }
-},{"./ParseFile":14,"./ParseObject":18,"./ParseOp":19,"./ParsePromise":21,"./ParseRelation":23,"./TaskQueue":32,"./encode":37,"babel-runtime/core-js/json/stringify":45,"babel-runtime/helpers/typeof":62}],10:[function(_dereq_,module,exports){
+},{"./ParseFile":14,"./ParseObject":18,"./ParseOp":19,"./ParsePromise":21,"./ParseRelation":23,"./TaskQueue":33,"./encode":38,"babel-runtime/core-js/json/stringify":46,"babel-runtime/helpers/typeof":63}],10:[function(_dereq_,module,exports){
 'use strict';
 
 var _decode = _dereq_('./decode');
@@ -1663,8 +1687,10 @@ function _interopRequireDefault(obj) {
 
 /**
  * Contains all Parse API classes and functions.
- * @class Parse
  * @static
+ * @global
+ * @class
+ * @hideconstructor
  */
 /**
  * Copyright (c) 2015-present, Parse, LLC.
@@ -1679,7 +1705,6 @@ var Parse = {
   /**
    * Call this method first to set up your authentication tokens for Parse.
    * You can get your keys from the Data Browser on parse.com.
-   * @method initialize
    * @param {String} applicationId Your Parse Application ID.
    * @param {String} javaScriptKey (optional) Your Parse JavaScript Key (Not needed for parse-server)
    * @param {String} masterKey (optional) Your Parse Master Key. (Node.js only!)
@@ -1696,10 +1721,26 @@ var Parse = {
     _CoreManager2.default.set('JAVASCRIPT_KEY', javaScriptKey);
     _CoreManager2.default.set('MASTER_KEY', masterKey);
     _CoreManager2.default.set('USE_MASTER_KEY', false);
+  },
+
+  /**
+   * Call this method to set your AsyncStorage engine
+   * Starting Parse@1.11, the ParseSDK do not provide a React AsyncStorage as the ReactNative module
+   * is not provided at a stable path and changes over versions.
+   * @param {AsyncStorage} storage a react native async storage.
+   * @static
+   */
+  setAsyncStorage: function (storage) {
+    _CoreManager2.default.setAsyncStorage(storage);
   }
 };
 
 /** These legacy setters may eventually be deprecated **/
+/** 
+ * @member Parse.applicationId
+ * @type string
+ * @static
+ */
 Object.defineProperty(Parse, 'applicationId', {
   get: function () {
     return _CoreManager2.default.get('APPLICATION_ID');
@@ -1708,6 +1749,12 @@ Object.defineProperty(Parse, 'applicationId', {
     _CoreManager2.default.set('APPLICATION_ID', value);
   }
 });
+
+/** 
+ * @member Parse.javaScriptKey
+ * @type string
+ * @static
+ */
 Object.defineProperty(Parse, 'javaScriptKey', {
   get: function () {
     return _CoreManager2.default.get('JAVASCRIPT_KEY');
@@ -1716,6 +1763,12 @@ Object.defineProperty(Parse, 'javaScriptKey', {
     _CoreManager2.default.set('JAVASCRIPT_KEY', value);
   }
 });
+
+/** 
+ * @member Parse.masterKey
+ * @type string
+ * @static
+ */
 Object.defineProperty(Parse, 'masterKey', {
   get: function () {
     return _CoreManager2.default.get('MASTER_KEY');
@@ -1724,6 +1777,12 @@ Object.defineProperty(Parse, 'masterKey', {
     _CoreManager2.default.set('MASTER_KEY', value);
   }
 });
+
+/** 
+ * @member Parse.serverURL
+ * @type string
+ * @static
+ */
 Object.defineProperty(Parse, 'serverURL', {
   get: function () {
     return _CoreManager2.default.get('SERVER_URL');
@@ -1732,6 +1791,11 @@ Object.defineProperty(Parse, 'serverURL', {
     _CoreManager2.default.set('SERVER_URL', value);
   }
 });
+/** 
+ * @member Parse.liveQueryServerURL
+ * @type string
+ * @static
+ */
 Object.defineProperty(Parse, 'liveQueryServerURL', {
   get: function () {
     return _CoreManager2.default.get('LIVEQUERY_SERVER_URL');
@@ -1740,7 +1804,7 @@ Object.defineProperty(Parse, 'liveQueryServerURL', {
     _CoreManager2.default.set('LIVEQUERY_SERVER_URL', value);
   }
 });
-/** End setters **/
+/* End setters */
 
 Parse.ACL = _dereq_('./ParseACL').default;
 Parse.Analytics = _dereq_('./Analytics');
@@ -1768,6 +1832,7 @@ Parse.Push = _dereq_('./Push');
 Parse.Query = _dereq_('./ParseQuery').default;
 Parse.Relation = _dereq_('./ParseRelation').default;
 Parse.Role = _dereq_('./ParseRole').default;
+Parse.Schema = _dereq_('./ParseSchema').default;
 Parse.Session = _dereq_('./ParseSession').default;
 Parse.Storage = _dereq_('./Storage');
 Parse.User = _dereq_('./ParseUser').default;
@@ -1806,7 +1871,7 @@ _CoreManager2.default.setRESTController(_RESTController2.default);
 Parse.Parse = Parse;
 
 module.exports = Parse;
-},{"./Analytics":1,"./Cloud":2,"./CoreManager":3,"./FacebookUtils":5,"./InstallationController":6,"./LiveQueryClient":7,"./ParseACL":11,"./ParseConfig":12,"./ParseError":13,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseInstallation":16,"./ParseLiveQuery":17,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParsePromise":21,"./ParseQuery":22,"./ParseRelation":23,"./ParseRole":24,"./ParseSession":25,"./ParseUser":26,"./Push":27,"./RESTController":28,"./Storage":30,"./decode":36,"./encode":37}],11:[function(_dereq_,module,exports){
+},{"./Analytics":1,"./Cloud":2,"./CoreManager":3,"./FacebookUtils":5,"./InstallationController":6,"./LiveQueryClient":7,"./ParseACL":11,"./ParseConfig":12,"./ParseError":13,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseInstallation":16,"./ParseLiveQuery":17,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParsePromise":21,"./ParseQuery":22,"./ParseRelation":23,"./ParseRole":24,"./ParseSchema":25,"./ParseSession":26,"./ParseUser":27,"./Push":28,"./RESTController":29,"./Storage":31,"./decode":37,"./encode":38}],11:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1861,15 +1926,18 @@ var PUBLIC_KEY = '*';
  *   permission for only that user.
  * If the argument is any other JSON object, that object will be interpretted
  *   as a serialized ACL created with toJSON().
- * @class Parse.ACL
- * @constructor
- *
+ * 
  * <p>An ACL, or Access Control List can be added to any
  * <code>Parse.Object</code> to restrict access to only a subset of users
  * of your application.</p>
+ * @alias Parse.ACL
  */
 
 var ParseACL = function () {
+
+  /**
+   * @param {(Parse.User|Object)} user The user to initialize the ACL for
+   */
   function ParseACL(arg1) {
     (0, _classCallCheck3.default)(this, ParseACL);
 
@@ -1904,7 +1972,6 @@ var ParseACL = function () {
 
   /**
    * Returns a JSON-encoded version of the ACL.
-   * @method toJSON
    * @return {Object}
    */
 
@@ -1920,7 +1987,6 @@ var ParseACL = function () {
 
     /**
      * Returns whether this ACL is equal to another object
-     * @method equals
      * @param other The other object to compare to
      * @return {Boolean}
      */
@@ -2011,7 +2077,6 @@ var ParseACL = function () {
 
     /**
      * Sets whether the given user is allowed to read this object.
-     * @method setReadAccess
      * @param userId An instance of Parse.User or its objectId.
      * @param {Boolean} allowed Whether that user should have read access.
      */
@@ -2027,7 +2092,6 @@ var ParseACL = function () {
      * Even if this returns false, the user may still be able to access it if
      * getPublicReadAccess returns true or a role that the user belongs to has
      * write access.
-     * @method getReadAccess
      * @param userId An instance of Parse.User or its objectId, or a Parse.Role.
      * @return {Boolean}
      */
@@ -2040,7 +2104,6 @@ var ParseACL = function () {
 
     /**
      * Sets whether the given user id is allowed to write this object.
-     * @method setWriteAccess
      * @param userId An instance of Parse.User or its objectId, or a Parse.Role..
      * @param {Boolean} allowed Whether that user should have write access.
      */
@@ -2056,7 +2119,6 @@ var ParseACL = function () {
      * Even if this returns false, the user may still be able to write it if
      * getPublicWriteAccess returns true or a role that the user belongs to has
      * write access.
-     * @method getWriteAccess
      * @param userId An instance of Parse.User or its objectId, or a Parse.Role.
      * @return {Boolean}
      */
@@ -2069,7 +2131,6 @@ var ParseACL = function () {
 
     /**
      * Sets whether the public is allowed to read this object.
-     * @method setPublicReadAccess
      * @param {Boolean} allowed
      */
 
@@ -2081,7 +2142,6 @@ var ParseACL = function () {
 
     /**
      * Gets whether the public is allowed to read this object.
-     * @method getPublicReadAccess
      * @return {Boolean}
      */
 
@@ -2093,7 +2153,6 @@ var ParseACL = function () {
 
     /**
      * Sets whether the public is allowed to write this object.
-     * @method setPublicWriteAccess
      * @param {Boolean} allowed
      */
 
@@ -2105,7 +2164,6 @@ var ParseACL = function () {
 
     /**
      * Gets whether the public is allowed to write this object.
-     * @method getPublicWriteAccess
      * @return {Boolean}
      */
 
@@ -2120,7 +2178,6 @@ var ParseACL = function () {
      * to read this object. Even if this returns false, the role may
      * still be able to write it if a parent role has read access.
      *
-     * @method getRoleReadAccess
      * @param role The name of the role, or a Parse.Role object.
      * @return {Boolean} true if the role has read access. false otherwise.
      * @throws {TypeError} If role is neither a Parse.Role nor a String.
@@ -2144,7 +2201,6 @@ var ParseACL = function () {
      * to write this object. Even if this returns false, the role may
      * still be able to write it if a parent role has write access.
      *
-     * @method getRoleWriteAccess
      * @param role The name of the role, or a Parse.Role object.
      * @return {Boolean} true if the role has write access. false otherwise.
      * @throws {TypeError} If role is neither a Parse.Role nor a String.
@@ -2167,7 +2223,6 @@ var ParseACL = function () {
      * Sets whether users belonging to the given role are allowed
      * to read this object.
      *
-     * @method setRoleReadAccess
      * @param role The name of the role, or a Parse.Role object.
      * @param {Boolean} allowed Whether the given role can read this object.
      * @throws {TypeError} If role is neither a Parse.Role nor a String.
@@ -2190,7 +2245,6 @@ var ParseACL = function () {
      * Sets whether users belonging to the given role are allowed
      * to write this object.
      *
-     * @method setRoleWriteAccess
      * @param role The name of the role, or a Parse.Role object.
      * @param {Boolean} allowed Whether the given role can write this object.
      * @throws {TypeError} If role is neither a Parse.Role nor a String.
@@ -2213,7 +2267,7 @@ var ParseACL = function () {
 }();
 
 exports.default = ParseACL;
-},{"./ParseRole":24,"./ParseUser":26,"babel-runtime/core-js/object/keys":52,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/typeof":62}],12:[function(_dereq_,module,exports){
+},{"./ParseRole":24,"./ParseUser":27,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],12:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2272,8 +2326,7 @@ function _interopRequireDefault(obj) {
  * Parse.Config is a local representation of configuration data that
  * can be set from the Parse dashboard.
  *
- * @class Parse.Config
- * @constructor
+ * @alias Parse.Config
  */
 
 var ParseConfig = function () {
@@ -2286,7 +2339,6 @@ var ParseConfig = function () {
 
   /**
    * Gets the value of an attribute.
-   * @method get
    * @param {String} attr The name of an attribute.
    */
 
@@ -2298,7 +2350,6 @@ var ParseConfig = function () {
 
     /**
      * Gets the HTML-escaped value of an attribute.
-     * @method escape
      * @param {String} attr The name of an attribute.
      */
 
@@ -2322,7 +2373,6 @@ var ParseConfig = function () {
      * Retrieves the most recently-fetched configuration object, either from
      * memory or from local storage if necessary.
      *
-     * @method current
      * @static
      * @return {Config} The most recently-fetched Parse.Config if it
      *     exists, else an empty Parse.Config.
@@ -2337,7 +2387,6 @@ var ParseConfig = function () {
 
     /**
      * Gets a new configuration object from the server.
-     * @method get
      * @static
      * @param {Object} options A Backbone-style options object.
      * Valid options are:<ul>
@@ -2368,8 +2417,6 @@ var ParseConfig = function () {
       *
       * 
       */
-
-exports.default = ParseConfig;
 
 var currentConfig = null;
 
@@ -2442,7 +2489,9 @@ var DefaultController = {
 };
 
 _CoreManager2.default.setConfigController(DefaultController);
-},{"./CoreManager":3,"./ParseError":13,"./ParsePromise":21,"./Storage":30,"./decode":36,"./encode":37,"./escape":39,"babel-runtime/core-js/json/stringify":45,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/typeof":62}],13:[function(_dereq_,module,exports){
+
+exports.default = ParseConfig;
+},{"./CoreManager":3,"./ParseError":13,"./ParsePromise":21,"./Storage":31,"./decode":37,"./encode":38,"./escape":40,"babel-runtime/core-js/json/stringify":46,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],13:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2472,12 +2521,13 @@ function _interopRequireDefault(obj) {
 
 /**
  * Constructs a new Parse.Error object with the given code and message.
- * @class Parse.Error
- * @constructor
- * @param {Number} code An error code constant from <code>Parse.Error</code>.
- * @param {String} message A detailed description of the error.
+ * @alias Parse.Error
  */
 var ParseError = function () {
+  /**
+   * @param {Number} code An error code constant from <code>Parse.Error</code>.
+   * @param {String} message A detailed description of the error.
+   */
   function ParseError(code, message) {
     (0, _classCallCheck3.default)(this, ParseError);
 
@@ -2501,7 +2551,6 @@ var ParseError = function () {
  * @final
  */
 
-exports.default = ParseError;
 ParseError.OTHER_CAUSE = -1;
 
 /**
@@ -2964,7 +3013,9 @@ ParseError.FILE_READ_ERROR = 601;
  * @final
  */
 ParseError.X_DOMAIN_REQUEST = 602;
-},{"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58}],14:[function(_dereq_,module,exports){
+
+exports.default = ParseError;
+},{"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],14:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3026,35 +3077,37 @@ function b64Digit(number) {
 /**
  * A Parse.File is a local representation of a file that is saved to the Parse
  * cloud.
- * @class Parse.File
- * @constructor
- * @param name {String} The file's name. This will be prefixed by a unique
- *     value once the file has finished saving. The file name must begin with
- *     an alphanumeric character, and consist of alphanumeric characters,
- *     periods, spaces, underscores, or dashes.
- * @param data {Array} The data for the file, as either:
- *     1. an Array of byte value Numbers, or
- *     2. an Object like { base64: "..." } with a base64-encoded String.
- *     3. a File object selected with a file upload control. (3) only works
- *        in Firefox 3.6+, Safari 6.0.2+, Chrome 7+, and IE 10+.
- *        For example:<pre>
- * var fileUploadControl = $("#profilePhotoFileUpload")[0];
- * if (fileUploadControl.files.length > 0) {
- *   var file = fileUploadControl.files[0];
- *   var name = "photo.jpg";
- *   var parseFile = new Parse.File(name, file);
- *   parseFile.save().then(function() {
- *     // The file has been saved to Parse.
- *   }, function(error) {
- *     // The file either could not be read, or could not be saved to Parse.
- *   });
- * }</pre>
- * @param type {String} Optional Content-Type header to use for the file. If
- *     this is omitted, the content type will be inferred from the name's
- *     extension.
+ * @alias Parse.File
  */
 
 var ParseFile = function () {
+
+  /**
+   * @param name {String} The file's name. This will be prefixed by a unique
+   *     value once the file has finished saving. The file name must begin with
+   *     an alphanumeric character, and consist of alphanumeric characters,
+   *     periods, spaces, underscores, or dashes.
+   * @param data {Array} The data for the file, as either:
+   *     1. an Array of byte value Numbers, or
+   *     2. an Object like { base64: "..." } with a base64-encoded String.
+   *     3. a File object selected with a file upload control. (3) only works
+   *        in Firefox 3.6+, Safari 6.0.2+, Chrome 7+, and IE 10+.
+   *        For example:<pre>
+   * var fileUploadControl = $("#profilePhotoFileUpload")[0];
+   * if (fileUploadControl.files.length > 0) {
+   *   var file = fileUploadControl.files[0];
+   *   var name = "photo.jpg";
+   *   var parseFile = new Parse.File(name, file);
+   *   parseFile.save().then(function() {
+   *     // The file has been saved to Parse.
+   *   }, function(error) {
+   *     // The file either could not be read, or could not be saved to Parse.
+   *   });
+   * }</pre>
+   * @param type {String} Optional Content-Type header to use for the file. If
+   *     this is omitted, the content type will be inferred from the name's
+   *     extension.
+   */
   function ParseFile(name, data, type) {
     (0, _classCallCheck3.default)(this, ParseFile);
 
@@ -3104,7 +3157,6 @@ var ParseFile = function () {
    * Gets the name of the file. Before save is called, this is the filename
    * given by the user. After save is called, that name gets prefixed with a
    * unique identifier.
-   * @method name
    * @return {String}
    */
 
@@ -3117,7 +3169,6 @@ var ParseFile = function () {
     /**
      * Gets the url of the file. It is only available after you save the file or
      * after you get the file from a Parse.Object.
-     * @method url
      * @param {Object} options An object to specify url options
      * @return {String}
      */
@@ -3138,7 +3189,6 @@ var ParseFile = function () {
 
     /**
      * Saves the file to the Parse cloud.
-     * @method save
      * @param {Object} options A Backbone-style options object.
      * @return {Parse.Promise} Promise that is resolved when the save finishes.
      */
@@ -3219,8 +3269,6 @@ var ParseFile = function () {
   return ParseFile;
 }();
 
-exports.default = ParseFile;
-
 var DefaultController = {
   saveFile: function (name, source) {
     if (source.format !== 'file') {
@@ -3256,7 +3304,9 @@ var DefaultController = {
 };
 
 _CoreManager2.default.setFileController(DefaultController);
-},{"./CoreManager":3,"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58}],15:[function(_dereq_,module,exports){
+
+exports.default = ParseFile;
+},{"./CoreManager":3,"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],15:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3292,9 +3342,6 @@ function _interopRequireDefault(obj) {
  *   new GeoPoint({latitude: 30, longitude: 30})
  *   new GeoPoint()  // defaults to (0, 0)
  *   </pre>
- * @class Parse.GeoPoint
- * @constructor
- *
  * <p>Represents a latitude / longitude point that may be associated
  * with a key in a ParseObject or used as a reference point for geo queries.
  * This allows proximity-based queries on the key.</p>
@@ -3306,8 +3353,14 @@ function _interopRequireDefault(obj) {
  *   var object = new Parse.Object("PlaceObject");
  *   object.set("location", point);
  *   object.save();</pre></p>
+ * @alias Parse.GeoPoint
  */
 var ParseGeoPoint = function () {
+
+  /**
+   * @param {(Number[]|Object|Number)} options Either a list of coordinate pairs, an object with `latitude`, `longitude`, or the latitude or the point. 
+   * @param {Number} longitude The longitude of the GeoPoint
+   */
   function ParseGeoPoint(arg1, arg2) {
     (0, _classCallCheck3.default)(this, ParseGeoPoint);
 
@@ -3341,8 +3394,7 @@ var ParseGeoPoint = function () {
 
     /**
      * Returns a JSON representation of the GeoPoint, suitable for Parse.
-     * @method toJSON
-     * @return {Object}
+      * @return {Object}
      */
     value: function () {
       ParseGeoPoint._validate(this._latitude, this._longitude);
@@ -3360,8 +3412,7 @@ var ParseGeoPoint = function () {
 
     /**
      * Returns the distance from this GeoPoint to another in radians.
-     * @method radiansTo
-     * @param {Parse.GeoPoint} point the other Parse.GeoPoint.
+      * @param {Parse.GeoPoint} point the other Parse.GeoPoint.
      * @return {Number}
      */
 
@@ -3384,8 +3435,7 @@ var ParseGeoPoint = function () {
 
     /**
      * Returns the distance from this GeoPoint to another in kilometers.
-     * @method kilometersTo
-     * @param {Parse.GeoPoint} point the other Parse.GeoPoint.
+      * @param {Parse.GeoPoint} point the other Parse.GeoPoint.
      * @return {Number}
      */
 
@@ -3397,8 +3447,7 @@ var ParseGeoPoint = function () {
 
     /**
      * Returns the distance from this GeoPoint to another in miles.
-     * @method milesTo
-     * @param {Parse.GeoPoint} point the other Parse.GeoPoint.
+      * @param {Parse.GeoPoint} point the other Parse.GeoPoint.
      * @return {Number}
      */
 
@@ -3408,7 +3457,7 @@ var ParseGeoPoint = function () {
       return this.radiansTo(point) * 3958.8;
     }
 
-    /**
+    /*
      * Throws an exception if the given lat-long is out of bounds.
      */
 
@@ -3461,8 +3510,7 @@ var ParseGeoPoint = function () {
     /**
      * Creates a GeoPoint with the user's current location, if available.
      * Calls options.success with a new GeoPoint instance or calls options.error.
-     * @method current
-     * @param {Object} options An object with success and error callbacks.
+      * @param {Object} options An object with success and error callbacks.
      * @static
      */
 
@@ -3492,7 +3540,7 @@ var ParseGeoPoint = function () {
       */
 
 exports.default = ParseGeoPoint;
-},{"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/typeof":62}],16:[function(_dereq_,module,exports){
+},{"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],16:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3558,7 +3606,7 @@ var Installation = function (_ParseObject) {
 exports.default = Installation;
 
 _ParseObject3.default.registerSubclass('_Installation', Installation);
-},{"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/inherits":60,"babel-runtime/helpers/possibleConstructorReturn":61,"babel-runtime/helpers/typeof":62}],17:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],17:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3641,7 +3689,7 @@ var LiveQuery = new _EventEmitter2.default();
  * After open is called, the LiveQuery will try to send a connect request
  * to the LiveQuery server.
  * 
- * @method open
+
  */
 LiveQuery.open = open;
 
@@ -3652,7 +3700,7 @@ LiveQuery.open = open;
  * If you call query.subscribe() after this, we'll create a new WebSocket
  * connection to the LiveQuery server.
  * 
- * @method close
+
  */
 
 LiveQuery.close = close;
@@ -3971,32 +4019,28 @@ function getServerUrlPath() {
 
 /**
  * Creates a new model with defined attributes.
- *
- * <p>You won't normally call this method directly.  It is recommended that
- * you use a subclass of <code>Parse.Object</code> instead, created by calling
- * <code>extend</code>.</p>
- *
- * <p>However, if you don't want to use a subclass, or aren't sure which
- * subclass is appropriate, you can use this form:<pre>
- *     var object = new Parse.Object("ClassName");
- * </pre>
- * That is basically equivalent to:<pre>
- *     var MyClass = Parse.Object.extend("ClassName");
- *     var object = new MyClass();
- * </pre></p>
- *
- * @class Parse.Object
- * @constructor
- * @param {String} className The class name for the object
- * @param {Object} attributes The initial set of data to store in the object.
- * @param {Object} options The options for this object instance.
+  *
+  * <p>You won't normally call this method directly.  It is recommended that
+  * you use a subclass of <code>Parse.Object</code> instead, created by calling
+  * <code>extend</code>.</p>
+  *
+  * <p>However, if you don't want to use a subclass, or aren't sure which
+  * subclass is appropriate, you can use this form:<pre>
+  *     var object = new Parse.Object("ClassName");
+  * </pre>
+  * That is basically equivalent to:<pre>
+  *     var MyClass = Parse.Object.extend("ClassName");
+  *     var object = new MyClass();
+  * </pre></p>
+  *
+ * @alias Parse.Object
  */
 
 var ParseObject = function () {
   /**
-   * The ID of this object, unique within its class.
-   * @property id
-   * @type String
+   * @param {String} className The class name for the object
+   * @param {Object} attributes The initial set of data to store in the object.
+   * @param {Object} options The options for this object instance.
    */
   function ParseObject(className, attributes, options) {
     (0, _classCallCheck3.default)(this, ParseObject);
@@ -4030,7 +4074,11 @@ var ParseObject = function () {
     }
   }
 
-  /** Prototype getters / setters **/
+  /**
+   * The ID of this object, unique within its class.
+   * @property id
+   * @type String
+   */
 
   (0, _createClass3.default)(ParseObject, [{
     key: '_getId',
@@ -4287,7 +4335,6 @@ var ParseObject = function () {
 
     /**
      * Returns a JSON version of the object suitable for saving to Parse.
-     * @method toJSON
      * @return {Object}
      */
 
@@ -4318,7 +4365,7 @@ var ParseObject = function () {
 
     /**
      * Determines whether this ParseObject is equal to another ParseObject
-     * @method equals
+     * @param {Object} other - An other object ot compare
      * @return {Boolean}
      */
 
@@ -4335,7 +4382,6 @@ var ParseObject = function () {
      * Returns true if this object has been modified since its last
      * save/refresh.  If an attribute is specified, it returns true only if that
      * particular attribute has been modified since the last save/refresh.
-     * @method dirty
      * @param {String} attr An attribute name (optional).
      * @return {Boolean}
      */
@@ -4370,8 +4416,7 @@ var ParseObject = function () {
 
     /**
      * Returns an array of keys that have been modified since last save/refresh
-     * @method dirtyKeys
-     * @return {Array of string}
+     * @return {String[]}
      */
 
   }, {
@@ -4393,8 +4438,7 @@ var ParseObject = function () {
 
     /**
      * Gets a Pointer referencing this Object.
-     * @method toPointer
-     * @return {Object}
+     * @return {Pointer}
      */
 
   }, {
@@ -4412,7 +4456,6 @@ var ParseObject = function () {
 
     /**
      * Gets the value of an attribute.
-     * @method get
      * @param {String} attr The string name of an attribute.
      */
 
@@ -4424,8 +4467,8 @@ var ParseObject = function () {
 
     /**
      * Gets a relation on the given class for the attribute.
-     * @method relation
      * @param String attr The attribute to get the relation for.
+     * @return {Parse.Relation}
      */
 
   }, {
@@ -4444,7 +4487,6 @@ var ParseObject = function () {
 
     /**
      * Gets the HTML-escaped value of an attribute.
-     * @method escape
      * @param {String} attr The string name of an attribute.
      */
 
@@ -4468,7 +4510,6 @@ var ParseObject = function () {
     /**
      * Returns <code>true</code> if the attribute contains a value that is not
      * null or undefined.
-     * @method has
      * @param {String} attr The string name of the attribute.
      * @return {Boolean}
      */
@@ -4505,7 +4546,6 @@ var ParseObject = function () {
      *
      *   game.set("finished", true);</pre></p>
      *
-     * @method set
      * @param {String} key The key to set.
      * @param {} value The value to give it.
      * @param {Object} options A set of options for the set.
@@ -4595,7 +4635,6 @@ var ParseObject = function () {
     /**
      * Remove an attribute from the model. This is a noop if the attribute doesn't
      * exist.
-     * @method unset
      * @param {String} attr The string name of an attribute.
      */
 
@@ -4611,7 +4650,6 @@ var ParseObject = function () {
      * Atomically increments the value of the given attribute the next time the
      * object is saved. If no amount is specified, 1 is used by default.
      *
-     * @method increment
      * @param attr {String} The key.
      * @param amount {Number} The amount to increment by (optional).
      */
@@ -4631,9 +4669,9 @@ var ParseObject = function () {
     /**
      * Atomically add an object to the end of the array associated with a given
      * key.
-     * @method add
      * @param attr {String} The key.
      * @param item {} The item to add.
+     * @return {(ParseObject|Boolean)}
      */
 
   }, {
@@ -4645,9 +4683,8 @@ var ParseObject = function () {
     /**
      * Atomically add the objects to the end of the array associated with a given
      * key.
-     * @method addAll
      * @param attr {String} The key.
-     * @param items {[]} The items to add.
+     * @param items {Object[]} The items to add.
      */
 
   }, {
@@ -4661,7 +4698,6 @@ var ParseObject = function () {
      * if it is not already present in the array. The position of the insert is
      * not guaranteed.
      *
-     * @method addUnique
      * @param attr {String} The key.
      * @param item {} The object to add.
      */
@@ -4677,9 +4713,8 @@ var ParseObject = function () {
      * if it is not already present in the array. The position of the insert is
      * not guaranteed.
      *
-     * @method addAllUnique
      * @param attr {String} The key.
-     * @param items {[]} The objects to add.
+     * @param items {Object[]} The objects to add.
      */
 
   }, {
@@ -4692,7 +4727,6 @@ var ParseObject = function () {
      * Atomically remove all instances of an object from the array associated
      * with a given key.
      *
-     * @method remove
      * @param attr {String} The key.
      * @param item {} The object to remove.
      */
@@ -4707,9 +4741,8 @@ var ParseObject = function () {
      * Atomically remove all instances of the objects from the array associated
      * with a given key.
      *
-     * @method removeAll
      * @param attr {String} The key.
-     * @param items {[]} The object to remove.
+     * @param items {Object[]} The object to remove.
      */
 
   }, {
@@ -4724,7 +4757,6 @@ var ParseObject = function () {
      * saved. For example, after calling object.increment("x"), calling
      * object.op("x") would return an instance of Parse.Op.Increment.
      *
-     * @method op
      * @param attr {String} The key.
      * @returns {Parse.Op} The operation, or undefined if none.
      */
@@ -4742,7 +4774,6 @@ var ParseObject = function () {
 
     /**
      * Creates a new model with identical attributes to this one, similar to Backbone.Model's clone()
-     * @method clone
      * @return {Parse.Object}
      */
 
@@ -4774,7 +4805,6 @@ var ParseObject = function () {
 
     /**
      * Creates a new instance of this object. Not to be confused with clone()
-     * @method newInstance
      * @return {Parse.Object}
      */
 
@@ -4800,7 +4830,6 @@ var ParseObject = function () {
 
     /**
      * Returns true if this object has never been saved to Parse.
-     * @method isNew
      * @return {Boolean}
      */
 
@@ -4814,7 +4843,6 @@ var ParseObject = function () {
      * Returns true if this object was created by the Parse server when the
      * object might have already been there (e.g. in the case of a Facebook
      * login)
-     * @method existed
      * @return {Boolean}
      */
 
@@ -4834,7 +4862,6 @@ var ParseObject = function () {
 
     /**
      * Checks if the model is currently in a valid state.
-     * @method isValid
      * @return {Boolean}
      */
 
@@ -4850,7 +4877,6 @@ var ParseObject = function () {
      * to provide additional validation on <code>set</code> and
      * <code>save</code>.  Your implementation should return
      *
-     * @method validate
      * @param {Object} attrs The current data to validate.
      * @return {} False if the data is valid.  An error object otherwise.
      * @see Parse.Object#set
@@ -4872,7 +4898,6 @@ var ParseObject = function () {
 
     /**
      * Returns the ACL for this object.
-     * @method getACL
      * @returns {Parse.ACL} An instance of Parse.ACL.
      * @see Parse.Object#get
      */
@@ -4889,7 +4914,6 @@ var ParseObject = function () {
 
     /**
      * Sets the ACL to be used for this object.
-     * @method setACL
      * @param {Parse.ACL} acl An instance of Parse.ACL.
      * @param {Object} options Optional Backbone-like options object to be
      *     passed in to set.
@@ -4905,7 +4929,6 @@ var ParseObject = function () {
 
     /**
      * Clears any changes to this object made since the last call to save()
-     * @method revert
      */
 
   }, {
@@ -4916,7 +4939,7 @@ var ParseObject = function () {
 
     /**
      * Clears all attributes on a model
-     * @method clear
+     * @return {(ParseObject | boolean)}
      */
 
   }, {
@@ -4940,7 +4963,6 @@ var ParseObject = function () {
      * Fetch the model from the server. If the server's representation of the
      * model differs from its current attributes, they will be overriden.
      *
-     * @method fetch
      * @param {Object} options A Backbone-style callback object.
      * Valid options are:<ul>
      *   <li>success: A Backbone-style success callback.
@@ -5003,7 +5025,6 @@ var ParseObject = function () {
      *     // The save failed.  Error is an instance of Parse.Error.
      *   });</pre>
      *
-     * @method save
      * @param {Object} options A Backbone-style callback object.
      * Valid options are:<ul>
      *   <li>success: A Backbone-style success callback.
@@ -5080,7 +5101,6 @@ var ParseObject = function () {
      * If `wait: true` is passed, waits for the server to respond
      * before removal.
      *
-     * @method destroy
      * @param {Object} options A Backbone-style callback object.
      * Valid options are:<ul>
      *   <li>success: A Backbone-style success callback
@@ -5115,6 +5135,9 @@ var ParseObject = function () {
 
   }, {
     key: 'attributes',
+
+    /** Prototype getters / setters **/
+
     get: function () {
       var stateController = _CoreManager2.default.getObjectStateController();
       return (0, _freeze2.default)(stateController.estimateAttributes(this._getStateIdentifier()));
@@ -5165,7 +5188,6 @@ var ParseObject = function () {
      *   });
      * </pre>
      *
-     * @method fetchAll
      * @param {Array} list A list of <code>Parse.Object</code>.
      * @param {Object} options A Backbone-style callback object.
      * @static
@@ -5205,7 +5227,6 @@ var ParseObject = function () {
      *   });
      * </pre>
      *
-     * @method fetchAllIfNeeded
      * @param {Array} list A list of <code>Parse.Object</code>.
      * @param {Object} options A Backbone-style callback object.
      * @static
@@ -5272,7 +5293,6 @@ var ParseObject = function () {
      *   });
      * </pre>
      *
-     * @method destroyAll
      * @param {Array} list A list of <code>Parse.Object</code>.
      * @param {Object} options A Backbone-style callback object.
      * @static
@@ -5316,7 +5336,6 @@ var ParseObject = function () {
      *   });
      * </pre>
      *
-     * @method saveAll
      * @param {Array} list A list of <code>Parse.Object</code>.
      * @param {Object} options A Backbone-style callback object.
      * @static
@@ -5353,7 +5372,6 @@ var ParseObject = function () {
      *  pointerToFoo.id = "myObjectId";
      * </pre>
      *
-     * @method createWithoutData
      * @param {String} id The ID of the object to create a reference to.
      * @static
      * @return {Parse.Object} A Parse.Object reference.
@@ -5369,7 +5387,6 @@ var ParseObject = function () {
 
     /**
      * Creates a new instance of a Parse Object from a JSON representation.
-     * @method fromJSON
      * @param {Object} json The JSON map of the Object's data
      * @param {boolean} override In single instance mode, all old server data
      *   is overwritten if this is set to true
@@ -5417,7 +5434,6 @@ var ParseObject = function () {
      * When objects of that class are retrieved from a query, they will be
      * instantiated with this subclass.
      * This is only necessary when using ES6 subclassing.
-     * @method registerSubclass
      * @param {String} className The class name of the subclass
      * @param {Class} constructor The subclass
      */
@@ -5470,7 +5486,6 @@ var ParseObject = function () {
      *         <i>Class properties</i>
      *     });</pre></p>
      *
-     * @method extend
      * @param {String} className The name of the Parse class backing this model.
      * @param {Object} protoProps Instance properties to add to instances of the
      *     class returned from this method.
@@ -5570,7 +5585,7 @@ var ParseObject = function () {
      * share the same attributes, and stay synchronized with each other.
      * This is disabled by default in server environments, since it can lead to
      * security issues.
-     * @method enableSingleInstance
+     * @static
      */
 
   }, {
@@ -5585,7 +5600,7 @@ var ParseObject = function () {
      * share the same attributes, and stay synchronized with each other.
      * When disabled, you can have two instances of the same object in memory
      * without them sharing attributes.
-     * @method disableSingleInstance
+     * @static
      */
 
   }, {
@@ -5597,8 +5612,6 @@ var ParseObject = function () {
   }]);
   return ParseObject;
 }();
-
-exports.default = ParseObject;
 
 var DefaultController = {
   fetch: function (target, forceFetch, options) {
@@ -5853,7 +5866,9 @@ var DefaultController = {
 };
 
 _CoreManager2.default.setObjectController(DefaultController);
-},{"./CoreManager":3,"./ParseACL":11,"./ParseError":13,"./ParseFile":14,"./ParseOp":19,"./ParsePromise":21,"./ParseQuery":22,"./ParseRelation":23,"./SingleInstanceStateController":29,"./UniqueInstanceStateController":33,"./canBeSerialized":35,"./decode":36,"./encode":37,"./equals":38,"./escape":39,"./parseDate":41,"./unique":42,"./unsavedChildren":43,"babel-runtime/core-js/json/stringify":45,"babel-runtime/core-js/object/create":47,"babel-runtime/core-js/object/define-property":48,"babel-runtime/core-js/object/freeze":49,"babel-runtime/core-js/object/keys":52,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/typeof":62}],19:[function(_dereq_,module,exports){
+
+exports.default = ParseObject;
+},{"./CoreManager":3,"./ParseACL":11,"./ParseError":13,"./ParseFile":14,"./ParseOp":19,"./ParsePromise":21,"./ParseQuery":22,"./ParseRelation":23,"./SingleInstanceStateController":30,"./UniqueInstanceStateController":34,"./canBeSerialized":36,"./decode":37,"./encode":38,"./equals":39,"./escape":40,"./parseDate":42,"./unique":43,"./unsavedChildren":44,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/object/create":48,"babel-runtime/core-js/object/define-property":49,"babel-runtime/core-js/object/freeze":50,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],19:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6433,7 +6448,7 @@ var RelationOp = exports.RelationOp = function (_Op7) {
   }]);
   return RelationOp;
 }(Op);
-},{"./ParseObject":18,"./ParseRelation":23,"./arrayContainsObject":34,"./decode":36,"./encode":37,"./unique":42,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/inherits":60,"babel-runtime/helpers/possibleConstructorReturn":61}],20:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"./ParseRelation":23,"./arrayContainsObject":35,"./decode":37,"./encode":38,"./unique":43,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62}],20:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6462,9 +6477,7 @@ function _interopRequireDefault(obj) {
  *   new Polygon([[0,0],[0,1],[1,1],[1,0]])
  *   new Polygon([GeoPoint, GeoPoint, GeoPoint])
  *   </pre>
- * @class Parse.GeoPoint
- * @constructor
- *
+ * 
  * <p>Represents a coordinates that may be associated
  * with a key in a ParseObject or used as a reference point for geo queries.
  * This allows proximity-based queries on the key.</p>
@@ -6474,8 +6487,13 @@ function _interopRequireDefault(obj) {
  *   var object = new Parse.Object("PlaceObject");
  *   object.set("area", polygon);
  *   object.save();</pre></p>
+ * @alias Parse.Polygon
  */
 var ParsePolygon = function () {
+
+  /**
+   * @param {(Number[][]|Parse.GeoPoint[])} coordinates An Array of coordinate pairs
+   */
   function ParsePolygon(arg1) {
     (0, _classCallCheck3.default)(this, ParsePolygon);
 
@@ -6494,7 +6512,6 @@ var ParsePolygon = function () {
 
     /**
      * Returns a JSON representation of the GeoPoint, suitable for Parse.
-     * @method toJSON
      * @return {Object}
      */
     value: function () {
@@ -6504,6 +6521,13 @@ var ParsePolygon = function () {
         coordinates: this._coordinates
       };
     }
+
+    /**
+     * Checks if two polygons are equal
+     * @param {(Parse.Polygon|Object)} other
+     * @returns {Boolean}
+     */
+
   }, {
     key: 'equals',
     value: function (other) {
@@ -6520,6 +6544,13 @@ var ParsePolygon = function () {
       }
       return isEqual;
     }
+
+    /**
+     * 
+     * @param {Parse.GeoPoint} point 
+     * @returns {Boolean} wether the points is contained into the polygon
+     */
+
   }, {
     key: 'containsPoint',
     value: function (point) {
@@ -6558,8 +6589,9 @@ var ParsePolygon = function () {
     }
 
     /**
-     * Throws an exception if the given lat-long is out of bounds.
-     * @return {Array}
+     * Validates that the list of coordinates can form a valid polygon
+     * @param {Array} coords the list of coordinated to validate as a polygon
+     * @throws {TypeError}
      */
 
   }, {
@@ -6608,7 +6640,7 @@ var ParsePolygon = function () {
       */
 
 exports.default = ParsePolygon;
-},{"./ParseGeoPoint":15,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58}],21:[function(_dereq_,module,exports){
+},{"./ParseGeoPoint":15,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],21:[function(_dereq_,module,exports){
 (function (process){
 'use strict';
 
@@ -6645,6 +6677,9 @@ function _interopRequireDefault(obj) {
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
+/**
+ * @private
+ */
 var _isPromisesAPlusCompliant = true;
 
 /**
@@ -6660,8 +6695,7 @@ var _isPromisesAPlusCompliant = true;
  *    });
  * </pre></p>
  *
- * @class Parse.Promise
- * @constructor
+ * @alias Parse.Promise
  */
 
 var ParsePromise = function () {
@@ -6680,8 +6714,7 @@ var ParsePromise = function () {
 
   /**
    * Marks this promise as fulfilled, firing any callbacks waiting on it.
-   * @method resolve
-   * @param {Object} result the result to pass to the callbacks.
+    * @param {Object} result the result to pass to the callbacks.
    */
 
   (0, _createClass3.default)(ParsePromise, [{
@@ -6707,8 +6740,7 @@ var ParsePromise = function () {
 
     /**
      * Marks this promise as fulfilled, firing any callbacks waiting on it.
-     * @method reject
-     * @param {Object} error the error to pass to the callbacks.
+      * @param {Object} error the error to pass to the callbacks.
      */
 
   }, {
@@ -6732,8 +6764,7 @@ var ParsePromise = function () {
      * chaining. If the callback itself returns a Promise, then the one returned
      * by "then" will not be fulfilled until that one returned by the callback
      * is fulfilled.
-     * @method then
-     * @param {Function} resolvedCallback Function that is called when this
+      * @param {Function} resolvedCallback Function that is called when this
      * Promise is resolved. Once the callback is complete, then the Promise
      * returned by "then" will also be fulfilled.
      * @param {Function} rejectedCallback Function that is called when this
@@ -6845,8 +6876,7 @@ var ParsePromise = function () {
     /**
      * Add handlers to be called when the promise
      * is either resolved or rejected
-     * @method always
-     */
+      */
 
   }, {
     key: 'always',
@@ -6856,8 +6886,7 @@ var ParsePromise = function () {
 
     /**
      * Add handlers to be called when the Promise object is resolved
-     * @method done
-     */
+      */
 
   }, {
     key: 'done',
@@ -6868,8 +6897,7 @@ var ParsePromise = function () {
     /**
      * Add handlers to be called when the Promise object is rejected
      * Alias for catch().
-     * @method fail
-     */
+      */
 
   }, {
     key: 'fail',
@@ -6879,8 +6907,7 @@ var ParsePromise = function () {
 
     /**
      * Add handlers to be called when the Promise object is rejected
-     * @method catch
-     */
+      */
 
   }, {
     key: 'catch',
@@ -6890,8 +6917,7 @@ var ParsePromise = function () {
 
     /**
      * Run the given callbacks after this promise is fulfilled.
-     * @method _thenRunCallbacks
-     * @param optionsOrCallback {} A Backbone-style options callback, or a
+      * @param optionsOrCallback {} A Backbone-style options callback, or a
      * callback function. If this is an options object and contains a "model"
      * attributes, that will be passed to error callbacks as the first argument.
      * @param model {} If truthy, this will be passed as the first result of
@@ -6949,8 +6975,7 @@ var ParsePromise = function () {
      * array of results for its first argument, or the error as its second,
      * depending on whether this Promise was rejected or resolved. Returns a
      * new Promise, like "then" would.
-     * @method _continueWith
-     * @param {Function} continuation the callback.
+      * @param {Function} continuation the callback.
      */
 
   }, {
@@ -6969,8 +6994,7 @@ var ParsePromise = function () {
 
     /**
      * Returns true iff the given object fulfils the Promise interface.
-     * @method is
-     * @param {Object} promise The object to test
+      * @param {Object} promise The object to test
      * @static
      * @return {Boolean}
      */
@@ -6983,8 +7007,7 @@ var ParsePromise = function () {
 
     /**
      * Returns a new promise that is resolved with a given value.
-     * @method as
-     * @param value The value to resolve the promise with
+      * @param value The value to resolve the promise with
      * @static
      * @return {Parse.Promise} the new promise.
      */
@@ -7007,8 +7030,7 @@ var ParsePromise = function () {
      * If that value is a thenable Promise (has a .then() prototype
      * method), the new promise will be chained to the end of the
      * value.
-     * @method resolve
-     * @param value The value to resolve the promise with
+      * @param value The value to resolve the promise with
      * @static
      * @return {Parse.Promise} the new promise.
      */
@@ -7027,8 +7049,7 @@ var ParsePromise = function () {
 
     /**
      * Returns a new promise that is rejected with a given error.
-     * @method error
-     * @param error The error to reject the promise with
+      * @param error The error to reject the promise with
      * @static
      * @return {Parse.Promise} the new promise.
      */
@@ -7050,8 +7071,7 @@ var ParsePromise = function () {
      * Returns a new promise that is rejected with a given error.
      * This is an alias for Parse.Promise.error, for compliance with
      * the ES6 implementation.
-     * @method reject
-     * @param error The error to reject the promise with
+      * @param error The error to reject the promise with
      * @static
      * @return {Parse.Promise} the new promise.
      */
@@ -7089,8 +7109,7 @@ var ParsePromise = function () {
      *     console.log(results);  // prints [1,2,3]
      *   });
      * </pre>
-     * @method when
-     * @param {Array} promises a list of promises to wait for.
+      * @param {Array} promises a list of promises to wait for.
      * @static
      * @return {Parse.Promise} the new promise.
      */
@@ -7173,8 +7192,7 @@ var ParsePromise = function () {
      *     console.log(r3);  // prints 3
      *   });</pre>
      *
-     * @method all
-     * @param {Iterable} promises an iterable of promises to wait for.
+      * @param {Iterable} promises an iterable of promises to wait for.
      * @static
      * @return {Parse.Promise} the new promise.
      */
@@ -7254,8 +7272,7 @@ var ParsePromise = function () {
      * complete is rejected, the returned promise will be rejected with the
      * same reason.
      *
-     * @method race
-     * @param {Iterable} promises an iterable of promises to wait for.
+      * @param {Iterable} promises an iterable of promises to wait for.
      * @static
      * @return {Parse.Promise} the new promise.
      */
@@ -7314,8 +7331,7 @@ var ParsePromise = function () {
      * Runs the given asyncFunction repeatedly, as long as the predicate
      * function returns a truthy value. Stops repeating if asyncFunction returns
      * a rejected promise.
-     * @method _continueWhile
-     * @param {Function} predicate should return false when ready to stop.
+      * @param {Function} predicate should return false when ready to stop.
      * @param {Function} asyncFunction should return a Promise.
      * @static
      */
@@ -7351,7 +7367,7 @@ var ParsePromise = function () {
 
 exports.default = ParsePromise;
 }).call(this,_dereq_('_process'))
-},{"_process":63,"babel-runtime/core-js/get-iterator":44,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/typeof":62}],22:[function(_dereq_,module,exports){
+},{"_process":64,"babel-runtime/core-js/get-iterator":45,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],22:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -7410,17 +7426,18 @@ function _interopRequireDefault(obj) {
  * Converts a string into a regex that matches it.
  * Surrounding with \Q .. \E does this, we just need to escape any \E's in
  * the text separately.
+ * @private
  */
 function quote(s) {
   return '\\Q' + s.replace('\\E', '\\E\\\\E\\Q') + '\\E';
 }
 
-/**
+/*
  * Handles pre-populating the result data of a query with select fields,
  * making sure that the data object contains keys for all objects that have
  * been requested with a select, so that our cached state updates correctly.
  */
-/**
+/*
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
  *
@@ -7498,62 +7515,69 @@ function handleSelectResult(data, select) {
 
 /**
  * Creates a new parse Parse.Query for the given Parse.Object subclass.
- * @class Parse.Query
- * @constructor
- * @param {} objectClass An instance of a subclass of Parse.Object, or a Parse className string.
  *
  * <p>Parse.Query defines a query that is used to fetch Parse.Objects. The
  * most common use case is finding all objects that match a query through the
- * <code>find</code> method. For example, this sample code fetches all objects
- * of class <code>MyClass</code>. It calls a different function depending on
+ * <code>find</code> method. for example, this sample code fetches all objects
+ * of class <code>myclass</code>. it calls a different function depending on
  * whether the fetch succeeded or not.
  *
  * <pre>
- * var query = new Parse.Query(MyClass);
+ * var query = new parse.query(myclass);
  * query.find({
  *   success: function(results) {
- *     // results is an array of Parse.Object.
+ *     // results is an array of parse.object.
  *   },
  *
  *   error: function(error) {
- *     // error is an instance of Parse.Error.
+ *     // error is an instance of parse.error.
  *   }
  * });</pre></p>
  *
- * <p>A Parse.Query can also be used to retrieve a single object whose id is
- * known, through the get method. For example, this sample code fetches an
- * object of class <code>MyClass</code> and id <code>myId</code>. It calls a
+ * <p>a parse.query can also be used to retrieve a single object whose id is
+ * known, through the get method. for example, this sample code fetches an
+ * object of class <code>myclass</code> and id <code>myid</code>. it calls a
  * different function depending on whether the fetch succeeded or not.
  *
  * <pre>
- * var query = new Parse.Query(MyClass);
- * query.get(myId, {
+ * var query = new parse.query(myclass);
+ * query.get(myid, {
  *   success: function(object) {
- *     // object is an instance of Parse.Object.
+ *     // object is an instance of parse.object.
  *   },
  *
  *   error: function(object, error) {
- *     // error is an instance of Parse.Error.
+ *     // error is an instance of parse.error.
  *   }
  * });</pre></p>
  *
- * <p>A Parse.Query can also be used to count the number of objects that match
- * the query without retrieving all of those objects. For example, this
- * sample code counts the number of objects of the class <code>MyClass</code>
+ * <p>a parse.query can also be used to count the number of objects that match
+ * the query without retrieving all of those objects. for example, this
+ * sample code counts the number of objects of the class <code>myclass</code>
  * <pre>
- * var query = new Parse.Query(MyClass);
+ * var query = new parse.query(myclass);
  * query.count({
  *   success: function(number) {
- *     // There are number instances of MyClass.
+ *     // there are number instances of myclass.
  *   },
  *
  *   error: function(error) {
  *     // error is an instance of Parse.Error.
  *   }
  * });</pre></p>
+ * @alias Parse.Query
  */
 
 var ParseQuery = function () {
+
+  /**
+   * @param {(String|Parse.Object)} objectClass An instance of a subclass of Parse.Object, or a Parse className string.
+   */
+
+  /**
+   * @property className
+   * @type String
+   */
   function ParseQuery(objectClass) {
     (0, _classCallCheck3.default)(this, ParseQuery);
 
@@ -7585,7 +7609,6 @@ var ParseQuery = function () {
 
   /**
    * Adds constraint that at least one of the passed in queries matches.
-   * @method _orQuery
    * @param {Array} queries
    * @return {Parse.Query} Returns the query, so you can chain this call.
    */
@@ -7617,7 +7640,6 @@ var ParseQuery = function () {
 
     /**
      * Returns a JSON representation of this query.
-     * @method toJSON
      * @return {Object} The JSON representation of the query.
      */
 
@@ -7667,7 +7689,6 @@ var ParseQuery = function () {
      *
      * and continue to query...
      * query.skip(100).find().then(...);
-     * @method withJSON
      * @param {QueryJSON} json from Parse.Query.toJSON() method
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -7725,7 +7746,6 @@ var ParseQuery = function () {
      * the server.  Either options.success or options.error is called when the
      * find completes.
      *
-     * @method get
      * @param {String} objectId The id of the object to be fetched.
      * @param {Object} options A Backbone-style options object.
      * Valid options are:<ul>
@@ -7766,7 +7786,6 @@ var ParseQuery = function () {
      * Either options.success or options.error is called when the find
      * completes.
      *
-     * @method find
      * @param {Object} options A Backbone-style options object. Valid options
      * are:<ul>
      *   <li>success: Function to call when the find completes successfully.
@@ -7826,7 +7845,6 @@ var ParseQuery = function () {
      * Either options.success or options.error is called when the count
      * completes.
      *
-     * @method count
      * @param {Object} options A Backbone-style options object. Valid options
      * are:<ul>
      *   <li>success: Function to call when the count completes successfully.
@@ -7866,12 +7884,94 @@ var ParseQuery = function () {
     }
 
     /**
+     * Executes a distinct query and returns unique values
+     *
+     * @param {String} key A field to find distinct values
+     * @param {Object} options A Backbone-style options object. Valid options
+     * are:<ul>
+     *   <li>success: Function to call when the count completes successfully.
+     *   <li>error: Function to call when the find fails.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     * </ul>
+     *
+     * @return {Parse.Promise} A promise that is resolved with the query completes.
+     */
+
+  }, {
+    key: 'distinct',
+    value: function (key, options) {
+      options = options || {};
+
+      var distinctOptions = {
+        useMasterKey: true
+      };
+      if (options.hasOwnProperty('sessionToken')) {
+        distinctOptions.sessionToken = options.sessionToken;
+      }
+      var controller = _CoreManager2.default.getQueryController();
+      var params = {
+        distinct: key,
+        where: this._where
+      };
+
+      return controller.aggregate(this.className, params, distinctOptions).then(function (results) {
+        return results.results;
+      })._thenRunCallbacks(options);
+    }
+
+    /**
+    * Executes an aggregate query and returns aggregate results
+    *
+    * @param {Mixed} pipeline Array or Object of stages to process query
+    * @param {Object} options A Backbone-style options object. Valid options
+    * are:<ul>
+    *   <li>success: Function to call when the count completes successfully.
+    *   <li>error: Function to call when the find fails.
+    *   <li>sessionToken: A valid session token, used for making a request on
+    *       behalf of a specific user.
+    * </ul>
+    *
+    * @return {Parse.Promise} A promise that is resolved with the query completes.
+    */
+
+  }, {
+    key: 'aggregate',
+    value: function (pipeline, options) {
+      options = options || {};
+
+      var aggregateOptions = {
+        useMasterKey: true
+      };
+      if (options.hasOwnProperty('sessionToken')) {
+        aggregateOptions.sessionToken = options.sessionToken;
+      }
+      var controller = _CoreManager2.default.getQueryController();
+      var stages = {};
+
+      if (Array.isArray(pipeline)) {
+        pipeline.forEach(function (stage) {
+          for (var op in stage) {
+            stages[op] = stage[op];
+          }
+        });
+      } else if (pipeline && (typeof pipeline === 'undefined' ? 'undefined' : (0, _typeof3.default)(pipeline)) === 'object') {
+        stages = pipeline;
+      } else {
+        throw new Error('Invalid pipeline must be Array or Object');
+      }
+
+      return controller.aggregate(this.className, stages, aggregateOptions).then(function (results) {
+        return results.results;
+      })._thenRunCallbacks(options);
+    }
+
+    /**
      * Retrieves at most one Parse.Object that satisfies this query.
      *
      * Either options.success or options.error is called when it completes.
      * success is passed the object if there is one. otherwise, undefined.
      *
-     * @method first
      * @param {Object} options A Backbone-style options object. Valid options
      * are:<ul>
      *   <li>success: Function to call when the find completes successfully.
@@ -7935,7 +8035,6 @@ var ParseQuery = function () {
      * promise, then iteration will stop with that error. The items are
      * processed in an unspecified order. The query may not have any sort order,
      * and may not use limit or skip.
-     * @method each
      * @param {Function} callback Callback that will be called with each result
      *     of the query.
      * @param {Object} options A Backbone-style options object. Valid options
@@ -8032,7 +8131,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint to the query that requires a particular key's value to
      * be equal to the provided value.
-     * @method equalTo
      * @param {String} key The key to check.
      * @param value The value that the Parse.Object must contain.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8052,7 +8150,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint to the query that requires a particular key's value to
      * be not equal to the provided value.
-     * @method notEqualTo
      * @param {String} key The key to check.
      * @param value The value that must not be equalled.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8067,7 +8164,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint to the query that requires a particular key's value to
      * be less than the provided value.
-     * @method lessThan
      * @param {String} key The key to check.
      * @param value The value that provides an upper bound.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8082,7 +8178,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint to the query that requires a particular key's value to
      * be greater than the provided value.
-     * @method greaterThan
      * @param {String} key The key to check.
      * @param value The value that provides an lower bound.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8097,7 +8192,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint to the query that requires a particular key's value to
      * be less than or equal to the provided value.
-     * @method lessThanOrEqualTo
      * @param {String} key The key to check.
      * @param value The value that provides an upper bound.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8112,7 +8206,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint to the query that requires a particular key's value to
      * be greater than or equal to the provided value.
-     * @method greaterThanOrEqualTo
      * @param {String} key The key to check.
      * @param value The value that provides an lower bound.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8127,7 +8220,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint to the query that requires a particular key's value to
      * be contained in the provided list of values.
-     * @method containedIn
      * @param {String} key The key to check.
      * @param {Array} values The values that will match.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8142,7 +8234,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint to the query that requires a particular key's value to
      * not be contained in the provided list of values.
-     * @method notContainedIn
      * @param {String} key The key to check.
      * @param {Array} values The values that will not match.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8157,7 +8248,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint to the query that requires a particular key's value to
      * contain each one of the provided list of values.
-     * @method containsAll
      * @param {String} key The key to check.  This key's value must be an array.
      * @param {Array} values The values that will match.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8171,7 +8261,6 @@ var ParseQuery = function () {
 
     /**
      * Adds a constraint for finding objects that contain the given key.
-     * @method exists
      * @param {String} key The key that should exist.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8184,7 +8273,6 @@ var ParseQuery = function () {
 
     /**
      * Adds a constraint for finding objects that do not contain a given key.
-     * @method doesNotExist
      * @param {String} key The key that should not exist
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8199,7 +8287,6 @@ var ParseQuery = function () {
      * Adds a regular expression constraint for finding string values that match
      * the provided regular expression.
      * This may be slow for large datasets.
-     * @method matches
      * @param {String} key The key that the string to match is stored in.
      * @param {RegExp} regex The regular expression pattern to match.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8227,7 +8314,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint that requires that a key's value matches a Parse.Query
      * constraint.
-     * @method matchesQuery
      * @param {String} key The key that the contains the object to match the
      *                     query.
      * @param {Parse.Query} query The query that should match.
@@ -8245,7 +8331,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint that requires that a key's value not matches a
      * Parse.Query constraint.
-     * @method doesNotMatchQuery
      * @param {String} key The key that the contains the object to match the
      *                     query.
      * @param {Parse.Query} query The query that should not match.
@@ -8263,7 +8348,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint that requires that a key's value matches a value in
      * an object returned by a different Parse.Query.
-     * @method matchesKeyInQuery
      * @param {String} key The key that contains the value that is being
      *                     matched.
      * @param {String} queryKey The key in the objects returned by the query to
@@ -8286,7 +8370,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint that requires that a key's value not match a value in
      * an object returned by a different Parse.Query.
-     * @method doesNotMatchKeyInQuery
      * @param {String} key The key that contains the value that is being
      *                     excluded.
      * @param {String} queryKey The key in the objects returned by the query to
@@ -8309,7 +8392,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint for finding string values that contain a provided
      * string.  This may be slow for large datasets.
-     * @method contains
      * @param {String} key The key that the string to match is stored in.
      * @param {String} substring The substring that the value must contain.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8328,7 +8410,6 @@ var ParseQuery = function () {
      * Adds a constraint for finding string values that start with a provided
      * string.  This query will use the backend index, so it will be fast even
      * for large datasets.
-     * @method startsWith
      * @param {String} key The key that the string to match is stored in.
      * @param {String} prefix The substring that the value must start with.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8346,7 +8427,6 @@ var ParseQuery = function () {
     /**
      * Adds a constraint for finding string values that end with a provided
      * string.  This will be slow for large datasets.
-     * @method endsWith
      * @param {String} key The key that the string to match is stored in.
      * @param {String} suffix The substring that the value must end with.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8364,7 +8444,6 @@ var ParseQuery = function () {
     /**
      * Adds a proximity based constraint for finding objects with key point
      * values near the point given.
-     * @method near
      * @param {String} key The key that the Parse.GeoPoint is stored in.
      * @param {Parse.GeoPoint} point The reference Parse.GeoPoint that is used.
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8383,7 +8462,6 @@ var ParseQuery = function () {
     /**
      * Adds a proximity based constraint for finding objects with key point
      * values near the point given and within the maximum distance given.
-     * @method withinRadians
      * @param {String} key The key that the Parse.GeoPoint is stored in.
      * @param {Parse.GeoPoint} point The reference Parse.GeoPoint that is used.
      * @param {Number} maxDistance Maximum distance (in radians) of results to
@@ -8402,7 +8480,6 @@ var ParseQuery = function () {
      * Adds a proximity based constraint for finding objects with key point
      * values near the point given and within the maximum distance given.
      * Radius of earth used is 3958.8 miles.
-     * @method withinMiles
      * @param {String} key The key that the Parse.GeoPoint is stored in.
      * @param {Parse.GeoPoint} point The reference Parse.GeoPoint that is used.
      * @param {Number} maxDistance Maximum distance (in miles) of results to
@@ -8420,7 +8497,6 @@ var ParseQuery = function () {
      * Adds a proximity based constraint for finding objects with key point
      * values near the point given and within the maximum distance given.
      * Radius of earth used is 6371.0 kilometers.
-     * @method withinKilometers
      * @param {String} key The key that the Parse.GeoPoint is stored in.
      * @param {Parse.GeoPoint} point The reference Parse.GeoPoint that is used.
      * @param {Number} maxDistance Maximum distance (in kilometers) of results
@@ -8438,7 +8514,6 @@ var ParseQuery = function () {
      * Adds a constraint to the query that requires a particular key's
      * coordinates be contained within a given rectangular geographic bounding
      * box.
-     * @method withinGeoBox
      * @param {String} key The key to be constrained.
      * @param {Parse.GeoPoint} southwest
      *     The lower-left inclusive corner of the box.
@@ -8467,7 +8542,6 @@ var ParseQuery = function () {
      *
      * Polygon must have at least 3 points
      *
-     * @method withinPolygon
      * @param {String} key The key to be constrained.
      * @param {Array} array of geopoints
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8483,7 +8557,6 @@ var ParseQuery = function () {
      * Add a constraint to the query that requires a particular key's
      * coordinates that contains a ParseGeoPoint
      *
-     * @method polygonContains
      * @param {String} key The key to be constrained.
      * @param {Parse.GeoPoint} GeoPoint
      * @return {Parse.Query} Returns the query, so you can chain this call.
@@ -8500,8 +8573,7 @@ var ParseQuery = function () {
     /**
      * Sorts the results in ascending order by the given key.
      *
-     * @method ascending
-     * @param {(String|String[]|...String} key The key to order by, which is a
+     * @param {(String|String[]|...String)} key The key to order by, which is a
      * string of comma separated values, or an Array of keys, or multiple keys.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8522,8 +8594,7 @@ var ParseQuery = function () {
      * Sorts the results in ascending order by the given key,
      * but can also add secondary sort descriptors without overwriting _order.
      *
-     * @method addAscending
-     * @param {(String|String[]|...String} key The key to order by, which is a
+     * @param {(String|String[]|...String)} key The key to order by, which is a
      * string of comma separated values, or an Array of keys, or multiple keys.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8554,8 +8625,7 @@ var ParseQuery = function () {
     /**
      * Sorts the results in descending order by the given key.
      *
-     * @method descending
-     * @param {(String|String[]|...String} key The key to order by, which is a
+     * @param {(String|String[]|...String)} key The key to order by, which is a
      * string of comma separated values, or an Array of keys, or multiple keys.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8576,8 +8646,7 @@ var ParseQuery = function () {
      * Sorts the results in descending order by the given key,
      * but can also add secondary sort descriptors without overwriting _order.
      *
-     * @method addDescending
-     * @param {(String|String[]|...String} key The key to order by, which is a
+     * @param {(String|String[]|...String)} key The key to order by, which is a
      * string of comma separated values, or an Array of keys, or multiple keys.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8613,7 +8682,6 @@ var ParseQuery = function () {
      * Sets the number of results to skip before returning any results.
      * This is useful for pagination.
      * Default is to skip zero results.
-     * @method skip
      * @param {Number} n the number of results to skip.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8631,7 +8699,6 @@ var ParseQuery = function () {
     /**
      * Sets the limit of the number of results to return. The default limit is
      * 100, with a maximum of 1000 results being returned at a time.
-     * @method limit
      * @param {Number} n the number of results to limit to.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8649,7 +8716,6 @@ var ParseQuery = function () {
     /**
      * Includes nested Parse.Objects for the provided key.  You can use dot
      * notation to specify which fields in the included object are also fetched.
-     * @method include
      * @param {String} key The name of the key to include.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8677,7 +8743,6 @@ var ParseQuery = function () {
      * Restricts the fields of the returned Parse.Objects to include only the
      * provided keys.  If this is called multiple times, then all of the keys
      * specified in each of the calls will be included.
-     * @method select
      * @param {Array} keys The names of the keys to include.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8707,7 +8772,6 @@ var ParseQuery = function () {
 
     /**
      * Subscribe this query to get liveQuery updates
-     * @method subscribe
      * @return {LiveQuerySubscription} Returns the liveQuerySubscription, it's an event emitter
      * which can be used to get liveQuery updates.
      */
@@ -8726,7 +8790,6 @@ var ParseQuery = function () {
      *
      * will create a compoundQuery that is an or of the query1, query2, and
      * query3.
-     * @method or
      * @param {...Parse.Query} var_args The list of queries to OR.
      * @static
      * @return {Parse.Query} The query that is the OR of the passed in queries.
@@ -8765,18 +8828,23 @@ var ParseQuery = function () {
   return ParseQuery;
 }();
 
-exports.default = ParseQuery;
-
 var DefaultController = {
   find: function (className, params, options) {
     var RESTController = _CoreManager2.default.getRESTController();
 
     return RESTController.request('GET', 'classes/' + className, params, options);
+  },
+  aggregate: function (className, params, options) {
+    var RESTController = _CoreManager2.default.getRESTController();
+
+    return RESTController.request('GET', 'aggregate/' + className, params, options);
   }
 };
 
 _CoreManager2.default.setQueryController(DefaultController);
-},{"./CoreManager":3,"./ParseError":13,"./ParseGeoPoint":15,"./ParseObject":18,"./ParsePolygon":20,"./ParsePromise":21,"./encode":37,"babel-runtime/core-js/object/keys":52,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/typeof":62}],23:[function(_dereq_,module,exports){
+
+exports.default = ParseQuery;
+},{"./CoreManager":3,"./ParseError":13,"./ParseGeoPoint":15,"./ParseObject":18,"./ParsePolygon":20,"./ParsePromise":21,"./encode":38,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],23:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -8809,18 +8877,20 @@ function _interopRequireDefault(obj) {
  * Creates a new Relation for the given parent object and key. This
  * constructor should rarely be used directly, but rather created by
  * Parse.Object.relation.
- * @class Parse.Relation
- * @constructor
- * @param {Parse.Object} parent The parent of this relation.
- * @param {String} key The key for this relation on the parent.
  *
  * <p>
  * A class that is used to access all of the children of a many-to-many
  * relationship.  Each instance of Parse.Relation is associated with a
  * particular parent object and key.
  * </p>
+ * @alias Parse.Relation
  */
 var ParseRelation = function () {
+
+  /**
+   * @param {Parse.Object} parent The parent of this relation.
+   * @param {String} key The key for this relation on the parent.
+   */
   function ParseRelation(parent, key) {
     (0, _classCallCheck3.default)(this, ParseRelation);
 
@@ -8829,7 +8899,7 @@ var ParseRelation = function () {
     this.targetClassName = null;
   }
 
-  /**
+  /*
    * Makes sure that this relation has the right parent and key.
    */
 
@@ -8858,8 +8928,7 @@ var ParseRelation = function () {
 
     /**
      * Adds a Parse.Object or an array of Parse.Objects to the relation.
-     * @method add
-     * @param {} objects The item or items to add.
+      * @param {} objects The item or items to add.
      */
 
   }, {
@@ -8881,8 +8950,7 @@ var ParseRelation = function () {
 
     /**
      * Removes a Parse.Object or an array of Parse.Objects from this relation.
-     * @method remove
-     * @param {} objects The item or items to remove.
+      * @param {} objects The item or items to remove.
      */
 
   }, {
@@ -8902,8 +8970,7 @@ var ParseRelation = function () {
 
     /**
      * Returns a JSON version of the object suitable for saving to disk.
-     * @method toJSON
-     * @return {Object}
+      * @return {Object}
      */
 
   }, {
@@ -8918,8 +8985,7 @@ var ParseRelation = function () {
     /**
      * Returns a Parse.Query that is limited to objects in this
      * relation.
-     * @method query
-     * @return {Parse.Query}
+      * @return {Parse.Query}
      */
 
   }, {
@@ -8959,7 +9025,7 @@ var ParseRelation = function () {
       */
 
 exports.default = ParseRelation;
-},{"./ParseObject":18,"./ParseOp":19,"./ParseQuery":22,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58}],24:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"./ParseOp":19,"./ParseQuery":22,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],24:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -9015,16 +9081,18 @@ function _interopRequireDefault(obj) {
  *
  * <p>Roles must have a name (which cannot be changed after creation of the
  * role), and must specify an ACL.</p>
- * @class Parse.Role
- * @constructor
- * @param {String} name The name of the Role to create.
- * @param {Parse.ACL} acl The ACL for this role. Roles must have an ACL.
- * A Parse.Role is a local representation of a role persisted to the Parse
- * cloud.
+ * @alias Parse.Role
+ * @extends Parse.Object
  */
 var ParseRole = function (_ParseObject) {
   (0, _inherits3.default)(ParseRole, _ParseObject);
 
+  /**
+   * @param {String} name The name of the Role to create.
+   * @param {Parse.ACL} acl The ACL for this role. Roles must have an ACL.
+   * A Parse.Role is a local representation of a role persisted to the Parse
+   * cloud.
+   */
   function ParseRole(name, acl) {
     (0, _classCallCheck3.default)(this, ParseRole);
 
@@ -9040,8 +9108,7 @@ var ParseRole = function (_ParseObject) {
   /**
    * Gets the name of the role.  You can alternatively call role.get("name")
    *
-   * @method getName
-   * @return {String} the name of the role.
+    * @return {String} the name of the role.
    */
 
   (0, _createClass3.default)(ParseRole, [{
@@ -9066,8 +9133,7 @@ var ParseRole = function (_ParseObject) {
      *
      * <p>This is equivalent to calling role.set("name", name)</p>
      *
-     * @method setName
-     * @param {String} name The name of the role.
+      * @param {String} name The name of the role.
      * @param {Object} options Standard options object with success and error
      *     callbacks.
      */
@@ -9086,8 +9152,7 @@ var ParseRole = function (_ParseObject) {
      *
      * <p>This is equivalent to calling role.relation("users")</p>
      *
-     * @method getUsers
-     * @return {Parse.Relation} the relation for the users belonging to this
+      * @return {Parse.Relation} the relation for the users belonging to this
      *     role.
      */
 
@@ -9105,8 +9170,7 @@ var ParseRole = function (_ParseObject) {
      *
      * <p>This is equivalent to calling role.relation("roles")</p>
      *
-     * @method getRoles
-     * @return {Parse.Relation} the relation for the roles belonging to this
+      * @return {Parse.Relation} the relation for the roles belonging to this
      *     role.
      */
 
@@ -9153,10 +9217,524 @@ var ParseRole = function (_ParseObject) {
                            * 
                            */
 
-exports.default = ParseRole;
-
 _ParseObject3.default.registerSubclass('_Role', ParseRole);
-},{"./ParseACL":11,"./ParseError":13,"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/get":59,"babel-runtime/helpers/inherits":60,"babel-runtime/helpers/possibleConstructorReturn":61}],25:[function(_dereq_,module,exports){
+
+exports.default = ParseRole;
+},{"./ParseACL":11,"./ParseError":13,"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/get":60,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62}],25:[function(_dereq_,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _classCallCheck2 = _dereq_('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = _dereq_('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _CoreManager = _dereq_('./CoreManager');
+
+var _CoreManager2 = _interopRequireDefault(_CoreManager);
+
+var _ParsePromise = _dereq_('./ParsePromise');
+
+var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
+
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
+
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
+
+var FIELD_TYPES = ['String', 'Number', 'Boolean', 'Date', 'File', 'GeoPoint', 'Array', 'Object', 'Pointer', 'Relation'];
+
+/**
+ * A Parse.Schema object is for handling schema data from Parse.
+ * <p>All the schemas methods require MasterKey.
+ *
+ * <pre>
+ * const schema = new Parse.Schema('MyClass');
+ * schema.addString('field');
+ * schema.addIndex('index_name', {'field', 1});
+ * schema.save();
+ * </pre>
+ * </p>
+ * @alias Parse.Schema
+ */
+
+var ParseSchema = function () {
+
+  /**
+   * @param {String} className Parse Class string.
+   */
+  function ParseSchema(className) {
+    (0, _classCallCheck3.default)(this, ParseSchema);
+
+    if (typeof className === 'string') {
+      if (className === 'User' && _CoreManager2.default.get('PERFORM_USER_REWRITE')) {
+        this.className = '_User';
+      } else {
+        this.className = className;
+      }
+    }
+
+    this._fields = {};
+    this._indexes = {};
+  }
+
+  /**
+   * Static method to get all schemas
+   *
+   * @param {Object} options A Backbone-style options object.
+   * Valid options are:<ul>
+   *   <li>success: A Backbone-style success callback
+   *   <li>error: An Backbone-style error callback.
+   *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+   *     be used for this request.
+   *   <li>sessionToken: A valid session token, used for making a request on
+   *       behalf of a specific user.
+   * </ul>
+   *
+   * @return {Parse.Promise} A promise that is resolved with the result when
+   * the query completes.
+   */
+
+  (0, _createClass3.default)(ParseSchema, [{
+    key: 'get',
+
+    /**
+     * Get the Schema from Parse
+     *
+     * @param {Object} options A Backbone-style options object.
+     * Valid options are:<ul>
+     *   <li>success: A Backbone-style success callback
+     *   <li>error: An Backbone-style error callback.
+     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     * </ul>
+     *
+     * @return {Parse.Promise} A promise that is resolved with the result when
+     * the query completes.
+     */
+    value: function (options) {
+      this.assertClassName();
+
+      options = options || {};
+      var controller = _CoreManager2.default.getSchemaController();
+
+      return controller.get(this.className, options).then(function (response) {
+        if (!response) {
+          throw new Error('Schema not found.');
+        }
+        return response;
+      })._thenRunCallbacks(options);
+    }
+
+    /**
+     * Create a new Schema on Parse
+     *
+     * @param {Object} options A Backbone-style options object.
+     * Valid options are:<ul>
+     *   <li>success: A Backbone-style success callback
+     *   <li>error: An Backbone-style error callback.
+     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     * </ul>
+     *
+     * @return {Parse.Promise} A promise that is resolved with the result when
+     * the query completes.
+     */
+
+  }, {
+    key: 'save',
+    value: function (options) {
+      this.assertClassName();
+
+      options = options || {};
+      var controller = _CoreManager2.default.getSchemaController();
+      var params = {
+        className: this.className,
+        fields: this._fields,
+        indexes: this._indexes
+      };
+
+      return controller.create(this.className, params, options).then(function (response) {
+        return response;
+      })._thenRunCallbacks(options);
+    }
+
+    /**
+     * Update a Schema on Parse
+     *
+     * @param {Object} options A Backbone-style options object.
+     * Valid options are:<ul>
+     *   <li>success: A Backbone-style success callback
+     *   <li>error: An Backbone-style error callback.
+     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     * </ul>
+     *
+     * @return {Parse.Promise} A promise that is resolved with the result when
+     * the query completes.
+     */
+
+  }, {
+    key: 'update',
+    value: function (options) {
+      this.assertClassName();
+
+      options = options || {};
+      var controller = _CoreManager2.default.getSchemaController();
+      var params = {
+        className: this.className,
+        fields: this._fields,
+        indexes: this._indexes
+      };
+
+      this._fields = {};
+      this._indexes = {};
+
+      return controller.update(this.className, params, options).then(function (response) {
+        return response;
+      })._thenRunCallbacks(options);
+    }
+
+    /**
+     * Removing a Schema from Parse
+     *
+     * @param {Object} options A Backbone-style options object.
+     * Valid options are:<ul>
+     *   <li>success: A Backbone-style success callback
+     *   <li>error: An Backbone-style error callback.
+     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     * </ul>
+     *
+     * @return {Parse.Promise} A promise that is resolved with the result when
+     * the query completes.
+     */
+
+  }, {
+    key: 'delete',
+    value: function (options) {
+      this.assertClassName();
+
+      options = options || {};
+      var controller = _CoreManager2.default.getSchemaController();
+
+      return controller.delete(this.className, options).then(function (response) {
+        return response;
+      })._thenRunCallbacks(options);
+    }
+
+    /**
+     * Assert if ClassName has been filled
+     * @private
+     */
+
+  }, {
+    key: 'assertClassName',
+    value: function () {
+      if (!this.className) {
+        throw new Error('You must set a Class Name before making any request.');
+      }
+    }
+
+    /**
+     * Adding a Field to Create / Update a Schema
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @param {String} type TheCan be a (String|Number|Boolean|Date|Parse.File|Parse.GeoPoint|Array|Object|Pointer|Parse.Relation)
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addField',
+    value: function (name, type) {
+      type = type || 'String';
+
+      if (!name) {
+        throw new Error('field name may not be null.');
+      }
+      if (FIELD_TYPES.indexOf(type) === -1) {
+        throw new Error(type + ' is not a valid type.');
+      }
+
+      this._fields[name] = { type: type };
+
+      return this;
+    }
+
+    /**
+     * Adding an Index to Create / Update a Schema
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @param {String} type Can be a (String|Number|Boolean|Date|Parse.File|Parse.GeoPoint|Array|Object|Pointer|Parse.Relation)
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addIndex',
+    value: function (name, index) {
+      if (!name) {
+        throw new Error('index name may not be null.');
+      }
+      if (!index) {
+        throw new Error('index may not be null.');
+      }
+
+      this._indexes[name] = index;
+
+      return this;
+    }
+
+    /**
+     * Adding String Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addString',
+    value: function (name) {
+      return this.addField(name, 'String');
+    }
+
+    /**
+     * Adding Number Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addNumber',
+    value: function (name) {
+      return this.addField(name, 'Number');
+    }
+
+    /**
+     * Adding Boolean Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addBoolean',
+    value: function (name) {
+      return this.addField(name, 'Boolean');
+    }
+
+    /**
+     * Adding Date Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addDate',
+    value: function (name) {
+      return this.addField(name, 'Date');
+    }
+
+    /**
+     * Adding File Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addFile',
+    value: function (name) {
+      return this.addField(name, 'File');
+    }
+
+    /**
+     * Adding GeoPoint Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addGeoPoint',
+    value: function (name) {
+      return this.addField(name, 'GeoPoint');
+    }
+
+    /**
+     * Adding Array Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addArray',
+    value: function (name) {
+      return this.addField(name, 'Array');
+    }
+
+    /**
+     * Adding Object Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addObject',
+    value: function (name) {
+      return this.addField(name, 'Object');
+    }
+
+    /**
+     * Adding Pointer Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @param {String} targetClass Name of the target Pointer Class
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addPointer',
+    value: function (name, targetClass) {
+      if (!name) {
+        throw new Error('field name may not be null.');
+      }
+      if (!targetClass) {
+        throw new Error('You need to set the targetClass of the Pointer.');
+      }
+
+      this._fields[name] = {
+        type: 'Pointer',
+        targetClass: targetClass
+      };
+
+      return this;
+    }
+
+    /**
+     * Adding Relation Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @param {String} targetClass Name of the target Pointer Class
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addRelation',
+    value: function (name, targetClass) {
+      if (!name) {
+        throw new Error('field name may not be null.');
+      }
+      if (!targetClass) {
+        throw new Error('You need to set the targetClass of the Relation.');
+      }
+
+      this._fields[name] = {
+        type: 'Relation',
+        targetClass: targetClass
+      };
+
+      return this;
+    }
+
+    /**
+     * Deleting a Field to Update on a Schema
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @param {String} targetClass Name of the target Pointer Class
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'deleteField',
+    value: function (name) {
+      this._fields[name] = { __op: 'Delete' };
+    }
+
+    /**
+    * Deleting an Index to Update on a Schema
+    *
+    * @param {String} name Name of the field that will be created on Parse
+    * @param {String} targetClass Name of the target Pointer Class
+    * @return {Parse.Schema} Returns the schema, so you can chain this call.
+    */
+
+  }, {
+    key: 'deleteIndex',
+    value: function (name) {
+      this._indexes[name] = { __op: 'Delete' };
+    }
+  }], [{
+    key: 'all',
+    value: function (options) {
+      options = options || {};
+      var controller = _CoreManager2.default.getSchemaController();
+
+      return controller.get('', options).then(function (response) {
+        if (response.results.length === 0) {
+          throw new Error('Schema not found.');
+        }
+        return response.results;
+      })._thenRunCallbacks(options);
+    }
+  }]);
+  return ParseSchema;
+}();
+
+var DefaultController = {
+  send: function (className, method, params, options) {
+    var RESTController = _CoreManager2.default.getRESTController();
+    var requestOptions = { useMasterKey: true };
+    if (options.hasOwnProperty('sessionToken')) {
+      requestOptions.sessionToken = options.sessionToken;
+    }
+    return RESTController.request(method, 'schemas/' + className, params, requestOptions);
+  },
+  get: function (className, options) {
+    return this.send(className, 'GET', {}, options);
+  },
+  create: function (className, params, options) {
+    return this.send(className, 'POST', params, options);
+  },
+  update: function (className, params, options) {
+    return this.send(className, 'PUT', params, options);
+  },
+  delete: function (className, options) {
+    return this.send(className, 'DELETE', {}, options);
+  }
+};
+
+_CoreManager2.default.setSchemaController(DefaultController);
+
+exports.default = ParseSchema;
+},{"./CoreManager":3,"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],26:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -9212,16 +9790,19 @@ function _interopRequireDefault(obj) {
 }
 
 /**
- * @class Parse.Session
- * @constructor
- *
  * <p>A Parse.Session object is a local representation of a revocable session.
  * This class is a subclass of a Parse.Object, and retains the same
  * functionality of a Parse.Object.</p>
+ * @alias Parse.Session
+ * @extends Parse.Object
  */
 var ParseSession = function (_ParseObject) {
   (0, _inherits3.default)(ParseSession, _ParseObject);
 
+  /**
+   * 
+   * @param {Object} attributes The initial set of data to store in the user.
+   */
   function ParseSession(attributes) {
     (0, _classCallCheck3.default)(this, ParseSession);
 
@@ -9237,8 +9818,7 @@ var ParseSession = function (_ParseObject) {
 
   /**
    * Returns the session token string.
-   * @method getSessionToken
-   * @return {String}
+    * @return {String}
    */
 
   (0, _createClass3.default)(ParseSession, [{
@@ -9258,8 +9838,7 @@ var ParseSession = function (_ParseObject) {
 
     /**
      * Retrieves the Session object for the currently logged in session.
-     * @method current
-     * @static
+      * @static
      * @return {Parse.Promise} A promise that is resolved with the Parse.Session
      *   object after it has been fetched. If there is no current user, the
      *   promise will be rejected.
@@ -9292,8 +9871,7 @@ var ParseSession = function (_ParseObject) {
      * use revocable sessions. If you are migrating an app that uses the Parse
      * SDK in the browser only, please use Parse.User.enableRevocableSession()
      * instead, so that sessions can be automatically upgraded.
-     * @method isCurrentSessionRevocable
-     * @static
+      * @static
      * @return {Boolean}
      */
 
@@ -9319,8 +9897,6 @@ var ParseSession = function (_ParseObject) {
                            * 
                            */
 
-exports.default = ParseSession;
-
 _ParseObject3.default.registerSubclass('_Session', ParseSession);
 
 var DefaultController = {
@@ -9337,7 +9913,9 @@ var DefaultController = {
 };
 
 _CoreManager2.default.setSessionController(DefaultController);
-},{"./CoreManager":3,"./ParseObject":18,"./ParsePromise":21,"./ParseUser":26,"./isRevocableSession":40,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/inherits":60,"babel-runtime/helpers/possibleConstructorReturn":61,"babel-runtime/helpers/typeof":62}],26:[function(_dereq_,module,exports){
+
+exports.default = ParseSession;
+},{"./CoreManager":3,"./ParseObject":18,"./ParsePromise":21,"./ParseUser":27,"./isRevocableSession":41,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],27:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -9430,19 +10008,21 @@ var currentUserCache = null;
 var authProviders = {};
 
 /**
- * @class Parse.User
- * @constructor
- *
  * <p>A Parse.User object is a local representation of a user persisted to the
  * Parse cloud. This class is a subclass of a Parse.Object, and retains the
  * same functionality of a Parse.Object, but also extends it with various
  * user specific methods, like authentication, signing up, and validation of
  * uniqueness.</p>
+ * @alias Parse.User
+ * @extends Parse.Object
  */
 
 var ParseUser = function (_ParseObject) {
   (0, _inherits3.default)(ParseUser, _ParseObject);
 
+  /**
+   * @param {Object} attributes The initial set of data to store in the user.
+   */
   function ParseUser(attributes) {
     (0, _classCallCheck3.default)(this, ParseUser);
 
@@ -9458,8 +10038,7 @@ var ParseUser = function (_ParseObject) {
 
   /**
    * Request a revocable session token to replace the older style of token.
-   * @method _upgradeToRevocableSession
-   * @param {Object} options A Backbone-style options object.
+    * @param {Object} options A Backbone-style options object.
    * @return {Parse.Promise} A promise that is resolved when the replacement
    *   token has been fetched.
    */
@@ -9481,7 +10060,6 @@ var ParseUser = function (_ParseObject) {
     /**
      * Unlike in the Android/iOS SDKs, logInWith is unnecessary, since you can
      * call linkWith on the user (even if it doesn't exist yet on the server).
-     * @method _linkWith
      */
 
   }, {
@@ -9537,8 +10115,7 @@ var ParseUser = function (_ParseObject) {
     /**
      * Synchronizes auth data for a provider (e.g. puts the access token in the
      * right place to be used by the Facebook SDK).
-     * @method _synchronizeAuthData
-     */
+      */
 
   }, {
     key: '_synchronizeAuthData',
@@ -9565,8 +10142,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Synchronizes authData for all providers.
-     * @method _synchronizeAllAuthData
-     */
+      */
 
   }, {
     key: '_synchronizeAllAuthData',
@@ -9584,8 +10160,7 @@ var ParseUser = function (_ParseObject) {
     /**
      * Removes null values from authData (which exist temporarily for
      * unlinking)
-     * @method _cleanupAuthData
-     */
+      */
 
   }, {
     key: '_cleanupAuthData',
@@ -9607,8 +10182,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Unlinks a user from a service.
-     * @method _unlinkFrom
-     */
+      */
 
   }, {
     key: '_unlinkFrom',
@@ -9628,8 +10202,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Checks whether a user is linked to a service.
-     * @method _isLinked
-     */
+      */
 
   }, {
     key: '_isLinked',
@@ -9649,8 +10222,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Deauthenticates all providers.
-     * @method _logOutWithAll
-     */
+      */
 
   }, {
     key: '_logOutWithAll',
@@ -9668,8 +10240,7 @@ var ParseUser = function (_ParseObject) {
     /**
      * Deauthenticates a single provider (e.g. removing access tokens from the
      * Facebook SDK).
-     * @method _logOutWith
-     */
+      */
 
   }, {
     key: '_logOutWith',
@@ -9700,8 +10271,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Returns true if <code>current</code> would return this user.
-     * @method isCurrent
-     * @return {Boolean}
+      * @return {Boolean}
      */
 
   }, {
@@ -9713,8 +10283,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Returns get("username").
-     * @method getUsername
-     * @return {String}
+      * @return {String}
      */
 
   }, {
@@ -9729,8 +10298,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Calls set("username", username, options) and returns the result.
-     * @method setUsername
-     * @param {String} username
+      * @param {String} username
      * @param {Object} options A Backbone-style options object.
      * @return {Boolean}
      */
@@ -9750,8 +10318,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Calls set("password", password, options) and returns the result.
-     * @method setPassword
-     * @param {String} password
+      * @param {String} password
      * @param {Object} options A Backbone-style options object.
      * @return {Boolean}
      */
@@ -9764,8 +10331,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Returns get("email").
-     * @method getEmail
-     * @return {String}
+      * @return {String}
      */
 
   }, {
@@ -9780,8 +10346,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Calls set("email", email, options) and returns the result.
-     * @method setEmail
-     * @param {String} email
+      * @param {String} email
      * @param {Object} options A Backbone-style options object.
      * @return {Boolean}
      */
@@ -9796,8 +10361,7 @@ var ParseUser = function (_ParseObject) {
      * Returns the session token for this user, if the user has been logged in,
      * or if it is the result of a query with the master key. Otherwise, returns
      * undefined.
-     * @method getSessionToken
-     * @return {String} the session token, or undefined
+      * @return {String} the session token, or undefined
      */
 
   }, {
@@ -9812,8 +10376,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Checks whether this user is the current user and has been authenticated.
-     * @method authenticated
-     * @return (Boolean) whether this user is the current user and is logged in.
+      * @return (Boolean) whether this user is the current user and is logged in.
      */
 
   }, {
@@ -9833,8 +10396,7 @@ var ParseUser = function (_ParseObject) {
      *
      * <p>Calls options.success or options.error on completion.</p>
      *
-     * @method signUp
-     * @param {Object} attrs Extra fields to set on the new user, or null.
+      * @param {Object} attrs Extra fields to set on the new user, or null.
      * @param {Object} options A Backbone-style options object.
      * @return {Parse.Promise} A promise that is fulfilled when the signup
      *     finishes.
@@ -9866,8 +10428,7 @@ var ParseUser = function (_ParseObject) {
      *
      * <p>Calls options.success or options.error on completion.</p>
      *
-     * @method logIn
-     * @param {Object} options A Backbone-style options object.
+      * @param {Object} options A Backbone-style options object.
      * @return {Parse.Promise} A promise that is fulfilled with the user when
      *     the login is complete.
      */
@@ -9962,8 +10523,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Adds functionality to the existing Parse.User class
-     * @method extend
-     * @param {Object} protoProps A set of properties to add to the prototype
+      * @param {Object} protoProps A set of properties to add to the prototype
      * @param {Object} classProps A set of static properties to add to the class
      * @static
      * @return {Class} The newly extended Parse.User class
@@ -10004,8 +10564,7 @@ var ParseUser = function (_ParseObject) {
     /**
      * Retrieves the currently logged in ParseUser with a valid session,
      * either from memory or localStorage, if necessary.
-     * @method current
-     * @static
+      * @static
      * @return {Parse.Object} The currently logged in Parse.User.
      */
 
@@ -10021,8 +10580,7 @@ var ParseUser = function (_ParseObject) {
 
     /**
      * Retrieves the currently logged in ParseUser from asynchronous Storage.
-     * @method currentAsync
-     * @static
+      * @static
      * @return {Parse.Promise} A Promise that is resolved with the currently
      *   logged in Parse User
      */
@@ -10045,8 +10603,7 @@ var ParseUser = function (_ParseObject) {
      *
      * <p>Calls options.success or options.error on completion.</p>
      *
-     * @method signUp
-     * @param {String} username The username (or email) to sign up with.
+      * @param {String} username The username (or email) to sign up with.
      * @param {String} password The password to sign up with.
      * @param {Object} attrs Extra fields to set on the new user.
      * @param {Object} options A Backbone-style options object.
@@ -10072,8 +10629,7 @@ var ParseUser = function (_ParseObject) {
      *
      * <p>Calls options.success or options.error on completion.</p>
      *
-     * @method logIn
-     * @param {String} username The username (or email) to log in with.
+      * @param {String} username The username (or email) to log in with.
      * @param {String} password The password to log in with.
      * @param {Object} options A Backbone-style options object.
      * @static
@@ -10101,8 +10657,7 @@ var ParseUser = function (_ParseObject) {
      *
      * <p>Calls options.success or options.error on completion.</p>
      *
-     * @method become
-     * @param {String} sessionToken The sessionToken to log in with.
+      * @param {String} sessionToken The sessionToken to log in with.
      * @param {Object} options A Backbone-style options object.
      * @static
      * @return {Parse.Promise} A promise that is fulfilled with the user when
@@ -10137,8 +10692,7 @@ var ParseUser = function (_ParseObject) {
      * Logs out the currently logged in user session. This will remove the
      * session from disk, log out of linked services, and future calls to
      * <code>current</code> will return <code>null</code>.
-     * @method logOut
-     * @static
+      * @static
      * @return {Parse.Promise} A promise that is resolved when the session is
      *   destroyed on the server.
      */
@@ -10161,11 +10715,11 @@ var ParseUser = function (_ParseObject) {
      *
      * <p>Calls options.success or options.error on completion.</p>
      *
-     * @method requestPasswordReset
-     * @param {String} email The email address associated with the user that
+      * @param {String} email The email address associated with the user that
      *     forgot their password.
      * @param {Object} options A Backbone-style options object.
      * @static
+     * @returns {Parse.Promise}
      */
 
   }, {
@@ -10188,8 +10742,7 @@ var ParseUser = function (_ParseObject) {
      * User to _User for legacy reasons. This allows developers to
      * override that behavior.
      *
-     * @method allowCustomUserClass
-     * @param {Boolean} isAllowed Whether or not to allow custom User class
+      * @param {Boolean} isAllowed Whether or not to allow custom User class
      * @static
      */
 
@@ -10206,8 +10759,7 @@ var ParseUser = function (_ParseObject) {
      * It is not necessary to call this method from cloud code unless you are
      * handling user signup or login from the server side. In a cloud code call,
      * this function will not attempt to upgrade the current token.
-     * @method enableRevocableSession
-     * @param {Object} options A Backbone-style options object.
+      * @param {Object} options A Backbone-style options object.
      * @static
      * @return {Parse.Promise} A promise that is resolved when the process has
      *   completed. If a replacement session token is requested, the promise
@@ -10232,8 +10784,7 @@ var ParseUser = function (_ParseObject) {
      * Enables the use of become or the current user in a server
      * environment. These features are disabled by default, since they depend on
      * global objects that are not memory-safe for most servers.
-     * @method enableUnsafeCurrentUser
-     * @static
+      * @static
      */
 
   }, {
@@ -10246,8 +10797,7 @@ var ParseUser = function (_ParseObject) {
      * Disables the use of become or the current user in any environment.
      * These features are disabled on servers by default, since they depend on
      * global objects that are not memory-safe for most servers.
-     * @method disableUnsafeCurrentUser
-     * @static
+      * @static
      */
 
   }, {
@@ -10286,8 +10836,6 @@ var ParseUser = function (_ParseObject) {
   }]);
   return ParseUser;
 }(_ParseObject3.default);
-
-exports.default = ParseUser;
 
 _ParseObject3.default.registerSubclass('_User', ParseUser);
 
@@ -10488,7 +11036,9 @@ var DefaultController = {
 };
 
 _CoreManager2.default.setUserController(DefaultController);
-},{"./CoreManager":3,"./ParseError":13,"./ParseObject":18,"./ParsePromise":21,"./ParseSession":25,"./Storage":30,"./isRevocableSession":40,"babel-runtime/core-js/json/stringify":45,"babel-runtime/core-js/object/define-property":48,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58,"babel-runtime/helpers/get":59,"babel-runtime/helpers/inherits":60,"babel-runtime/helpers/possibleConstructorReturn":61,"babel-runtime/helpers/typeof":62}],27:[function(_dereq_,module,exports){
+
+exports.default = ParseUser;
+},{"./CoreManager":3,"./ParseError":13,"./ParseObject":18,"./ParsePromise":21,"./ParseSession":26,"./Storage":31,"./isRevocableSession":41,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/object/define-property":49,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/get":60,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],28:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -10517,11 +11067,13 @@ function _interopRequireDefault(obj) {
  * Contains functions to deal with Push in Parse.
  * @class Parse.Push
  * @static
+ * @hideconstructor
  */
 
 /**
  * Sends a push notification.
  * @method send
+ * @name Parse.Push.send
  * @param {Object} data -  The data of the push notification.  Valid fields
  * are:
  *   <ol>
@@ -10587,7 +11139,7 @@ var DefaultController = {
 };
 
 _CoreManager2.default.setPushController(DefaultController);
-},{"./CoreManager":3,"./ParseQuery":22,"babel-runtime/helpers/typeof":62}],28:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseQuery":22,"babel-runtime/helpers/typeof":63}],29:[function(_dereq_,module,exports){
 (function (process){
 'use strict';
 
@@ -10838,7 +11390,7 @@ var RESTController = {
 
 module.exports = RESTController;
 }).call(this,_dereq_('_process'))
-},{"./CoreManager":3,"./ParseError":13,"./ParsePromise":21,"./Storage":30,"_process":63,"babel-runtime/core-js/json/stringify":45,"babel-runtime/helpers/typeof":62}],29:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./ParsePromise":21,"./Storage":31,"_process":64,"babel-runtime/core-js/json/stringify":46,"babel-runtime/helpers/typeof":63}],30:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -10999,7 +11551,7 @@ function clearAllState() {
 function duplicateState(source, dest) {
   dest.id = source.id;
 }
-},{"./ObjectStateMutations":9}],30:[function(_dereq_,module,exports){
+},{"./ObjectStateMutations":9}],31:[function(_dereq_,module,exports){
 'use strict';
 
 var _CoreManager = _dereq_('./CoreManager');
@@ -11095,7 +11647,7 @@ var Storage = {
 module.exports = Storage;
 
 _CoreManager2.default.setStorageController(_dereq_('./StorageController.browser'));
-},{"./CoreManager":3,"./ParsePromise":21,"./StorageController.browser":31}],31:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParsePromise":21,"./StorageController.browser":32}],32:[function(_dereq_,module,exports){
 'use strict';
 
 var _ParsePromise = _dereq_('./ParsePromise');
@@ -11137,7 +11689,7 @@ var StorageController = {
     */
 
 module.exports = StorageController;
-},{"./ParsePromise":21}],32:[function(_dereq_,module,exports){
+},{"./ParsePromise":21}],33:[function(_dereq_,module,exports){
 'use strict';
 
 var _classCallCheck2 = _dereq_('babel-runtime/helpers/classCallCheck');
@@ -11215,7 +11767,7 @@ var TaskQueue = function () {
       */
 
 module.exports = TaskQueue;
-},{"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":57,"babel-runtime/helpers/createClass":58}],33:[function(_dereq_,module,exports){
+},{"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],34:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11405,7 +11957,7 @@ function duplicateState(source, dest) {
 function clearAllState() {
   objectState = new _weakMap2.default();
 }
-},{"./ObjectStateMutations":9,"./TaskQueue":32,"babel-runtime/core-js/weak-map":56}],34:[function(_dereq_,module,exports){
+},{"./ObjectStateMutations":9,"./TaskQueue":33,"babel-runtime/core-js/weak-map":57}],35:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11441,7 +11993,7 @@ function arrayContainsObject(array, object) {
    *
    * 
    */
-},{"./ParseObject":18}],35:[function(_dereq_,module,exports){
+},{"./ParseObject":18}],36:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11524,7 +12076,7 @@ function canBeSerializedHelper(value) {
   }
   return true;
 }
-},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":23,"babel-runtime/helpers/typeof":62}],36:[function(_dereq_,module,exports){
+},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":23,"babel-runtime/helpers/typeof":63}],37:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11623,7 +12175,7 @@ function decode(value) {
    *
    * 
    */
-},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":23,"babel-runtime/helpers/typeof":62}],37:[function(_dereq_,module,exports){
+},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":23,"babel-runtime/helpers/typeof":63}],38:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11730,7 +12282,7 @@ function encode(value, disallowObjects, forcePointers, seen) {
 
   return value;
 }
-},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":23,"babel-runtime/core-js/object/keys":52,"babel-runtime/helpers/typeof":62}],38:[function(_dereq_,module,exports){
+},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":23,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/typeof":63}],39:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11815,14 +12367,14 @@ function equals(a, b) {
   }
   return true;
 }
-},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"babel-runtime/core-js/object/keys":52,"babel-runtime/helpers/typeof":62}],39:[function(_dereq_,module,exports){
+},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/typeof":63}],40:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = escape;
-/**
+/*
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
  *
@@ -11847,7 +12399,7 @@ function escape(str) {
     return encoded[char];
   });
 }
-},{}],40:[function(_dereq_,module,exports){
+},{}],41:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11868,7 +12420,7 @@ exports.default = isRevocableSession;
 function isRevocableSession(token) {
   return token.indexOf('r:') > -1;
 }
-},{}],41:[function(_dereq_,module,exports){
+},{}],42:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11903,7 +12455,7 @@ function parseDate(iso8601) {
 
   return new Date(Date.UTC(year, month, day, hour, minute, second, milli));
 }
-},{}],42:[function(_dereq_,module,exports){
+},{}],43:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11949,7 +12501,7 @@ function unique(arr) {
   });
   return uniques;
 }
-},{"./ParseObject":18,"./arrayContainsObject":34}],43:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"./arrayContainsObject":35}],44:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12052,33 +12604,33 @@ function traverse(obj, encountered, shouldThrow, allowDeepUnsaved) {
     }
   }
 }
-},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":23,"babel-runtime/helpers/typeof":62}],44:[function(_dereq_,module,exports){
+},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":23,"babel-runtime/helpers/typeof":63}],45:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/get-iterator"), __esModule: true };
-},{"core-js/library/fn/get-iterator":65}],45:[function(_dereq_,module,exports){
+},{"core-js/library/fn/get-iterator":66}],46:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/json/stringify"), __esModule: true };
-},{"core-js/library/fn/json/stringify":66}],46:[function(_dereq_,module,exports){
+},{"core-js/library/fn/json/stringify":67}],47:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/map"), __esModule: true };
-},{"core-js/library/fn/map":67}],47:[function(_dereq_,module,exports){
+},{"core-js/library/fn/map":68}],48:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/create"), __esModule: true };
-},{"core-js/library/fn/object/create":68}],48:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/create":69}],49:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/define-property"), __esModule: true };
-},{"core-js/library/fn/object/define-property":69}],49:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/define-property":70}],50:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/freeze"), __esModule: true };
-},{"core-js/library/fn/object/freeze":70}],50:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/freeze":71}],51:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/get-own-property-descriptor"), __esModule: true };
-},{"core-js/library/fn/object/get-own-property-descriptor":71}],51:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/get-own-property-descriptor":72}],52:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/get-prototype-of"), __esModule: true };
-},{"core-js/library/fn/object/get-prototype-of":72}],52:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/get-prototype-of":73}],53:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/keys"), __esModule: true };
-},{"core-js/library/fn/object/keys":73}],53:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/keys":74}],54:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/set-prototype-of"), __esModule: true };
-},{"core-js/library/fn/object/set-prototype-of":74}],54:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/set-prototype-of":75}],55:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/symbol"), __esModule: true };
-},{"core-js/library/fn/symbol":75}],55:[function(_dereq_,module,exports){
+},{"core-js/library/fn/symbol":76}],56:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/symbol/iterator"), __esModule: true };
-},{"core-js/library/fn/symbol/iterator":76}],56:[function(_dereq_,module,exports){
+},{"core-js/library/fn/symbol/iterator":77}],57:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/weak-map"), __esModule: true };
-},{"core-js/library/fn/weak-map":77}],57:[function(_dereq_,module,exports){
+},{"core-js/library/fn/weak-map":78}],58:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12088,7 +12640,7 @@ exports.default = function (instance, Constructor) {
     throw new TypeError("Cannot call a class as a function");
   }
 };
-},{}],58:[function(_dereq_,module,exports){
+},{}],59:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12116,7 +12668,7 @@ exports.default = function () {
     return Constructor;
   };
 }();
-},{"../core-js/object/define-property":48}],59:[function(_dereq_,module,exports){
+},{"../core-js/object/define-property":49}],60:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12155,7 +12707,7 @@ exports.default = function get(object, property, receiver) {
     return getter.call(receiver);
   }
 };
-},{"../core-js/object/get-own-property-descriptor":50,"../core-js/object/get-prototype-of":51}],60:[function(_dereq_,module,exports){
+},{"../core-js/object/get-own-property-descriptor":51,"../core-js/object/get-prototype-of":52}],61:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12189,7 +12741,7 @@ exports.default = function (subClass, superClass) {
   });
   if (superClass) _setPrototypeOf2.default ? (0, _setPrototypeOf2.default)(subClass, superClass) : subClass.__proto__ = superClass;
 };
-},{"../core-js/object/create":47,"../core-js/object/set-prototype-of":53,"../helpers/typeof":62}],61:[function(_dereq_,module,exports){
+},{"../core-js/object/create":48,"../core-js/object/set-prototype-of":54,"../helpers/typeof":63}],62:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12207,7 +12759,7 @@ exports.default = function (self, call) {
 
   return call && ((typeof call === "undefined" ? "undefined" : (0, _typeof3.default)(call)) === "object" || typeof call === "function") ? call : self;
 };
-},{"../helpers/typeof":62}],62:[function(_dereq_,module,exports){
+},{"../helpers/typeof":63}],63:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12229,9 +12781,9 @@ exports.default = typeof _symbol2.default === "function" && _typeof(_iterator2.d
 } : function (obj) {
   return obj && typeof _symbol2.default === "function" && obj.constructor === _symbol2.default ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof(obj);
 };
-},{"../core-js/symbol":54,"../core-js/symbol/iterator":55}],63:[function(_dereq_,module,exports){
+},{"../core-js/symbol":55,"../core-js/symbol/iterator":56}],64:[function(_dereq_,module,exports){
 
-},{}],64:[function(_dereq_,module,exports){
+},{}],65:[function(_dereq_,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -12535,88 +13087,88 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],65:[function(_dereq_,module,exports){
+},{}],66:[function(_dereq_,module,exports){
 _dereq_('../modules/web.dom.iterable');
 _dereq_('../modules/es6.string.iterator');
 module.exports = _dereq_('../modules/core.get-iterator');
-},{"../modules/core.get-iterator":153,"../modules/es6.string.iterator":164,"../modules/web.dom.iterable":170}],66:[function(_dereq_,module,exports){
+},{"../modules/core.get-iterator":154,"../modules/es6.string.iterator":165,"../modules/web.dom.iterable":171}],67:[function(_dereq_,module,exports){
 var core  = _dereq_('../../modules/_core')
   , $JSON = core.JSON || (core.JSON = {stringify: JSON.stringify});
 module.exports = function stringify(it){ // eslint-disable-line no-unused-vars
   return $JSON.stringify.apply($JSON, arguments);
 };
-},{"../../modules/_core":93}],67:[function(_dereq_,module,exports){
+},{"../../modules/_core":94}],68:[function(_dereq_,module,exports){
 _dereq_('../modules/es6.object.to-string');
 _dereq_('../modules/es6.string.iterator');
 _dereq_('../modules/web.dom.iterable');
 _dereq_('../modules/es6.map');
 _dereq_('../modules/es7.map.to-json');
 module.exports = _dereq_('../modules/_core').Map;
-},{"../modules/_core":93,"../modules/es6.map":155,"../modules/es6.object.to-string":163,"../modules/es6.string.iterator":164,"../modules/es7.map.to-json":167,"../modules/web.dom.iterable":170}],68:[function(_dereq_,module,exports){
+},{"../modules/_core":94,"../modules/es6.map":156,"../modules/es6.object.to-string":164,"../modules/es6.string.iterator":165,"../modules/es7.map.to-json":168,"../modules/web.dom.iterable":171}],69:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.create');
 var $Object = _dereq_('../../modules/_core').Object;
 module.exports = function create(P, D){
   return $Object.create(P, D);
 };
-},{"../../modules/_core":93,"../../modules/es6.object.create":156}],69:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.create":157}],70:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.define-property');
 var $Object = _dereq_('../../modules/_core').Object;
 module.exports = function defineProperty(it, key, desc){
   return $Object.defineProperty(it, key, desc);
 };
-},{"../../modules/_core":93,"../../modules/es6.object.define-property":157}],70:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.define-property":158}],71:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.freeze');
 module.exports = _dereq_('../../modules/_core').Object.freeze;
-},{"../../modules/_core":93,"../../modules/es6.object.freeze":158}],71:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.freeze":159}],72:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.get-own-property-descriptor');
 var $Object = _dereq_('../../modules/_core').Object;
 module.exports = function getOwnPropertyDescriptor(it, key){
   return $Object.getOwnPropertyDescriptor(it, key);
 };
-},{"../../modules/_core":93,"../../modules/es6.object.get-own-property-descriptor":159}],72:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.get-own-property-descriptor":160}],73:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.get-prototype-of');
 module.exports = _dereq_('../../modules/_core').Object.getPrototypeOf;
-},{"../../modules/_core":93,"../../modules/es6.object.get-prototype-of":160}],73:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.get-prototype-of":161}],74:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.keys');
 module.exports = _dereq_('../../modules/_core').Object.keys;
-},{"../../modules/_core":93,"../../modules/es6.object.keys":161}],74:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.keys":162}],75:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.set-prototype-of');
 module.exports = _dereq_('../../modules/_core').Object.setPrototypeOf;
-},{"../../modules/_core":93,"../../modules/es6.object.set-prototype-of":162}],75:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.set-prototype-of":163}],76:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.symbol');
 _dereq_('../../modules/es6.object.to-string');
 _dereq_('../../modules/es7.symbol.async-iterator');
 _dereq_('../../modules/es7.symbol.observable');
 module.exports = _dereq_('../../modules/_core').Symbol;
-},{"../../modules/_core":93,"../../modules/es6.object.to-string":163,"../../modules/es6.symbol":165,"../../modules/es7.symbol.async-iterator":168,"../../modules/es7.symbol.observable":169}],76:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.to-string":164,"../../modules/es6.symbol":166,"../../modules/es7.symbol.async-iterator":169,"../../modules/es7.symbol.observable":170}],77:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.string.iterator');
 _dereq_('../../modules/web.dom.iterable');
 module.exports = _dereq_('../../modules/_wks-ext').f('iterator');
-},{"../../modules/_wks-ext":150,"../../modules/es6.string.iterator":164,"../../modules/web.dom.iterable":170}],77:[function(_dereq_,module,exports){
+},{"../../modules/_wks-ext":151,"../../modules/es6.string.iterator":165,"../../modules/web.dom.iterable":171}],78:[function(_dereq_,module,exports){
 _dereq_('../modules/es6.object.to-string');
 _dereq_('../modules/web.dom.iterable');
 _dereq_('../modules/es6.weak-map');
 module.exports = _dereq_('../modules/_core').WeakMap;
-},{"../modules/_core":93,"../modules/es6.object.to-string":163,"../modules/es6.weak-map":166,"../modules/web.dom.iterable":170}],78:[function(_dereq_,module,exports){
+},{"../modules/_core":94,"../modules/es6.object.to-string":164,"../modules/es6.weak-map":167,"../modules/web.dom.iterable":171}],79:[function(_dereq_,module,exports){
 module.exports = function(it){
   if(typeof it != 'function')throw TypeError(it + ' is not a function!');
   return it;
 };
-},{}],79:[function(_dereq_,module,exports){
-module.exports = function(){ /* empty */ };
 },{}],80:[function(_dereq_,module,exports){
+module.exports = function(){ /* empty */ };
+},{}],81:[function(_dereq_,module,exports){
 module.exports = function(it, Constructor, name, forbiddenField){
   if(!(it instanceof Constructor) || (forbiddenField !== undefined && forbiddenField in it)){
     throw TypeError(name + ': incorrect invocation!');
   } return it;
 };
-},{}],81:[function(_dereq_,module,exports){
+},{}],82:[function(_dereq_,module,exports){
 var isObject = _dereq_('./_is-object');
 module.exports = function(it){
   if(!isObject(it))throw TypeError(it + ' is not an object!');
   return it;
 };
-},{"./_is-object":111}],82:[function(_dereq_,module,exports){
+},{"./_is-object":112}],83:[function(_dereq_,module,exports){
 var forOf = _dereq_('./_for-of');
 
 module.exports = function(iter, ITERATOR){
@@ -12625,7 +13177,7 @@ module.exports = function(iter, ITERATOR){
   return result;
 };
 
-},{"./_for-of":102}],83:[function(_dereq_,module,exports){
+},{"./_for-of":103}],84:[function(_dereq_,module,exports){
 // false -> Array#indexOf
 // true  -> Array#includes
 var toIObject = _dereq_('./_to-iobject')
@@ -12647,7 +13199,7 @@ module.exports = function(IS_INCLUDES){
     } return !IS_INCLUDES && -1;
   };
 };
-},{"./_to-index":142,"./_to-iobject":144,"./_to-length":145}],84:[function(_dereq_,module,exports){
+},{"./_to-index":143,"./_to-iobject":145,"./_to-length":146}],85:[function(_dereq_,module,exports){
 // 0 -> Array#forEach
 // 1 -> Array#map
 // 2 -> Array#filter
@@ -12692,7 +13244,7 @@ module.exports = function(TYPE, $create){
     return IS_FIND_INDEX ? -1 : IS_SOME || IS_EVERY ? IS_EVERY : result;
   };
 };
-},{"./_array-species-create":86,"./_ctx":94,"./_iobject":108,"./_to-length":145,"./_to-object":146}],85:[function(_dereq_,module,exports){
+},{"./_array-species-create":87,"./_ctx":95,"./_iobject":109,"./_to-length":146,"./_to-object":147}],86:[function(_dereq_,module,exports){
 var isObject = _dereq_('./_is-object')
   , isArray  = _dereq_('./_is-array')
   , SPECIES  = _dereq_('./_wks')('species');
@@ -12709,14 +13261,14 @@ module.exports = function(original){
     }
   } return C === undefined ? Array : C;
 };
-},{"./_is-array":110,"./_is-object":111,"./_wks":151}],86:[function(_dereq_,module,exports){
+},{"./_is-array":111,"./_is-object":112,"./_wks":152}],87:[function(_dereq_,module,exports){
 // 9.4.2.3 ArraySpeciesCreate(originalArray, length)
 var speciesConstructor = _dereq_('./_array-species-constructor');
 
 module.exports = function(original, length){
   return new (speciesConstructor(original))(length);
 };
-},{"./_array-species-constructor":85}],87:[function(_dereq_,module,exports){
+},{"./_array-species-constructor":86}],88:[function(_dereq_,module,exports){
 // getting tag from 19.1.3.6 Object.prototype.toString()
 var cof = _dereq_('./_cof')
   , TAG = _dereq_('./_wks')('toStringTag')
@@ -12740,13 +13292,13 @@ module.exports = function(it){
     // ES3 arguments fallback
     : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
 };
-},{"./_cof":88,"./_wks":151}],88:[function(_dereq_,module,exports){
+},{"./_cof":89,"./_wks":152}],89:[function(_dereq_,module,exports){
 var toString = {}.toString;
 
 module.exports = function(it){
   return toString.call(it).slice(8, -1);
 };
-},{}],89:[function(_dereq_,module,exports){
+},{}],90:[function(_dereq_,module,exports){
 'use strict';
 var dP          = _dereq_('./_object-dp').f
   , create      = _dereq_('./_object-create')
@@ -12889,7 +13441,7 @@ module.exports = {
     setSpecies(NAME);
   }
 };
-},{"./_an-instance":80,"./_ctx":94,"./_defined":95,"./_descriptors":96,"./_for-of":102,"./_iter-define":114,"./_iter-step":115,"./_meta":119,"./_object-create":121,"./_object-dp":122,"./_redefine-all":134,"./_set-species":137}],90:[function(_dereq_,module,exports){
+},{"./_an-instance":81,"./_ctx":95,"./_defined":96,"./_descriptors":97,"./_for-of":103,"./_iter-define":115,"./_iter-step":116,"./_meta":120,"./_object-create":122,"./_object-dp":123,"./_redefine-all":135,"./_set-species":138}],91:[function(_dereq_,module,exports){
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var classof = _dereq_('./_classof')
   , from    = _dereq_('./_array-from-iterable');
@@ -12899,7 +13451,7 @@ module.exports = function(NAME){
     return from(this);
   };
 };
-},{"./_array-from-iterable":82,"./_classof":87}],91:[function(_dereq_,module,exports){
+},{"./_array-from-iterable":83,"./_classof":88}],92:[function(_dereq_,module,exports){
 'use strict';
 var redefineAll       = _dereq_('./_redefine-all')
   , getWeak           = _dereq_('./_meta').getWeak
@@ -12983,7 +13535,7 @@ module.exports = {
   },
   ufstore: uncaughtFrozenStore
 };
-},{"./_an-instance":80,"./_an-object":81,"./_array-methods":84,"./_for-of":102,"./_has":104,"./_is-object":111,"./_meta":119,"./_redefine-all":134}],92:[function(_dereq_,module,exports){
+},{"./_an-instance":81,"./_an-object":82,"./_array-methods":85,"./_for-of":103,"./_has":105,"./_is-object":112,"./_meta":120,"./_redefine-all":135}],93:[function(_dereq_,module,exports){
 'use strict';
 var global         = _dereq_('./_global')
   , $export        = _dereq_('./_export')
@@ -13043,10 +13595,10 @@ module.exports = function(NAME, wrapper, methods, common, IS_MAP, IS_WEAK){
 
   return C;
 };
-},{"./_an-instance":80,"./_array-methods":84,"./_descriptors":96,"./_export":100,"./_fails":101,"./_for-of":102,"./_global":103,"./_hide":105,"./_is-object":111,"./_meta":119,"./_object-dp":122,"./_redefine-all":134,"./_set-to-string-tag":138}],93:[function(_dereq_,module,exports){
+},{"./_an-instance":81,"./_array-methods":85,"./_descriptors":97,"./_export":101,"./_fails":102,"./_for-of":103,"./_global":104,"./_hide":106,"./_is-object":112,"./_meta":120,"./_object-dp":123,"./_redefine-all":135,"./_set-to-string-tag":139}],94:[function(_dereq_,module,exports){
 var core = module.exports = {version: '2.4.0'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
-},{}],94:[function(_dereq_,module,exports){
+},{}],95:[function(_dereq_,module,exports){
 // optional / simple context binding
 var aFunction = _dereq_('./_a-function');
 module.exports = function(fn, that, length){
@@ -13067,18 +13619,18 @@ module.exports = function(fn, that, length){
     return fn.apply(that, arguments);
   };
 };
-},{"./_a-function":78}],95:[function(_dereq_,module,exports){
+},{"./_a-function":79}],96:[function(_dereq_,module,exports){
 // 7.2.1 RequireObjectCoercible(argument)
 module.exports = function(it){
   if(it == undefined)throw TypeError("Can't call method on  " + it);
   return it;
 };
-},{}],96:[function(_dereq_,module,exports){
+},{}],97:[function(_dereq_,module,exports){
 // Thank's IE8 for his funny defineProperty
 module.exports = !_dereq_('./_fails')(function(){
   return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
 });
-},{"./_fails":101}],97:[function(_dereq_,module,exports){
+},{"./_fails":102}],98:[function(_dereq_,module,exports){
 var isObject = _dereq_('./_is-object')
   , document = _dereq_('./_global').document
   // in old IE typeof document.createElement is 'object'
@@ -13086,12 +13638,12 @@ var isObject = _dereq_('./_is-object')
 module.exports = function(it){
   return is ? document.createElement(it) : {};
 };
-},{"./_global":103,"./_is-object":111}],98:[function(_dereq_,module,exports){
+},{"./_global":104,"./_is-object":112}],99:[function(_dereq_,module,exports){
 // IE 8- don't enum bug keys
 module.exports = (
   'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
 ).split(',');
-},{}],99:[function(_dereq_,module,exports){
+},{}],100:[function(_dereq_,module,exports){
 // all enumerable object keys, includes symbols
 var getKeys = _dereq_('./_object-keys')
   , gOPS    = _dereq_('./_object-gops')
@@ -13107,7 +13659,7 @@ module.exports = function(it){
     while(symbols.length > i)if(isEnum.call(it, key = symbols[i++]))result.push(key);
   } return result;
 };
-},{"./_object-gops":127,"./_object-keys":130,"./_object-pie":131}],100:[function(_dereq_,module,exports){
+},{"./_object-gops":128,"./_object-keys":131,"./_object-pie":132}],101:[function(_dereq_,module,exports){
 var global    = _dereq_('./_global')
   , core      = _dereq_('./_core')
   , ctx       = _dereq_('./_ctx')
@@ -13169,7 +13721,7 @@ $export.W = 32;  // wrap
 $export.U = 64;  // safe
 $export.R = 128; // real proto method for `library` 
 module.exports = $export;
-},{"./_core":93,"./_ctx":94,"./_global":103,"./_hide":105}],101:[function(_dereq_,module,exports){
+},{"./_core":94,"./_ctx":95,"./_global":104,"./_hide":106}],102:[function(_dereq_,module,exports){
 module.exports = function(exec){
   try {
     return !!exec();
@@ -13177,7 +13729,7 @@ module.exports = function(exec){
     return true;
   }
 };
-},{}],102:[function(_dereq_,module,exports){
+},{}],103:[function(_dereq_,module,exports){
 var ctx         = _dereq_('./_ctx')
   , call        = _dereq_('./_iter-call')
   , isArrayIter = _dereq_('./_is-array-iter')
@@ -13203,17 +13755,17 @@ var exports = module.exports = function(iterable, entries, fn, that, ITERATOR){
 };
 exports.BREAK  = BREAK;
 exports.RETURN = RETURN;
-},{"./_an-object":81,"./_ctx":94,"./_is-array-iter":109,"./_iter-call":112,"./_to-length":145,"./core.get-iterator-method":152}],103:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_ctx":95,"./_is-array-iter":110,"./_iter-call":113,"./_to-length":146,"./core.get-iterator-method":153}],104:[function(_dereq_,module,exports){
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
   ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
 if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
-},{}],104:[function(_dereq_,module,exports){
+},{}],105:[function(_dereq_,module,exports){
 var hasOwnProperty = {}.hasOwnProperty;
 module.exports = function(it, key){
   return hasOwnProperty.call(it, key);
 };
-},{}],105:[function(_dereq_,module,exports){
+},{}],106:[function(_dereq_,module,exports){
 var dP         = _dereq_('./_object-dp')
   , createDesc = _dereq_('./_property-desc');
 module.exports = _dereq_('./_descriptors') ? function(object, key, value){
@@ -13222,19 +13774,19 @@ module.exports = _dereq_('./_descriptors') ? function(object, key, value){
   object[key] = value;
   return object;
 };
-},{"./_descriptors":96,"./_object-dp":122,"./_property-desc":133}],106:[function(_dereq_,module,exports){
+},{"./_descriptors":97,"./_object-dp":123,"./_property-desc":134}],107:[function(_dereq_,module,exports){
 module.exports = _dereq_('./_global').document && document.documentElement;
-},{"./_global":103}],107:[function(_dereq_,module,exports){
+},{"./_global":104}],108:[function(_dereq_,module,exports){
 module.exports = !_dereq_('./_descriptors') && !_dereq_('./_fails')(function(){
   return Object.defineProperty(_dereq_('./_dom-create')('div'), 'a', {get: function(){ return 7; }}).a != 7;
 });
-},{"./_descriptors":96,"./_dom-create":97,"./_fails":101}],108:[function(_dereq_,module,exports){
+},{"./_descriptors":97,"./_dom-create":98,"./_fails":102}],109:[function(_dereq_,module,exports){
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
 var cof = _dereq_('./_cof');
 module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
   return cof(it) == 'String' ? it.split('') : Object(it);
 };
-},{"./_cof":88}],109:[function(_dereq_,module,exports){
+},{"./_cof":89}],110:[function(_dereq_,module,exports){
 // check on default Array iterator
 var Iterators  = _dereq_('./_iterators')
   , ITERATOR   = _dereq_('./_wks')('iterator')
@@ -13243,17 +13795,17 @@ var Iterators  = _dereq_('./_iterators')
 module.exports = function(it){
   return it !== undefined && (Iterators.Array === it || ArrayProto[ITERATOR] === it);
 };
-},{"./_iterators":116,"./_wks":151}],110:[function(_dereq_,module,exports){
+},{"./_iterators":117,"./_wks":152}],111:[function(_dereq_,module,exports){
 // 7.2.2 IsArray(argument)
 var cof = _dereq_('./_cof');
 module.exports = Array.isArray || function isArray(arg){
   return cof(arg) == 'Array';
 };
-},{"./_cof":88}],111:[function(_dereq_,module,exports){
+},{"./_cof":89}],112:[function(_dereq_,module,exports){
 module.exports = function(it){
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
-},{}],112:[function(_dereq_,module,exports){
+},{}],113:[function(_dereq_,module,exports){
 // call something on iterator step with safe closing on error
 var anObject = _dereq_('./_an-object');
 module.exports = function(iterator, fn, value, entries){
@@ -13266,7 +13818,7 @@ module.exports = function(iterator, fn, value, entries){
     throw e;
   }
 };
-},{"./_an-object":81}],113:[function(_dereq_,module,exports){
+},{"./_an-object":82}],114:[function(_dereq_,module,exports){
 'use strict';
 var create         = _dereq_('./_object-create')
   , descriptor     = _dereq_('./_property-desc')
@@ -13280,7 +13832,7 @@ module.exports = function(Constructor, NAME, next){
   Constructor.prototype = create(IteratorPrototype, {next: descriptor(1, next)});
   setToStringTag(Constructor, NAME + ' Iterator');
 };
-},{"./_hide":105,"./_object-create":121,"./_property-desc":133,"./_set-to-string-tag":138,"./_wks":151}],114:[function(_dereq_,module,exports){
+},{"./_hide":106,"./_object-create":122,"./_property-desc":134,"./_set-to-string-tag":139,"./_wks":152}],115:[function(_dereq_,module,exports){
 'use strict';
 var LIBRARY        = _dereq_('./_library')
   , $export        = _dereq_('./_export')
@@ -13351,13 +13903,13 @@ module.exports = function(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED
   }
   return methods;
 };
-},{"./_export":100,"./_has":104,"./_hide":105,"./_iter-create":113,"./_iterators":116,"./_library":118,"./_object-gpo":128,"./_redefine":135,"./_set-to-string-tag":138,"./_wks":151}],115:[function(_dereq_,module,exports){
+},{"./_export":101,"./_has":105,"./_hide":106,"./_iter-create":114,"./_iterators":117,"./_library":119,"./_object-gpo":129,"./_redefine":136,"./_set-to-string-tag":139,"./_wks":152}],116:[function(_dereq_,module,exports){
 module.exports = function(done, value){
   return {value: value, done: !!done};
 };
-},{}],116:[function(_dereq_,module,exports){
-module.exports = {};
 },{}],117:[function(_dereq_,module,exports){
+module.exports = {};
+},{}],118:[function(_dereq_,module,exports){
 var getKeys   = _dereq_('./_object-keys')
   , toIObject = _dereq_('./_to-iobject');
 module.exports = function(object, el){
@@ -13368,9 +13920,9 @@ module.exports = function(object, el){
     , key;
   while(length > index)if(O[key = keys[index++]] === el)return key;
 };
-},{"./_object-keys":130,"./_to-iobject":144}],118:[function(_dereq_,module,exports){
+},{"./_object-keys":131,"./_to-iobject":145}],119:[function(_dereq_,module,exports){
 module.exports = true;
-},{}],119:[function(_dereq_,module,exports){
+},{}],120:[function(_dereq_,module,exports){
 var META     = _dereq_('./_uid')('meta')
   , isObject = _dereq_('./_is-object')
   , has      = _dereq_('./_has')
@@ -13424,7 +13976,7 @@ var meta = module.exports = {
   getWeak:  getWeak,
   onFreeze: onFreeze
 };
-},{"./_fails":101,"./_has":104,"./_is-object":111,"./_object-dp":122,"./_uid":148}],120:[function(_dereq_,module,exports){
+},{"./_fails":102,"./_has":105,"./_is-object":112,"./_object-dp":123,"./_uid":149}],121:[function(_dereq_,module,exports){
 'use strict';
 // 19.1.2.1 Object.assign(target, source, ...)
 var getKeys  = _dereq_('./_object-keys')
@@ -13458,7 +14010,7 @@ module.exports = !$assign || _dereq_('./_fails')(function(){
     while(length > j)if(isEnum.call(S, key = keys[j++]))T[key] = S[key];
   } return T;
 } : $assign;
-},{"./_fails":101,"./_iobject":108,"./_object-gops":127,"./_object-keys":130,"./_object-pie":131,"./_to-object":146}],121:[function(_dereq_,module,exports){
+},{"./_fails":102,"./_iobject":109,"./_object-gops":128,"./_object-keys":131,"./_object-pie":132,"./_to-object":147}],122:[function(_dereq_,module,exports){
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject    = _dereq_('./_an-object')
   , dPs         = _dereq_('./_object-dps')
@@ -13501,7 +14053,7 @@ module.exports = Object.create || function create(O, Properties){
   return Properties === undefined ? result : dPs(result, Properties);
 };
 
-},{"./_an-object":81,"./_dom-create":97,"./_enum-bug-keys":98,"./_html":106,"./_object-dps":123,"./_shared-key":139}],122:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_dom-create":98,"./_enum-bug-keys":99,"./_html":107,"./_object-dps":124,"./_shared-key":140}],123:[function(_dereq_,module,exports){
 var anObject       = _dereq_('./_an-object')
   , IE8_DOM_DEFINE = _dereq_('./_ie8-dom-define')
   , toPrimitive    = _dereq_('./_to-primitive')
@@ -13518,7 +14070,7 @@ exports.f = _dereq_('./_descriptors') ? Object.defineProperty : function defineP
   if('value' in Attributes)O[P] = Attributes.value;
   return O;
 };
-},{"./_an-object":81,"./_descriptors":96,"./_ie8-dom-define":107,"./_to-primitive":147}],123:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_descriptors":97,"./_ie8-dom-define":108,"./_to-primitive":148}],124:[function(_dereq_,module,exports){
 var dP       = _dereq_('./_object-dp')
   , anObject = _dereq_('./_an-object')
   , getKeys  = _dereq_('./_object-keys');
@@ -13532,7 +14084,7 @@ module.exports = _dereq_('./_descriptors') ? Object.defineProperties : function 
   while(length > i)dP.f(O, P = keys[i++], Properties[P]);
   return O;
 };
-},{"./_an-object":81,"./_descriptors":96,"./_object-dp":122,"./_object-keys":130}],124:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_descriptors":97,"./_object-dp":123,"./_object-keys":131}],125:[function(_dereq_,module,exports){
 var pIE            = _dereq_('./_object-pie')
   , createDesc     = _dereq_('./_property-desc')
   , toIObject      = _dereq_('./_to-iobject')
@@ -13549,7 +14101,7 @@ exports.f = _dereq_('./_descriptors') ? gOPD : function getOwnPropertyDescriptor
   } catch(e){ /* empty */ }
   if(has(O, P))return createDesc(!pIE.f.call(O, P), O[P]);
 };
-},{"./_descriptors":96,"./_has":104,"./_ie8-dom-define":107,"./_object-pie":131,"./_property-desc":133,"./_to-iobject":144,"./_to-primitive":147}],125:[function(_dereq_,module,exports){
+},{"./_descriptors":97,"./_has":105,"./_ie8-dom-define":108,"./_object-pie":132,"./_property-desc":134,"./_to-iobject":145,"./_to-primitive":148}],126:[function(_dereq_,module,exports){
 // fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
 var toIObject = _dereq_('./_to-iobject')
   , gOPN      = _dereq_('./_object-gopn').f
@@ -13570,7 +14122,7 @@ module.exports.f = function getOwnPropertyNames(it){
   return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
 };
 
-},{"./_object-gopn":126,"./_to-iobject":144}],126:[function(_dereq_,module,exports){
+},{"./_object-gopn":127,"./_to-iobject":145}],127:[function(_dereq_,module,exports){
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
 var $keys      = _dereq_('./_object-keys-internal')
   , hiddenKeys = _dereq_('./_enum-bug-keys').concat('length', 'prototype');
@@ -13578,9 +14130,9 @@ var $keys      = _dereq_('./_object-keys-internal')
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O){
   return $keys(O, hiddenKeys);
 };
-},{"./_enum-bug-keys":98,"./_object-keys-internal":129}],127:[function(_dereq_,module,exports){
+},{"./_enum-bug-keys":99,"./_object-keys-internal":130}],128:[function(_dereq_,module,exports){
 exports.f = Object.getOwnPropertySymbols;
-},{}],128:[function(_dereq_,module,exports){
+},{}],129:[function(_dereq_,module,exports){
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has         = _dereq_('./_has')
   , toObject    = _dereq_('./_to-object')
@@ -13594,7 +14146,7 @@ module.exports = Object.getPrototypeOf || function(O){
     return O.constructor.prototype;
   } return O instanceof Object ? ObjectProto : null;
 };
-},{"./_has":104,"./_shared-key":139,"./_to-object":146}],129:[function(_dereq_,module,exports){
+},{"./_has":105,"./_shared-key":140,"./_to-object":147}],130:[function(_dereq_,module,exports){
 var has          = _dereq_('./_has')
   , toIObject    = _dereq_('./_to-iobject')
   , arrayIndexOf = _dereq_('./_array-includes')(false)
@@ -13612,7 +14164,7 @@ module.exports = function(object, names){
   }
   return result;
 };
-},{"./_array-includes":83,"./_has":104,"./_shared-key":139,"./_to-iobject":144}],130:[function(_dereq_,module,exports){
+},{"./_array-includes":84,"./_has":105,"./_shared-key":140,"./_to-iobject":145}],131:[function(_dereq_,module,exports){
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys       = _dereq_('./_object-keys-internal')
   , enumBugKeys = _dereq_('./_enum-bug-keys');
@@ -13620,9 +14172,9 @@ var $keys       = _dereq_('./_object-keys-internal')
 module.exports = Object.keys || function keys(O){
   return $keys(O, enumBugKeys);
 };
-},{"./_enum-bug-keys":98,"./_object-keys-internal":129}],131:[function(_dereq_,module,exports){
+},{"./_enum-bug-keys":99,"./_object-keys-internal":130}],132:[function(_dereq_,module,exports){
 exports.f = {}.propertyIsEnumerable;
-},{}],132:[function(_dereq_,module,exports){
+},{}],133:[function(_dereq_,module,exports){
 // most Object methods by ES6 should accept primitives
 var $export = _dereq_('./_export')
   , core    = _dereq_('./_core')
@@ -13633,7 +14185,7 @@ module.exports = function(KEY, exec){
   exp[KEY] = exec(fn);
   $export($export.S + $export.F * fails(function(){ fn(1); }), 'Object', exp);
 };
-},{"./_core":93,"./_export":100,"./_fails":101}],133:[function(_dereq_,module,exports){
+},{"./_core":94,"./_export":101,"./_fails":102}],134:[function(_dereq_,module,exports){
 module.exports = function(bitmap, value){
   return {
     enumerable  : !(bitmap & 1),
@@ -13642,7 +14194,7 @@ module.exports = function(bitmap, value){
     value       : value
   };
 };
-},{}],134:[function(_dereq_,module,exports){
+},{}],135:[function(_dereq_,module,exports){
 var hide = _dereq_('./_hide');
 module.exports = function(target, src, safe){
   for(var key in src){
@@ -13650,9 +14202,9 @@ module.exports = function(target, src, safe){
     else hide(target, key, src[key]);
   } return target;
 };
-},{"./_hide":105}],135:[function(_dereq_,module,exports){
+},{"./_hide":106}],136:[function(_dereq_,module,exports){
 module.exports = _dereq_('./_hide');
-},{"./_hide":105}],136:[function(_dereq_,module,exports){
+},{"./_hide":106}],137:[function(_dereq_,module,exports){
 // Works with __proto__ only. Old v8 can't work with null proto objects.
 /* eslint-disable no-proto */
 var isObject = _dereq_('./_is-object')
@@ -13678,7 +14230,7 @@ module.exports = {
     }({}, false) : undefined),
   check: check
 };
-},{"./_an-object":81,"./_ctx":94,"./_is-object":111,"./_object-gopd":124}],137:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_ctx":95,"./_is-object":112,"./_object-gopd":125}],138:[function(_dereq_,module,exports){
 'use strict';
 var global      = _dereq_('./_global')
   , core        = _dereq_('./_core')
@@ -13693,7 +14245,7 @@ module.exports = function(KEY){
     get: function(){ return this; }
   });
 };
-},{"./_core":93,"./_descriptors":96,"./_global":103,"./_object-dp":122,"./_wks":151}],138:[function(_dereq_,module,exports){
+},{"./_core":94,"./_descriptors":97,"./_global":104,"./_object-dp":123,"./_wks":152}],139:[function(_dereq_,module,exports){
 var def = _dereq_('./_object-dp').f
   , has = _dereq_('./_has')
   , TAG = _dereq_('./_wks')('toStringTag');
@@ -13701,20 +14253,20 @@ var def = _dereq_('./_object-dp').f
 module.exports = function(it, tag, stat){
   if(it && !has(it = stat ? it : it.prototype, TAG))def(it, TAG, {configurable: true, value: tag});
 };
-},{"./_has":104,"./_object-dp":122,"./_wks":151}],139:[function(_dereq_,module,exports){
+},{"./_has":105,"./_object-dp":123,"./_wks":152}],140:[function(_dereq_,module,exports){
 var shared = _dereq_('./_shared')('keys')
   , uid    = _dereq_('./_uid');
 module.exports = function(key){
   return shared[key] || (shared[key] = uid(key));
 };
-},{"./_shared":140,"./_uid":148}],140:[function(_dereq_,module,exports){
+},{"./_shared":141,"./_uid":149}],141:[function(_dereq_,module,exports){
 var global = _dereq_('./_global')
   , SHARED = '__core-js_shared__'
   , store  = global[SHARED] || (global[SHARED] = {});
 module.exports = function(key){
   return store[key] || (store[key] = {});
 };
-},{"./_global":103}],141:[function(_dereq_,module,exports){
+},{"./_global":104}],142:[function(_dereq_,module,exports){
 var toInteger = _dereq_('./_to-integer')
   , defined   = _dereq_('./_defined');
 // true  -> String#at
@@ -13732,7 +14284,7 @@ module.exports = function(TO_STRING){
       : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
   };
 };
-},{"./_defined":95,"./_to-integer":143}],142:[function(_dereq_,module,exports){
+},{"./_defined":96,"./_to-integer":144}],143:[function(_dereq_,module,exports){
 var toInteger = _dereq_('./_to-integer')
   , max       = Math.max
   , min       = Math.min;
@@ -13740,34 +14292,34 @@ module.exports = function(index, length){
   index = toInteger(index);
   return index < 0 ? max(index + length, 0) : min(index, length);
 };
-},{"./_to-integer":143}],143:[function(_dereq_,module,exports){
+},{"./_to-integer":144}],144:[function(_dereq_,module,exports){
 // 7.1.4 ToInteger
 var ceil  = Math.ceil
   , floor = Math.floor;
 module.exports = function(it){
   return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
 };
-},{}],144:[function(_dereq_,module,exports){
+},{}],145:[function(_dereq_,module,exports){
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = _dereq_('./_iobject')
   , defined = _dereq_('./_defined');
 module.exports = function(it){
   return IObject(defined(it));
 };
-},{"./_defined":95,"./_iobject":108}],145:[function(_dereq_,module,exports){
+},{"./_defined":96,"./_iobject":109}],146:[function(_dereq_,module,exports){
 // 7.1.15 ToLength
 var toInteger = _dereq_('./_to-integer')
   , min       = Math.min;
 module.exports = function(it){
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
 };
-},{"./_to-integer":143}],146:[function(_dereq_,module,exports){
+},{"./_to-integer":144}],147:[function(_dereq_,module,exports){
 // 7.1.13 ToObject(argument)
 var defined = _dereq_('./_defined');
 module.exports = function(it){
   return Object(defined(it));
 };
-},{"./_defined":95}],147:[function(_dereq_,module,exports){
+},{"./_defined":96}],148:[function(_dereq_,module,exports){
 // 7.1.1 ToPrimitive(input [, PreferredType])
 var isObject = _dereq_('./_is-object');
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
@@ -13780,13 +14332,13 @@ module.exports = function(it, S){
   if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
   throw TypeError("Can't convert object to primitive value");
 };
-},{"./_is-object":111}],148:[function(_dereq_,module,exports){
+},{"./_is-object":112}],149:[function(_dereq_,module,exports){
 var id = 0
   , px = Math.random();
 module.exports = function(key){
   return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
 };
-},{}],149:[function(_dereq_,module,exports){
+},{}],150:[function(_dereq_,module,exports){
 var global         = _dereq_('./_global')
   , core           = _dereq_('./_core')
   , LIBRARY        = _dereq_('./_library')
@@ -13796,9 +14348,9 @@ module.exports = function(name){
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
   if(name.charAt(0) != '_' && !(name in $Symbol))defineProperty($Symbol, name, {value: wksExt.f(name)});
 };
-},{"./_core":93,"./_global":103,"./_library":118,"./_object-dp":122,"./_wks-ext":150}],150:[function(_dereq_,module,exports){
+},{"./_core":94,"./_global":104,"./_library":119,"./_object-dp":123,"./_wks-ext":151}],151:[function(_dereq_,module,exports){
 exports.f = _dereq_('./_wks');
-},{"./_wks":151}],151:[function(_dereq_,module,exports){
+},{"./_wks":152}],152:[function(_dereq_,module,exports){
 var store      = _dereq_('./_shared')('wks')
   , uid        = _dereq_('./_uid')
   , Symbol     = _dereq_('./_global').Symbol
@@ -13810,7 +14362,7 @@ var $exports = module.exports = function(name){
 };
 
 $exports.store = store;
-},{"./_global":103,"./_shared":140,"./_uid":148}],152:[function(_dereq_,module,exports){
+},{"./_global":104,"./_shared":141,"./_uid":149}],153:[function(_dereq_,module,exports){
 var classof   = _dereq_('./_classof')
   , ITERATOR  = _dereq_('./_wks')('iterator')
   , Iterators = _dereq_('./_iterators');
@@ -13819,7 +14371,7 @@ module.exports = _dereq_('./_core').getIteratorMethod = function(it){
     || it['@@iterator']
     || Iterators[classof(it)];
 };
-},{"./_classof":87,"./_core":93,"./_iterators":116,"./_wks":151}],153:[function(_dereq_,module,exports){
+},{"./_classof":88,"./_core":94,"./_iterators":117,"./_wks":152}],154:[function(_dereq_,module,exports){
 var anObject = _dereq_('./_an-object')
   , get      = _dereq_('./core.get-iterator-method');
 module.exports = _dereq_('./_core').getIterator = function(it){
@@ -13827,7 +14379,7 @@ module.exports = _dereq_('./_core').getIterator = function(it){
   if(typeof iterFn != 'function')throw TypeError(it + ' is not iterable!');
   return anObject(iterFn.call(it));
 };
-},{"./_an-object":81,"./_core":93,"./core.get-iterator-method":152}],154:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_core":94,"./core.get-iterator-method":153}],155:[function(_dereq_,module,exports){
 'use strict';
 var addToUnscopables = _dereq_('./_add-to-unscopables')
   , step             = _dereq_('./_iter-step')
@@ -13862,7 +14414,7 @@ Iterators.Arguments = Iterators.Array;
 addToUnscopables('keys');
 addToUnscopables('values');
 addToUnscopables('entries');
-},{"./_add-to-unscopables":79,"./_iter-define":114,"./_iter-step":115,"./_iterators":116,"./_to-iobject":144}],155:[function(_dereq_,module,exports){
+},{"./_add-to-unscopables":80,"./_iter-define":115,"./_iter-step":116,"./_iterators":117,"./_to-iobject":145}],156:[function(_dereq_,module,exports){
 'use strict';
 var strong = _dereq_('./_collection-strong');
 
@@ -13880,15 +14432,15 @@ module.exports = _dereq_('./_collection')('Map', function(get){
     return strong.def(this, key === 0 ? 0 : key, value);
   }
 }, strong, true);
-},{"./_collection":92,"./_collection-strong":89}],156:[function(_dereq_,module,exports){
+},{"./_collection":93,"./_collection-strong":90}],157:[function(_dereq_,module,exports){
 var $export = _dereq_('./_export')
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 $export($export.S, 'Object', {create: _dereq_('./_object-create')});
-},{"./_export":100,"./_object-create":121}],157:[function(_dereq_,module,exports){
+},{"./_export":101,"./_object-create":122}],158:[function(_dereq_,module,exports){
 var $export = _dereq_('./_export');
 // 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
 $export($export.S + $export.F * !_dereq_('./_descriptors'), 'Object', {defineProperty: _dereq_('./_object-dp').f});
-},{"./_descriptors":96,"./_export":100,"./_object-dp":122}],158:[function(_dereq_,module,exports){
+},{"./_descriptors":97,"./_export":101,"./_object-dp":123}],159:[function(_dereq_,module,exports){
 // 19.1.2.5 Object.freeze(O)
 var isObject = _dereq_('./_is-object')
   , meta     = _dereq_('./_meta').onFreeze;
@@ -13898,7 +14450,7 @@ _dereq_('./_object-sap')('freeze', function($freeze){
     return $freeze && isObject(it) ? $freeze(meta(it)) : it;
   };
 });
-},{"./_is-object":111,"./_meta":119,"./_object-sap":132}],159:[function(_dereq_,module,exports){
+},{"./_is-object":112,"./_meta":120,"./_object-sap":133}],160:[function(_dereq_,module,exports){
 // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
 var toIObject                 = _dereq_('./_to-iobject')
   , $getOwnPropertyDescriptor = _dereq_('./_object-gopd').f;
@@ -13908,7 +14460,7 @@ _dereq_('./_object-sap')('getOwnPropertyDescriptor', function(){
     return $getOwnPropertyDescriptor(toIObject(it), key);
   };
 });
-},{"./_object-gopd":124,"./_object-sap":132,"./_to-iobject":144}],160:[function(_dereq_,module,exports){
+},{"./_object-gopd":125,"./_object-sap":133,"./_to-iobject":145}],161:[function(_dereq_,module,exports){
 // 19.1.2.9 Object.getPrototypeOf(O)
 var toObject        = _dereq_('./_to-object')
   , $getPrototypeOf = _dereq_('./_object-gpo');
@@ -13918,7 +14470,7 @@ _dereq_('./_object-sap')('getPrototypeOf', function(){
     return $getPrototypeOf(toObject(it));
   };
 });
-},{"./_object-gpo":128,"./_object-sap":132,"./_to-object":146}],161:[function(_dereq_,module,exports){
+},{"./_object-gpo":129,"./_object-sap":133,"./_to-object":147}],162:[function(_dereq_,module,exports){
 // 19.1.2.14 Object.keys(O)
 var toObject = _dereq_('./_to-object')
   , $keys    = _dereq_('./_object-keys');
@@ -13928,13 +14480,13 @@ _dereq_('./_object-sap')('keys', function(){
     return $keys(toObject(it));
   };
 });
-},{"./_object-keys":130,"./_object-sap":132,"./_to-object":146}],162:[function(_dereq_,module,exports){
+},{"./_object-keys":131,"./_object-sap":133,"./_to-object":147}],163:[function(_dereq_,module,exports){
 // 19.1.3.19 Object.setPrototypeOf(O, proto)
 var $export = _dereq_('./_export');
 $export($export.S, 'Object', {setPrototypeOf: _dereq_('./_set-proto').set});
-},{"./_export":100,"./_set-proto":136}],163:[function(_dereq_,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"dup":63}],164:[function(_dereq_,module,exports){
+},{"./_export":101,"./_set-proto":137}],164:[function(_dereq_,module,exports){
+arguments[4][64][0].apply(exports,arguments)
+},{"dup":64}],165:[function(_dereq_,module,exports){
 'use strict';
 var $at  = _dereq_('./_string-at')(true);
 
@@ -13952,7 +14504,7 @@ _dereq_('./_iter-define')(String, 'String', function(iterated){
   this._i += point.length;
   return {value: point, done: false};
 });
-},{"./_iter-define":114,"./_string-at":141}],165:[function(_dereq_,module,exports){
+},{"./_iter-define":115,"./_string-at":142}],166:[function(_dereq_,module,exports){
 'use strict';
 // ECMAScript 6 symbols shim
 var global         = _dereq_('./_global')
@@ -14188,7 +14740,7 @@ setToStringTag($Symbol, 'Symbol');
 setToStringTag(Math, 'Math', true);
 // 24.3.3 JSON[@@toStringTag]
 setToStringTag(global.JSON, 'JSON', true);
-},{"./_an-object":81,"./_descriptors":96,"./_enum-keys":99,"./_export":100,"./_fails":101,"./_global":103,"./_has":104,"./_hide":105,"./_is-array":110,"./_keyof":117,"./_library":118,"./_meta":119,"./_object-create":121,"./_object-dp":122,"./_object-gopd":124,"./_object-gopn":126,"./_object-gopn-ext":125,"./_object-gops":127,"./_object-keys":130,"./_object-pie":131,"./_property-desc":133,"./_redefine":135,"./_set-to-string-tag":138,"./_shared":140,"./_to-iobject":144,"./_to-primitive":147,"./_uid":148,"./_wks":151,"./_wks-define":149,"./_wks-ext":150}],166:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_descriptors":97,"./_enum-keys":100,"./_export":101,"./_fails":102,"./_global":104,"./_has":105,"./_hide":106,"./_is-array":111,"./_keyof":118,"./_library":119,"./_meta":120,"./_object-create":122,"./_object-dp":123,"./_object-gopd":125,"./_object-gopn":127,"./_object-gopn-ext":126,"./_object-gops":128,"./_object-keys":131,"./_object-pie":132,"./_property-desc":134,"./_redefine":136,"./_set-to-string-tag":139,"./_shared":141,"./_to-iobject":145,"./_to-primitive":148,"./_uid":149,"./_wks":152,"./_wks-define":150,"./_wks-ext":151}],167:[function(_dereq_,module,exports){
 'use strict';
 var each         = _dereq_('./_array-methods')(0)
   , redefine     = _dereq_('./_redefine')
@@ -14245,16 +14797,16 @@ if(new $WeakMap().set((Object.freeze || Object)(tmp), 7).get(tmp) != 7){
     });
   });
 }
-},{"./_array-methods":84,"./_collection":92,"./_collection-weak":91,"./_is-object":111,"./_meta":119,"./_object-assign":120,"./_redefine":135}],167:[function(_dereq_,module,exports){
+},{"./_array-methods":85,"./_collection":93,"./_collection-weak":92,"./_is-object":112,"./_meta":120,"./_object-assign":121,"./_redefine":136}],168:[function(_dereq_,module,exports){
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var $export  = _dereq_('./_export');
 
 $export($export.P + $export.R, 'Map', {toJSON: _dereq_('./_collection-to-json')('Map')});
-},{"./_collection-to-json":90,"./_export":100}],168:[function(_dereq_,module,exports){
+},{"./_collection-to-json":91,"./_export":101}],169:[function(_dereq_,module,exports){
 _dereq_('./_wks-define')('asyncIterator');
-},{"./_wks-define":149}],169:[function(_dereq_,module,exports){
+},{"./_wks-define":150}],170:[function(_dereq_,module,exports){
 _dereq_('./_wks-define')('observable');
-},{"./_wks-define":149}],170:[function(_dereq_,module,exports){
+},{"./_wks-define":150}],171:[function(_dereq_,module,exports){
 _dereq_('./es6.array.iterator');
 var global        = _dereq_('./_global')
   , hide          = _dereq_('./_hide')
@@ -14268,5 +14820,5 @@ for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList'
   if(proto && !proto[TO_STRING_TAG])hide(proto, TO_STRING_TAG, NAME);
   Iterators[NAME] = Iterators.Array;
 }
-},{"./_global":103,"./_hide":105,"./_iterators":116,"./_wks":151,"./es6.array.iterator":154}]},{},[10])(10)
+},{"./_global":104,"./_hide":106,"./_iterators":117,"./_wks":152,"./es6.array.iterator":155}]},{},[10])(10)
 });
