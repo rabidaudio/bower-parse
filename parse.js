@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v1.11.0
+ * Parse JavaScript SDK v1.11.1
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -218,7 +218,7 @@ var config = {
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + '1.11.0',
+  VERSION: 'js' + '1.11.1',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -330,7 +330,7 @@ module.exports = {
     return config['RESTController'];
   },
   setSchemaController: function (controller) {
-    requireMethods('SchemaController', ['get', 'create', 'update', 'delete', 'send'], controller);
+    requireMethods('SchemaController', ['get', 'create', 'update', 'delete', 'send', 'purge'], controller);
     config['SchemaController'] = controller;
   },
   getSchemaController: function () {
@@ -2984,6 +2984,14 @@ ParseError.INVALID_LINKED_SESSION = 251;
  * @final
  */
 ParseError.UNSUPPORTED_SERVICE = 252;
+
+/**
+ * Error code indicating an invalid operation occured on schema
+ * @property INVALID_SCHEMA_OPERATION
+ * @static
+ * @final
+ */
+ParseError.INVALID_SCHEMA_OPERATION = 255;
 
 /**
  * Error code indicating that there were multiple errors. Aggregate errors
@@ -6477,7 +6485,7 @@ function _interopRequireDefault(obj) {
  *   new Polygon([[0,0],[0,1],[1,1],[1,0]])
  *   new Polygon([GeoPoint, GeoPoint, GeoPoint])
  *   </pre>
- * 
+ *
  * <p>Represents a coordinates that may be associated
  * with a key in a ParseObject or used as a reference point for geo queries.
  * This allows proximity-based queries on the key.</p>
@@ -6511,7 +6519,7 @@ var ParsePolygon = function () {
     key: 'toJSON',
 
     /**
-     * Returns a JSON representation of the GeoPoint, suitable for Parse.
+     * Returns a JSON representation of the Polygon, suitable for Parse.
      * @return {Object}
      */
     value: function () {
@@ -6546,9 +6554,9 @@ var ParsePolygon = function () {
     }
 
     /**
-     * 
-     * @param {Parse.GeoPoint} point 
-     * @returns {Boolean} wether the points is contained into the polygon
+     *
+     * @param {Parse.GeoPoint} point
+     * @returns {Boolean} Returns if the point is contained in the polygon
      */
 
   }, {
@@ -7432,10 +7440,9 @@ function quote(s) {
   return '\\Q' + s.replace('\\E', '\\E\\\\E\\Q') + '\\E';
 }
 
-/*
- * Handles pre-populating the result data of a query with select fields,
- * making sure that the data object contains keys for all objects that have
- * been requested with a select, so that our cached state updates correctly.
+/**
+ * Extracts the class name from queries. If not all queries have the same
+ * class name an error will be thrown.
  */
 /*
  * Copyright (c) 2015-present, Parse, LLC.
@@ -7448,6 +7455,25 @@ function quote(s) {
  * 
  */
 
+function _getClassNameFromQueries(queries) {
+  var className = null;
+  queries.forEach(function (q) {
+    if (!className) {
+      className = q.className;
+    }
+
+    if (className !== q.className) {
+      throw new Error('All queries must be for the same class.');
+    }
+  });
+  return className;
+}
+
+/*
+ * Handles pre-populating the result data of a query with select fields,
+ * making sure that the data object contains keys for all objects that have
+ * been requested with a select, so that our cached state updates correctly.
+ */
 function handleSelectResult(data, select) {
   var serverDataMask = {};
 
@@ -7621,6 +7647,24 @@ var ParseQuery = function () {
       });
 
       this._where.$or = queryJSON;
+      return this;
+    }
+
+    /**
+     * Adds constraint that all of the passed in queries match.
+     * @method _andQuery
+     * @param {Array} queries
+     * @return {Parse.Query} Returns the query, so you can chain this call.
+     */
+
+  }, {
+    key: '_andQuery',
+    value: function (queries) {
+      var queryJSON = queries.map(function (q) {
+        return q.toJSON().where;
+      });
+
+      this._where.$and = queryJSON;
       return this;
     }
 
@@ -8407,6 +8451,43 @@ var ParseQuery = function () {
     }
 
     /**
+    * Adds a constraint for finding string values that contain a provided
+    * string. This may be slow for large datasets. Requires Parse-Server > 2.5.0
+    *
+    * In order to sort you must use select and ascending ($score is required)
+    *  <pre>
+    *   query.fullText('term');
+    *   query.ascending('$score');
+    *   query.select('$score');
+    *  </pre>
+    *
+    * To retrieve the weight / rank
+    *  <pre>
+    *   object->get('score');
+    *  </pre>
+    *
+    * @param {String} key The key that the string to match is stored in.
+    * @param {String} value The string to search
+    * @return {Parse.Query} Returns the query, so you can chain this call.
+    */
+
+  }, {
+    key: 'fullText',
+    value: function (key, value) {
+      if (!key) {
+        throw new Error('A key is required.');
+      }
+      if (!value) {
+        throw new Error('A search term is required');
+      }
+      if (typeof value !== 'string') {
+        throw new Error('The value being searched for must be a string.');
+      }
+
+      return this._addCondition(key, '$text', { $search: { $term: value } });
+    }
+
+    /**
      * Adds a constraint for finding string values that start with a provided
      * string.  This query will use the backend index, so it will be fast even
      * for large datasets.
@@ -8804,24 +8885,39 @@ var ParseQuery = function () {
   }, {
     key: 'or',
     value: function () {
-      var className = null;
-
       for (var _len7 = arguments.length, queries = Array(_len7), _key8 = 0; _key8 < _len7; _key8++) {
         queries[_key8] = arguments[_key8];
       }
 
-      queries.forEach(function (q) {
-        if (!className) {
-          className = q.className;
-        }
-
-        if (className !== q.className) {
-          throw new Error('All queries must be for the same class.');
-        }
-      });
-
+      var className = _getClassNameFromQueries(queries);
       var query = new ParseQuery(className);
       query._orQuery(queries);
+      return query;
+    }
+
+    /**
+     * Constructs a Parse.Query that is the AND of the passed in queries.  For
+     * example:
+     * <pre>var compoundQuery = Parse.Query.and(query1, query2, query3);</pre>
+     *
+     * will create a compoundQuery that is an and of the query1, query2, and
+     * query3.
+     * @method and
+     * @param {...Parse.Query} var_args The list of queries to AND.
+     * @static
+     * @return {Parse.Query} The query that is the AND of the passed in queries.
+     */
+
+  }, {
+    key: 'and',
+    value: function () {
+      for (var _len8 = arguments.length, queries = Array(_len8), _key9 = 0; _key9 < _len8; _key9++) {
+        queries[_key9] = arguments[_key9];
+      }
+
+      var className = _getClassNameFromQueries(queries);
+      var query = new ParseQuery(className);
+      query._andQuery(queries);
       return query;
     }
   }]);
@@ -9258,7 +9354,7 @@ function _interopRequireDefault(obj) {
  * 
  */
 
-var FIELD_TYPES = ['String', 'Number', 'Boolean', 'Date', 'File', 'GeoPoint', 'Array', 'Object', 'Pointer', 'Relation'];
+var FIELD_TYPES = ['String', 'Number', 'Boolean', 'Date', 'File', 'GeoPoint', 'Polygon', 'Array', 'Object', 'Pointer', 'Relation'];
 
 /**
  * A Parse.Schema object is for handling schema data from Parse.
@@ -9419,6 +9515,7 @@ var ParseSchema = function () {
 
     /**
      * Removing a Schema from Parse
+     * Can only be used on Schema without objects
      *
      * @param {Object} options A Backbone-style options object.
      * Valid options are:<ul>
@@ -9443,6 +9540,36 @@ var ParseSchema = function () {
       var controller = _CoreManager2.default.getSchemaController();
 
       return controller.delete(this.className, options).then(function (response) {
+        return response;
+      })._thenRunCallbacks(options);
+    }
+
+    /**
+     * Removes all objects from a Schema (class) in Parse.
+     * EXERCISE CAUTION, running this will delete all objects for this schema and cannot be reversed
+     *
+     * @param {Object} options A Backbone-style options object.
+     * Valid options are:<ul>
+     *   <li>success: A Backbone-style success callback
+     *   <li>error: An Backbone-style error callback.
+     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     * </ul>
+     *
+     * @return {Parse.Promise} A promise that is resolved with the result when
+     * the query completes.
+     */
+
+  }, {
+    key: 'purge',
+    value: function (options) {
+      this.assertClassName();
+
+      var controller = _CoreManager2.default.getSchemaController();
+
+      return controller.purge(this.className).then(function (response) {
         return response;
       })._thenRunCallbacks(options);
     }
@@ -9587,6 +9714,19 @@ var ParseSchema = function () {
     }
 
     /**
+     * Adding Polygon Field
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
+
+  }, {
+    key: 'addPolygon',
+    value: function (name) {
+      return this.addField(name, 'Polygon');
+    }
+
+    /**
      * Adding Array Field
      *
      * @param {String} name Name of the field that will be created on Parse
@@ -9728,6 +9868,10 @@ var DefaultController = {
   },
   delete: function (className, options) {
     return this.send(className, 'DELETE', {}, options);
+  },
+  purge: function (className) {
+    var RESTController = _CoreManager2.default.getRESTController();
+    return RESTController.request('DELETE', 'purge/' + className, {}, { useMasterKey: true });
   }
 };
 
