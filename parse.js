@@ -1,10 +1,10 @@
 /**
- * Parse JavaScript SDK v1.11.1
+ * Parse JavaScript SDK v2.0.0
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
  */
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Parse = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Parse = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -57,8 +57,8 @@ function _interopRequireDefault(obj) {
  * having happened.
  * @param {Object} dimensions The dictionary of information by which to
  * segment this event.
- * @param {Object} options A Backbone-style callback object.
- * @return {Parse.Promise} A promise that is resolved when the round-trip
+ * @param {Object} options
+ * @return {Promise} A promise that is resolved when the round-trip
  * to the server completes.
  */
 function track(name, dimensions, options) {
@@ -76,7 +76,7 @@ function track(name, dimensions, options) {
   }
 
   options = options || {};
-  return _CoreManager2.default.getAnalyticsController().track(name, dimensions)._thenRunCallbacks(options);
+  return _CoreManager2.default.getAnalyticsController().track(name, dimensions);
 } /**
    * Copyright (c) 2015-present, Parse, LLC.
    * All rights reserved.
@@ -102,7 +102,15 @@ _CoreManager2.default.setAnalyticsController(DefaultController);
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
+
 exports.run = run;
+exports.getJobsData = getJobsData;
+exports.startJob = startJob;
+exports.getJobStatus = getJobStatus;
 
 var _CoreManager = _dereq_('./CoreManager');
 
@@ -120,9 +128,9 @@ var _ParseError = _dereq_('./ParseError');
 
 var _ParseError2 = _interopRequireDefault(_ParseError);
 
-var _ParsePromise = _dereq_('./ParsePromise');
+var _ParseQuery = _dereq_('./ParseQuery');
 
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
+var _ParseQuery2 = _interopRequireDefault(_ParseQuery);
 
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
@@ -146,12 +154,8 @@ function _interopRequireDefault(obj) {
  * @name Parse.Cloud.run
  * @param {String} name The function name.
  * @param {Object} data The parameters to send to the cloud function.
- * @param {Object} options A Backbone-style options object
- * options.success, if set, should be a function to handle a successful
- * call to a cloud function.  options.error should be a function that
- * handles an error running the cloud function.  Both functions are
- * optional.  Both functions take a single argument.
- * @return {Parse.Promise} A promise that will be resolved with the result
+ * @param {Object} options
+ * @return {Promise} A promise that will be resolved with the result
  * of the function.
  */
 function run(name, data, options) {
@@ -169,17 +173,69 @@ function run(name, data, options) {
     requestOptions.sessionToken = options.sessionToken;
   }
 
-  return _CoreManager2.default.getCloudController().run(name, data, requestOptions)._thenRunCallbacks(options);
-} /**
-   * Copyright (c) 2015-present, Parse, LLC.
-   * All rights reserved.
-   *
-   * This source code is licensed under the BSD-style license found in the
-   * LICENSE file in the root directory of this source tree. An additional grant
-   * of patent rights can be found in the PATENTS file in the same directory.
-   *
-   * 
-   */
+  return _CoreManager2.default.getCloudController().run(name, data, requestOptions);
+}
+
+/**
+ * Gets data for the current set of cloud jobs.
+ * @method getJobsData
+ * @name Parse.Cloud.getJobsData
+ * @param {Object} options
+ * @return {Promise} A promise that will be resolved with the result
+ * of the function.
+ */
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
+
+function getJobsData(options) {
+  options = options || {};
+
+  return _CoreManager2.default.getCloudController().getJobsData({
+    useMasterKey: true
+  });
+}
+
+/**
+ * Starts a given cloud job, which will process asynchronously.
+ * @method startJob
+ * @name Parse.Cloud.startJob
+ * @param {String} name The function name.
+ * @param {Object} data The parameters to send to the cloud function.
+ * @param {Object} options
+ * @return {Promise} A promise that will be resolved with the result
+ * of the function.
+ */
+function startJob(name, data, options) {
+  options = options || {};
+
+  if (typeof name !== 'string' || name.length === 0) {
+    throw new TypeError('Cloud job name must be a string.');
+  }
+
+  return _CoreManager2.default.getCloudController().startJob(name, data, {
+    useMasterKey: true
+  });
+}
+
+/**
+ * Gets job status by Id
+ * @method getJobStatus
+ * @name Parse.Cloud.getJobStatus
+ * @param {String} jobStatusId The Id of Job Status.
+ * @return {Parse.Object} Status of Job.
+ */
+function getJobStatus(jobStatusId) {
+  var query = new _ParseQuery2.default('_JobStatus');
+  return query.get(jobStatusId, { useMasterKey: true });
+}
 
 var DefaultController = {
   run: function (name, data, options) {
@@ -187,30 +243,45 @@ var DefaultController = {
 
     var payload = (0, _encode2.default)(data, true);
 
-    var requestOptions = {};
-    if (options.hasOwnProperty('useMasterKey')) {
-      requestOptions.useMasterKey = options.useMasterKey;
-    }
-    if (options.hasOwnProperty('sessionToken')) {
-      requestOptions.sessionToken = options.sessionToken;
-    }
-
-    var request = RESTController.request('POST', 'functions/' + name, payload, requestOptions);
+    var request = RESTController.request('POST', 'functions/' + name, payload, options);
 
     return request.then(function (res) {
       var decoded = (0, _decode2.default)(res);
       if (decoded && decoded.hasOwnProperty('result')) {
-        return _ParsePromise2.default.as(decoded.result);
+        return _promise2.default.resolve(decoded.result);
       }
-      return _ParsePromise2.default.error(new _ParseError2.default(_ParseError2.default.INVALID_JSON, 'The server returned an invalid response.'));
-    })._thenRunCallbacks(options);
+      throw new _ParseError2.default(_ParseError2.default.INVALID_JSON, 'The server returned an invalid response.');
+    });
+  },
+  getJobsData: function (options) {
+    var RESTController = _CoreManager2.default.getRESTController();
+
+    return RESTController.request('GET', 'cloud_code/jobs/data', null, options);
+  },
+  startJob: function (name, data, options) {
+    var RESTController = _CoreManager2.default.getRESTController();
+
+    var payload = (0, _encode2.default)(data, true);
+
+    return RESTController.request('POST', 'jobs/' + name, payload, options);
   }
 };
 
 _CoreManager2.default.setCloudController(DefaultController);
-},{"./CoreManager":3,"./ParseError":13,"./ParsePromise":21,"./decode":37,"./encode":38}],3:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./ParseQuery":21,"./decode":36,"./encode":37,"babel-runtime/core-js/promise":55}],3:[function(_dereq_,module,exports){
 (function (process){
 'use strict';
+
+/*
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
 
 var config = {
   // Defaults
@@ -218,23 +289,14 @@ var config = {
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + '1.11.1',
+  VERSION: 'js' + '2.0.0',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
   USE_MASTER_KEY: false,
   PERFORM_USER_REWRITE: true,
   FORCE_REVOCABLE_SESSION: false
-}; /*
-    * Copyright (c) 2015-present, Parse, LLC.
-    * All rights reserved.
-    *
-    * This source code is licensed under the BSD-style license found in the
-    * LICENSE file in the root directory of this source tree. An additional grant
-    * of patent rights can be found in the PATENTS file in the same directory.
-    *
-    * 
-    */
+};
 
 function requireMethods(name, methods, controller) {
   methods.forEach(function (func) {
@@ -266,7 +328,7 @@ module.exports = {
     return config['AnalyticsController'];
   },
   setCloudController: function (controller) {
-    requireMethods('CloudController', ['run'], controller);
+    requireMethods('CloudController', ['run', 'getJobsData', 'startJob'], controller);
     config['CloudController'] = controller;
   },
   getCloudController: function () {
@@ -383,7 +445,7 @@ module.exports = {
   }
 };
 }).call(this,_dereq_('_process'))
-},{"_process":64}],4:[function(_dereq_,module,exports){
+},{"_process":65}],4:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -399,7 +461,7 @@ module.exports = {
 
 module.exports = _dereq_('events').EventEmitter;
 var EventEmitter;
-},{"events":65}],5:[function(_dereq_,module,exports){
+},{"events":179}],5:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -574,7 +636,7 @@ var FacebookUtils = {
    *    yourself.
    * @param {Object} options Standard options object with success and error
    *    callbacks.
-   * @returns {Parse.Promise}
+   * @returns {Promise}
    */
   logIn: function (permissions, options) {
     if (!permissions || typeof permissions === 'string') {
@@ -611,7 +673,7 @@ var FacebookUtils = {
    *    yourself.
    * @param {Object} options Standard options object with success and error
    *    callbacks.
-   * @returns {Parse.Promise}
+   * @returns {Promise}
    */
   link: function (user, permissions, options) {
     if (!permissions || typeof permissions === 'string') {
@@ -641,7 +703,7 @@ var FacebookUtils = {
    *     current user.
    * @param {Object} options Standard options object with success and error
    *    callbacks.
-   * @returns {Parse.Promise}
+   * @returns {Promise}
    */
   unlink: function (user, options) {
     if (!initialized) {
@@ -652,16 +714,16 @@ var FacebookUtils = {
 };
 
 exports.default = FacebookUtils;
-},{"./ParseUser":27,"./parseDate":42}],6:[function(_dereq_,module,exports){
+},{"./ParseUser":26,"./parseDate":41}],6:[function(_dereq_,module,exports){
 'use strict';
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _CoreManager = _dereq_('./CoreManager');
 
 var _CoreManager2 = _interopRequireDefault(_CoreManager);
-
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
 
 var _Storage = _dereq_('./Storage');
 
@@ -671,16 +733,18 @@ function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
 
-var iidCache = null; /**
-                      * Copyright (c) 2015-present, Parse, LLC.
-                      * All rights reserved.
-                      *
-                      * This source code is licensed under the BSD-style license found in the
-                      * LICENSE file in the root directory of this source tree. An additional grant
-                      * of patent rights can be found in the PATENTS file in the same directory.
-                      *
-                      * 
-                      */
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
+
+var iidCache = null;
 
 function hexOctet() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -693,7 +757,7 @@ function generateId() {
 var InstallationController = {
   currentInstallationId: function () {
     if (typeof iidCache === 'string') {
-      return _ParsePromise2.default.as(iidCache);
+      return _promise2.default.resolve(iidCache);
     }
     var path = _Storage2.default.generatePath('installationId');
     return _Storage2.default.getItemAsync(path).then(function (iid) {
@@ -717,7 +781,7 @@ var InstallationController = {
 };
 
 module.exports = InstallationController;
-},{"./CoreManager":3,"./ParsePromise":21,"./Storage":31}],7:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./Storage":30,"babel-runtime/core-js/promise":55}],7:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -764,10 +828,6 @@ var _EventEmitter2 = _dereq_('./EventEmitter');
 
 var _EventEmitter3 = _interopRequireDefault(_EventEmitter2);
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
 var _ParseObject = _dereq_('./ParseObject');
 
 var _ParseObject2 = _interopRequireDefault(_ParseObject);
@@ -775,6 +835,8 @@ var _ParseObject2 = _interopRequireDefault(_ParseObject);
 var _LiveQuerySubscription = _dereq_('./LiveQuerySubscription');
 
 var _LiveQuerySubscription2 = _interopRequireDefault(_LiveQuerySubscription);
+
+var _promiseUtils = _dereq_('./promiseUtils');
 
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
@@ -900,11 +962,11 @@ var LiveQueryClient = function (_EventEmitter) {
    * @param {string} options.sessionToken (optional)
    */
   function LiveQueryClient(_ref) {
-    var applicationId = _ref.applicationId;
-    var serverURL = _ref.serverURL;
-    var javascriptKey = _ref.javascriptKey;
-    var masterKey = _ref.masterKey;
-    var sessionToken = _ref.sessionToken;
+    var applicationId = _ref.applicationId,
+        serverURL = _ref.serverURL,
+        javascriptKey = _ref.javascriptKey,
+        masterKey = _ref.masterKey,
+        sessionToken = _ref.sessionToken;
     (0, _classCallCheck3.default)(this, LiveQueryClient);
 
     var _this = (0, _possibleConstructorReturn3.default)(this, (LiveQueryClient.__proto__ || (0, _getPrototypeOf2.default)(LiveQueryClient)).call(this));
@@ -922,7 +984,7 @@ var LiveQueryClient = function (_EventEmitter) {
     _this.javascriptKey = javascriptKey;
     _this.masterKey = masterKey;
     _this.sessionToken = sessionToken;
-    _this.connectPromise = new _ParsePromise2.default();
+    _this.connectPromise = (0, _promiseUtils.resolvingPromise)();
     _this.subscriptions = new _map2.default();
     _this.state = CLIENT_STATE.INITIALIZED;
     return _this;
@@ -941,7 +1003,7 @@ var LiveQueryClient = function (_EventEmitter) {
      * updates from parse server, it'll try to check whether the sessionToken fulfills 
      * the ParseObject's ACL. The LiveQuery server will only send updates to clients whose 
      * sessionToken is fit for the ParseObject's ACL. You can check the LiveQuery protocol
-     * <a href="https://github.com/ParsePlatform/parse-server/wiki/Parse-LiveQuery-Protocol-Specification">here</a> for more details. The subscription you get is the same subscription you get 
+     * <a href="https://github.com/parse-community/parse-server/wiki/Parse-LiveQuery-Protocol-Specification">here</a> for more details. The subscription you get is the same subscription you get 
      * from our Standard API.
      * 
      * @param {Object} query - the ParseQuery you want to subscribe to
@@ -1144,7 +1206,7 @@ var LiveQueryClient = function (_EventEmitter) {
       this.attempts = 1;
       this.id = 0;
       this.requestId = 1;
-      this.connectPromise = new _ParsePromise2.default();
+      this.connectPromise = (0, _promiseUtils.resolvingPromise)();
       this.subscriptions = new _map2.default();
     }
   }, {
@@ -1303,7 +1365,7 @@ var LiveQueryClient = function (_EventEmitter) {
 
       this.reconnectHandle = setTimeout(function () {
         _this6.attempts++;
-        _this6.connectPromise = new _ParsePromise2.default();
+        _this6.connectPromise = (0, _promiseUtils.resolvingPromise)();
         _this6.open();
       }.bind(this), time);
     }
@@ -1312,7 +1374,7 @@ var LiveQueryClient = function (_EventEmitter) {
 }(_EventEmitter3.default);
 
 exports.default = LiveQueryClient;
-},{"./EventEmitter":4,"./LiveQuerySubscription":8,"./ParseObject":18,"./ParsePromise":21,"babel-runtime/core-js/get-iterator":45,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/map":47,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],8:[function(_dereq_,module,exports){
+},{"./EventEmitter":4,"./LiveQuerySubscription":8,"./ParseObject":18,"./promiseUtils":42,"babel-runtime/core-js/get-iterator":45,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/map":47,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63,"babel-runtime/helpers/typeof":64}],8:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1447,12 +1509,12 @@ var Subscription = function (_EventEmitter) {
   function Subscription(id, query, sessionToken) {
     (0, _classCallCheck3.default)(this, Subscription);
 
-    var _this2 = (0, _possibleConstructorReturn3.default)(this, (Subscription.__proto__ || (0, _getPrototypeOf2.default)(Subscription)).call(this));
+    var _this = (0, _possibleConstructorReturn3.default)(this, (Subscription.__proto__ || (0, _getPrototypeOf2.default)(Subscription)).call(this));
 
-    _this2.id = id;
-    _this2.query = query;
-    _this2.sessionToken = sessionToken;
-    return _this2;
+    _this.id = id;
+    _this.query = query;
+    _this.sessionToken = sessionToken;
+    return _this;
   }
 
   /**
@@ -1462,13 +1524,12 @@ var Subscription = function (_EventEmitter) {
   (0, _createClass3.default)(Subscription, [{
     key: 'unsubscribe',
     value: function () {
-      var _this3 = this;
+      var _this2 = this;
 
-      var _this = this;
-      _CoreManager2.default.getLiveQueryController().getDefaultLiveQueryClient().then(function (liveQueryClient) {
-        liveQueryClient.unsubscribe(_this);
-        _this.emit('close');
-        _this3.resolve();
+      return _CoreManager2.default.getLiveQueryController().getDefaultLiveQueryClient().then(function (liveQueryClient) {
+        liveQueryClient.unsubscribe(_this2);
+        _this2.emit('close');
+        _this2.resolve();
       });
     }
   }]);
@@ -1476,7 +1537,7 @@ var Subscription = function (_EventEmitter) {
 }(_EventEmitter3.default);
 
 exports.default = Subscription;
-},{"./CoreManager":3,"./EventEmitter":4,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62}],9:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./EventEmitter":4,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63}],9:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1513,10 +1574,6 @@ var _ParseObject = _dereq_('./ParseObject');
 
 var _ParseObject2 = _interopRequireDefault(_ParseObject);
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
 var _ParseRelation = _dereq_('./ParseRelation');
 
 var _ParseRelation2 = _interopRequireDefault(_ParseRelation);
@@ -1531,6 +1588,17 @@ function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
 
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
+
 function defaultState() {
   return {
     serverData: {},
@@ -1539,16 +1607,7 @@ function defaultState() {
     tasks: new _TaskQueue2.default(),
     existed: false
   };
-} /**
-   * Copyright (c) 2015-present, Parse, LLC.
-   * All rights reserved.
-   *
-   * This source code is licensed under the BSD-style license found in the
-   * LICENSE file in the root directory of this source tree. An additional grant
-   * of patent rights can be found in the PATENTS file in the same directory.
-   *
-   * 
-   */
+}
 
 function setServerData(serverData, attributes) {
   for (var _attr in attributes) {
@@ -1642,8 +1701,12 @@ function commitServerChanges(serverData, objectCache, changes) {
     }
   }
 }
-},{"./ParseFile":14,"./ParseObject":18,"./ParseOp":19,"./ParsePromise":21,"./ParseRelation":23,"./TaskQueue":33,"./encode":38,"babel-runtime/core-js/json/stringify":46,"babel-runtime/helpers/typeof":63}],10:[function(_dereq_,module,exports){
+},{"./ParseFile":14,"./ParseObject":18,"./ParseOp":19,"./ParseRelation":22,"./TaskQueue":32,"./encode":37,"babel-runtime/core-js/json/stringify":46,"babel-runtime/helpers/typeof":64}],10:[function(_dereq_,module,exports){
 'use strict';
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _decode = _dereq_('./decode');
 
@@ -1827,7 +1890,7 @@ Parse.Op = {
   AddUnique: ParseOp.AddUniqueOp,
   Relation: ParseOp.RelationOp
 };
-Parse.Promise = _dereq_('./ParsePromise').default;
+Promise = _promise2.default;
 Parse.Push = _dereq_('./Push');
 Parse.Query = _dereq_('./ParseQuery').default;
 Parse.Relation = _dereq_('./ParseRelation').default;
@@ -1871,7 +1934,7 @@ _CoreManager2.default.setRESTController(_RESTController2.default);
 Parse.Parse = Parse;
 
 module.exports = Parse;
-},{"./Analytics":1,"./Cloud":2,"./CoreManager":3,"./FacebookUtils":5,"./InstallationController":6,"./LiveQueryClient":7,"./ParseACL":11,"./ParseConfig":12,"./ParseError":13,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseInstallation":16,"./ParseLiveQuery":17,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParsePromise":21,"./ParseQuery":22,"./ParseRelation":23,"./ParseRole":24,"./ParseSchema":25,"./ParseSession":26,"./ParseUser":27,"./Push":28,"./RESTController":29,"./Storage":31,"./decode":37,"./encode":38}],11:[function(_dereq_,module,exports){
+},{"./Analytics":1,"./Cloud":2,"./CoreManager":3,"./FacebookUtils":5,"./InstallationController":6,"./LiveQueryClient":7,"./ParseACL":11,"./ParseConfig":12,"./ParseError":13,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseInstallation":16,"./ParseLiveQuery":17,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseQuery":21,"./ParseRelation":22,"./ParseRole":23,"./ParseSchema":24,"./ParseSession":25,"./ParseUser":26,"./Push":27,"./RESTController":28,"./Storage":30,"./decode":36,"./encode":37,"babel-runtime/core-js/promise":55}],11:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2267,7 +2330,7 @@ var ParseACL = function () {
 }();
 
 exports.default = ParseACL;
-},{"./ParseRole":24,"./ParseUser":27,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],12:[function(_dereq_,module,exports){
+},{"./ParseRole":23,"./ParseUser":26,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/typeof":64}],12:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2277,6 +2340,10 @@ Object.defineProperty(exports, "__esModule", {
 var _stringify = _dereq_('babel-runtime/core-js/json/stringify');
 
 var _stringify2 = _interopRequireDefault(_stringify);
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _typeof2 = _dereq_('babel-runtime/helpers/typeof');
 
@@ -2310,10 +2377,6 @@ var _ParseError = _dereq_('./ParseError');
 
 var _ParseError2 = _interopRequireDefault(_ParseError);
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
 var _Storage = _dereq_('./Storage');
 
 var _Storage2 = _interopRequireDefault(_Storage);
@@ -2327,6 +2390,17 @@ function _interopRequireDefault(obj) {
  * can be set from the Parse dashboard.
  *
  * @alias Parse.Config
+ */
+
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
  */
 
 var ParseConfig = function () {
@@ -2388,12 +2462,8 @@ var ParseConfig = function () {
     /**
      * Gets a new configuration object from the server.
      * @static
-     * @param {Object} options A Backbone-style options object.
-     * Valid options are:<ul>
-     *   <li>success: Function to call when the get completes successfully.
-     *   <li>error: Function to call when the get fails.
-     * </ul>
-     * @return {Parse.Promise} A promise that is resolved with a newly-created
+     * @param {Object} options
+     * @return {Promise} A promise that is resolved with a newly-created
      *     configuration object when the get completes.
      */
 
@@ -2403,20 +2473,11 @@ var ParseConfig = function () {
       options = options || {};
 
       var controller = _CoreManager2.default.getConfigController();
-      return controller.get()._thenRunCallbacks(options);
+      return controller.get();
     }
   }]);
   return ParseConfig;
-}(); /**
-      * Copyright (c) 2015-present, Parse, LLC.
-      * All rights reserved.
-      *
-      * This source code is licensed under the BSD-style license found in the
-      * LICENSE file in the root directory of this source tree. An additional grant
-      * of patent rights can be found in the PATENTS file in the same directory.
-      *
-      * 
-      */
+}();
 
 var currentConfig = null;
 
@@ -2472,7 +2533,7 @@ var DefaultController = {
     return RESTController.request('GET', 'config', {}, {}).then(function (response) {
       if (!response || !response.params) {
         var error = new _ParseError2.default(_ParseError2.default.INVALID_JSON, 'Config JSON response invalid.');
-        return _ParsePromise2.default.error(error);
+        return _promise2.default.reject(error);
       }
 
       var config = new ParseConfig();
@@ -2491,7 +2552,7 @@ var DefaultController = {
 _CoreManager2.default.setConfigController(DefaultController);
 
 exports.default = ParseConfig;
-},{"./CoreManager":3,"./ParseError":13,"./ParsePromise":21,"./Storage":31,"./decode":37,"./encode":38,"./escape":40,"babel-runtime/core-js/json/stringify":46,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],13:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./Storage":30,"./decode":36,"./encode":37,"./escape":39,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/typeof":64}],13:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3023,7 +3084,7 @@ ParseError.FILE_READ_ERROR = 601;
 ParseError.X_DOMAIN_REQUEST = 602;
 
 exports.default = ParseError;
-},{"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],14:[function(_dereq_,module,exports){
+},{"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],14:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3042,26 +3103,20 @@ var _CoreManager = _dereq_('./CoreManager');
 
 var _CoreManager2 = _interopRequireDefault(_CoreManager);
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
 
-/**
- * Copyright (c) 2015-present, Parse, LLC.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * 
- */
-
-var dataUriRegexp = /^data:([a-zA-Z]*\/[a-zA-Z+.-]*);(charset=[a-zA-Z0-9\-\/\s]*,)?base64,/;
+var dataUriRegexp = /^data:([a-zA-Z]+\/[-a-zA-Z0-9+.]+)(;charset=[a-zA-Z0-9\-\/]*)?;base64,/; /**
+                                                                                               * Copyright (c) 2015-present, Parse, LLC.
+                                                                                               * All rights reserved.
+                                                                                               *
+                                                                                               * This source code is licensed under the BSD-style license found in the
+                                                                                               * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                               * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                               *
+                                                                                               * 
+                                                                                               */
 
 function b64Digit(number) {
   if (number < 26) {
@@ -3100,7 +3155,8 @@ var ParseFile = function () {
    *     2. an Object like { base64: "..." } with a base64-encoded String.
    *     3. a File object selected with a file upload control. (3) only works
    *        in Firefox 3.6+, Safari 6.0.2+, Chrome 7+, and IE 10+.
-   *        For example:<pre>
+   *        For example:
+   * <pre>
    * var fileUploadControl = $("#profilePhotoFileUpload")[0];
    * if (fileUploadControl.files.length > 0) {
    *   var file = fileUploadControl.files[0];
@@ -3197,8 +3253,8 @@ var ParseFile = function () {
 
     /**
      * Saves the file to the Parse cloud.
-     * @param {Object} options A Backbone-style options object.
-     * @return {Parse.Promise} Promise that is resolved when the save finishes.
+     * @param {Object} options
+     * @return {Promise} Promise that is resolved when the save finishes.
      */
 
   }, {
@@ -3224,7 +3280,7 @@ var ParseFile = function () {
         }
       }
       if (this._previousSave) {
-        return this._previousSave._thenRunCallbacks(options);
+        return this._previousSave;
       }
     }
   }, {
@@ -3285,9 +3341,12 @@ var DefaultController = {
     // To directly upload a File, we use a REST-style AJAX request
     var headers = {
       'X-Parse-Application-ID': _CoreManager2.default.get('APPLICATION_ID'),
-      'X-Parse-JavaScript-Key': _CoreManager2.default.get('JAVASCRIPT_KEY'),
       'Content-Type': source.type || (source.file ? source.file.type : null)
     };
+    var jsKey = _CoreManager2.default.get('JAVASCRIPT_KEY');
+    if (jsKey) {
+      headers['X-Parse-JavaScript-Key'] = jsKey;
+    }
     var url = _CoreManager2.default.get('SERVER_URL');
     if (url[url.length - 1] !== '/') {
       url += '/';
@@ -3314,7 +3373,7 @@ var DefaultController = {
 _CoreManager2.default.setFileController(DefaultController);
 
 exports.default = ParseFile;
-},{"./CoreManager":3,"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],15:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],15:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3333,13 +3392,20 @@ var _createClass2 = _dereq_('babel-runtime/helpers/createClass');
 
 var _createClass3 = _interopRequireDefault(_createClass2);
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
+
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
 
 /**
  * Creates a new GeoPoint with any of the following forms:<br>
@@ -3524,31 +3590,17 @@ var ParseGeoPoint = function () {
 
   }, {
     key: 'current',
-    value: function (options) {
-      var promise = new _ParsePromise2.default();
-      navigator.geolocation.getCurrentPosition(function (location) {
-        promise.resolve(new ParseGeoPoint(location.coords.latitude, location.coords.longitude));
-      }, function (error) {
-        promise.reject(error);
+    value: function () {
+      return navigator.geolocation.getCurrentPosition(function (location) {
+        return new ParseGeoPoint(location.coords.latitude, location.coords.longitude);
       });
-
-      return promise._thenRunCallbacks(options);
     }
   }]);
   return ParseGeoPoint;
-}(); /**
-      * Copyright (c) 2015-present, Parse, LLC.
-      * All rights reserved.
-      *
-      * This source code is licensed under the BSD-style license found in the
-      * LICENSE file in the root directory of this source tree. An additional grant
-      * of patent rights can be found in the PATENTS file in the same directory.
-      *
-      * 
-      */
+}();
 
 exports.default = ParseGeoPoint;
-},{"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],16:[function(_dereq_,module,exports){
+},{"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/typeof":64}],16:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3614,12 +3666,16 @@ var Installation = function (_ParseObject) {
 exports.default = Installation;
 
 _ParseObject3.default.registerSubclass('_Installation', Installation);
-},{"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],17:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63,"babel-runtime/helpers/typeof":64}],17:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _EventEmitter = _dereq_('./EventEmitter');
 
@@ -3633,29 +3689,23 @@ var _CoreManager = _dereq_('./CoreManager');
 
 var _CoreManager2 = _interopRequireDefault(_CoreManager);
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
 
-/**
- * Copyright (c) 2015-present, Parse, LLC.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * 
- */
-
 function open() {
   var LiveQueryController = _CoreManager2.default.getLiveQueryController();
   LiveQueryController.open();
-}
+} /**
+   * Copyright (c) 2015-present, Parse, LLC.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   */
 
 function close() {
   var LiveQueryController = _CoreManager2.default.getLiveQueryController();
@@ -3735,7 +3785,7 @@ var DefaultLiveQueryController = {
   },
   getDefaultLiveQueryClient: function () {
     if (defaultLiveQueryClient) {
-      return _ParsePromise2.default.as(defaultLiveQueryClient);
+      return _promise2.default.resolve(defaultLiveQueryClient);
     }
 
     return getSessionToken().then(function (sessionToken) {
@@ -3785,22 +3835,16 @@ var DefaultLiveQueryController = {
     });
   },
   open: function () {
-    var _this = this;
-
     getLiveQueryClient().then(function (liveQueryClient) {
-      _this.resolve(liveQueryClient.open());
+      return liveQueryClient.open();
     });
   },
   close: function () {
-    var _this2 = this;
-
     getLiveQueryClient().then(function (liveQueryClient) {
-      _this2.resolve(liveQueryClient.close());
+      return liveQueryClient.close();
     });
   },
   subscribe: function (query) {
-    var _this3 = this;
-
     var subscriptionWrap = new _EventEmitter2.default();
 
     getLiveQueryClient().then(function (liveQueryClient) {
@@ -3843,17 +3887,13 @@ var DefaultLiveQueryController = {
         subscription.on('error', function (object) {
           subscriptionWrap.emit('error', object);
         });
-
-        _this3.resolve();
       });
     });
     return subscriptionWrap;
   },
   unsubscribe: function (subscription) {
-    var _this4 = this;
-
     getLiveQueryClient().then(function (liveQueryClient) {
-      _this4.resolve(liveQueryClient.unsubscribe(subscription));
+      return liveQueryClient.unsubscribe(subscription);
     });
   },
   _clearCachedDefaultClient: function () {
@@ -3862,7 +3902,7 @@ var DefaultLiveQueryController = {
 };
 
 _CoreManager2.default.setLiveQueryController(DefaultLiveQueryController);
-},{"./CoreManager":3,"./EventEmitter":4,"./LiveQueryClient":7,"./ParsePromise":21}],18:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./EventEmitter":4,"./LiveQueryClient":7,"babel-runtime/core-js/promise":55}],18:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3880,6 +3920,10 @@ var _create2 = _interopRequireDefault(_create);
 var _freeze = _dereq_('babel-runtime/core-js/object/freeze');
 
 var _freeze2 = _interopRequireDefault(_freeze);
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _stringify = _dereq_('babel-runtime/core-js/json/stringify');
 
@@ -3941,11 +3985,9 @@ var _ParseFile = _dereq_('./ParseFile');
 
 var _ParseFile2 = _interopRequireDefault(_ParseFile);
 
+var _promiseUtils = _dereq_('./promiseUtils');
+
 var _ParseOp = _dereq_('./ParseOp');
-
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
 
 var _ParseQuery = _dereq_('./ParseQuery');
 
@@ -4781,7 +4823,7 @@ var ParseObject = function () {
     }
 
     /**
-     * Creates a new model with identical attributes to this one, similar to Backbone.Model's clone()
+     * Creates a new model with identical attributes to this one.
      * @return {Parse.Object}
      */
 
@@ -4923,8 +4965,7 @@ var ParseObject = function () {
     /**
      * Sets the ACL to be used for this object.
      * @param {Parse.ACL} acl An instance of Parse.ACL.
-     * @param {Object} options Optional Backbone-like options object to be
-     *     passed in to set.
+     * @param {Object} options
      * @return {Boolean} Whether the set passed validation.
      * @see Parse.Object#set
      */
@@ -4971,16 +5012,14 @@ var ParseObject = function () {
      * Fetch the model from the server. If the server's representation of the
      * model differs from its current attributes, they will be overriden.
      *
-     * @param {Object} options A Backbone-style callback object.
+     * @param {Object} options
      * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback.
-     *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
-     * @return {Parse.Promise} A promise that is fulfilled when the fetch
+     * @return {Promise} A promise that is fulfilled when the fetch
      *     completes.
      */
 
@@ -4996,7 +5035,7 @@ var ParseObject = function () {
         fetchOptions.sessionToken = options.sessionToken;
       }
       var controller = _CoreManager2.default.getObjectController();
-      return controller.fetch(this, true, fetchOptions)._thenRunCallbacks(options);
+      return controller.fetch(this, true, fetchOptions);
     }
 
     /**
@@ -5015,34 +5054,20 @@ var ParseObject = function () {
      *   gameTurn.save({
      *     player: "Jake Cutter",
      *     diceRoll: 2
-     *   }, {
-     *     success: function(gameTurnAgain) {
-     *       // The save was successful.
-     *     },
-     *     error: function(gameTurnAgain, error) {
-     *       // The save failed.  Error is an instance of Parse.Error.
-     *     }
-     *   });</pre>
-     * or with promises:<pre>
-     *   gameTurn.save({
-     *     player: "Jake Cutter",
-     *     diceRoll: 2
      *   }).then(function(gameTurnAgain) {
      *     // The save was successful.
      *   }, function(error) {
      *     // The save failed.  Error is an instance of Parse.Error.
      *   });</pre>
      *
-     * @param {Object} options A Backbone-style callback object.
+     * @param {Object} options
      * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback.
-     *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
-     * @return {Parse.Promise} A promise that is fulfilled when the save
+     * @return {Promise} A promise that is fulfilled when the save
      *     completes.
      */
 
@@ -5064,6 +5089,7 @@ var ParseObject = function () {
         options = arg3;
       }
 
+      // TODO: safely remove me
       // Support save({ success: function() {}, error: function() {} })
       if (!options && attrs) {
         options = {};
@@ -5083,7 +5109,7 @@ var ParseObject = function () {
           if (options && typeof options.error === 'function') {
             options.error(this, validation);
           }
-          return _ParsePromise2.default.error(validation);
+          return _promise2.default.reject(validation);
         }
         this.set(attrs, options);
       }
@@ -5101,7 +5127,7 @@ var ParseObject = function () {
       var unsaved = (0, _unsavedChildren2.default)(this);
       return controller.save(unsaved, saveOptions).then(function () {
         return controller.save(_this, saveOptions);
-      })._thenRunCallbacks(options, this);
+      });
     }
 
     /**
@@ -5109,16 +5135,14 @@ var ParseObject = function () {
      * If `wait: true` is passed, waits for the server to respond
      * before removal.
      *
-     * @param {Object} options A Backbone-style callback object.
+     * @param {Object} options
      * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback
-     *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
-     * @return {Parse.Promise} A promise that is fulfilled when the destroy
+     * @return {Promise} A promise that is fulfilled when the destroy
      *     completes.
      */
 
@@ -5134,9 +5158,9 @@ var ParseObject = function () {
         destroyOptions.sessionToken = options.sessionToken;
       }
       if (!this.id) {
-        return _ParsePromise2.default.as()._thenRunCallbacks(options);
+        return _promise2.default.resolve();
       }
-      return _CoreManager2.default.getObjectController().destroy(this, destroyOptions)._thenRunCallbacks(options);
+      return _CoreManager2.default.getObjectController().destroy(this, destroyOptions);
     }
 
     /** Static methods **/
@@ -5186,23 +5210,17 @@ var ParseObject = function () {
      * If any error is encountered, stops and calls the error handler.
      *
      * <pre>
-     *   Parse.Object.fetchAll([object1, object2, ...], {
-     *     success: function(list) {
-     *       // All the objects were fetched.
-     *     },
-     *     error: function(error) {
-     *       // An error occurred while fetching one of the objects.
-     *     },
-     *   });
+     *   Parse.Object.fetchAll([object1, object2, ...])
+     *    .then((list) => {
+     *      // All the objects were fetched.
+     *    }, (error) => {
+     *      // An error occurred while fetching one of the objects.
+     *    });
      * </pre>
      *
      * @param {Array} list A list of <code>Parse.Object</code>.
-     * @param {Object} options A Backbone-style callback object.
+     * @param {Object} options
      * @static
-     * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback.
-     *   <li>error: An Backbone-style error callback.
-     * </ul>
      */
 
   }, {
@@ -5217,7 +5235,7 @@ var ParseObject = function () {
       if (options.hasOwnProperty('sessionToken')) {
         queryOptions.sessionToken = options.sessionToken;
       }
-      return _CoreManager2.default.getObjectController().fetch(list, true, queryOptions)._thenRunCallbacks(options);
+      return _CoreManager2.default.getObjectController().fetch(list, true, queryOptions);
     }
 
     /**
@@ -5225,23 +5243,17 @@ var ParseObject = function () {
      * If any error is encountered, stops and calls the error handler.
      *
      * <pre>
-     *   Parse.Object.fetchAllIfNeeded([object1, ...], {
-     *     success: function(list) {
-     *       // Objects were fetched and updated.
-     *     },
-     *     error: function(error) {
-     *       // An error occurred while fetching one of the objects.
-     *     },
-     *   });
+     *   Parse.Object.fetchAllIfNeeded([object1, ...])
+     *    .then((list) => {
+     *      // Objects were fetched and updated.
+     *    }, (error) => {
+     *      // An error occurred while fetching one of the objects.
+     *    });
      * </pre>
      *
      * @param {Array} list A list of <code>Parse.Object</code>.
-     * @param {Object} options A Backbone-style callback object.
+     * @param {Object} options
      * @static
-     * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback.
-     *   <li>error: An Backbone-style error callback.
-     * </ul>
      */
 
   }, {
@@ -5256,7 +5268,7 @@ var ParseObject = function () {
       if (options.hasOwnProperty('sessionToken')) {
         queryOptions.sessionToken = options.sessionToken;
       }
-      return _CoreManager2.default.getObjectController().fetch(list, false, queryOptions)._thenRunCallbacks(options);
+      return _CoreManager2.default.getObjectController().fetch(list, false, queryOptions);
     }
 
     /**
@@ -5280,29 +5292,27 @@ var ParseObject = function () {
      * </ul>
      *
      * <pre>
-     *   Parse.Object.destroyAll([object1, object2, ...], {
-     *     success: function() {
-     *       // All the objects were deleted.
-     *     },
-     *     error: function(error) {
-     *       // An error occurred while deleting one or more of the objects.
-     *       // If this is an aggregate error, then we can inspect each error
-     *       // object individually to determine the reason why a particular
-     *       // object was not deleted.
-     *       if (error.code === Parse.Error.AGGREGATE_ERROR) {
-     *         for (var i = 0; i < error.errors.length; i++) {
-     *           console.log("Couldn't delete " + error.errors[i].object.id +
-     *             "due to " + error.errors[i].message);
-     *         }
-     *       } else {
-     *         console.log("Delete aborted because of " + error.message);
-     *       }
-     *     },
+     *   Parse.Object.destroyAll([object1, object2, ...]) 
+     *    .then((list) => {
+     *      // All the objects were deleted.
+     *    }, (error) => {
+     *      // An error occurred while deleting one or more of the objects.
+     *      // If this is an aggregate error, then we can inspect each error
+     *      // object individually to determine the reason why a particular
+     *      // object was not deleted.
+     *      if (error.code === Parse.Error.AGGREGATE_ERROR) {
+     *        for (var i = 0; i < error.errors.length; i++) {
+     *          console.log("Couldn't delete " + error.errors[i].object.id +
+     *            "due to " + error.errors[i].message);
+     *        }
+     *      } else {
+     *        console.log("Delete aborted because of " + error.message);
+     *      }
      *   });
      * </pre>
      *
      * @param {Array} list A list of <code>Parse.Object</code>.
-     * @param {Object} options A Backbone-style callback object.
+     * @param {Object} options
      * @static
      * Valid options are:<ul>
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
@@ -5310,7 +5320,7 @@ var ParseObject = function () {
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
-     * @return {Parse.Promise} A promise that is fulfilled when the destroyAll
+     * @return {Promise} A promise that is fulfilled when the destroyAll
      *     completes.
      */
 
@@ -5326,7 +5336,7 @@ var ParseObject = function () {
       if (options.hasOwnProperty('sessionToken')) {
         destroyOptions.sessionToken = options.sessionToken;
       }
-      return _CoreManager2.default.getObjectController().destroy(list, destroyOptions)._thenRunCallbacks(options);
+      return _CoreManager2.default.getObjectController().destroy(list, destroyOptions);
     }
 
     /**
@@ -5334,18 +5344,16 @@ var ParseObject = function () {
      * If any error is encountered, stops and calls the error handler.
      *
      * <pre>
-     *   Parse.Object.saveAll([object1, object2, ...], {
-     *     success: function(list) {
+     *   Parse.Object.saveAll([object1, object2, ...])
+     *    .then((list) => {
      *       // All the objects were saved.
-     *     },
-     *     error: function(error) {
+     *    }, (error) => {
      *       // An error occurred while saving one of the objects.
-     *     },
-     *   });
+     *    });
      * </pre>
      *
      * @param {Array} list A list of <code>Parse.Object</code>.
-     * @param {Object} options A Backbone-style callback object.
+     * @param {Object} options
      * @static
      * Valid options are:<ul>
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
@@ -5367,7 +5375,7 @@ var ParseObject = function () {
       if (options.hasOwnProperty('sessionToken')) {
         saveOptions.sessionToken = options.sessionToken;
       }
-      return _CoreManager2.default.getObjectController().save(list, saveOptions)._thenRunCallbacks(options);
+      return _CoreManager2.default.getObjectController().save(list, saveOptions);
     }
 
     /**
@@ -5625,7 +5633,7 @@ var DefaultController = {
   fetch: function (target, forceFetch, options) {
     if (Array.isArray(target)) {
       if (target.length < 1) {
-        return _ParsePromise2.default.as([]);
+        return _promise2.default.resolve([]);
       }
       var objs = [];
       var ids = [];
@@ -5652,7 +5660,7 @@ var DefaultController = {
         results.push(el);
       });
       if (error) {
-        return _ParsePromise2.default.error(error);
+        return _promise2.default.reject(error);
       }
       var query = new _ParseQuery2.default(className);
       query.containedIn('objectId', ids);
@@ -5666,7 +5674,7 @@ var DefaultController = {
           var obj = objs[i];
           if (!obj || !obj.id || !idMap[obj.id]) {
             if (forceFetch) {
-              return _ParsePromise2.default.error(new _ParseError2.default(_ParseError2.default.OBJECT_NOT_FOUND, 'All objects must exist on the server.'));
+              return _promise2.default.reject(new _ParseError2.default(_ParseError2.default.OBJECT_NOT_FOUND, 'All objects must exist on the server.'));
             }
           }
         }
@@ -5681,7 +5689,7 @@ var DefaultController = {
             }
           }
         }
-        return _ParsePromise2.default.as(results);
+        return _promise2.default.resolve(results);
       });
     } else {
       var RESTController = _CoreManager2.default.getRESTController();
@@ -5699,7 +5707,7 @@ var DefaultController = {
     var RESTController = _CoreManager2.default.getRESTController();
     if (Array.isArray(target)) {
       if (target.length < 1) {
-        return _ParsePromise2.default.as([]);
+        return _promise2.default.resolve([]);
       }
       var batches = [[]];
       target.forEach(function (obj) {
@@ -5715,7 +5723,7 @@ var DefaultController = {
         // If the last batch is empty, remove it
         batches.pop();
       }
-      var deleteCompleted = _ParsePromise2.default.as();
+      var deleteCompleted = _promise2.default.resolve();
       var errors = [];
       batches.forEach(function (batch) {
         deleteCompleted = deleteCompleted.then(function () {
@@ -5742,23 +5750,23 @@ var DefaultController = {
         if (errors.length) {
           var aggregate = new _ParseError2.default(_ParseError2.default.AGGREGATE_ERROR);
           aggregate.errors = errors;
-          return _ParsePromise2.default.error(aggregate);
+          return _promise2.default.reject(aggregate);
         }
-        return _ParsePromise2.default.as(target);
+        return _promise2.default.resolve(target);
       });
     } else if (target instanceof ParseObject) {
       return RESTController.request('DELETE', 'classes/' + target.className + '/' + target._getId(), {}, options).then(function () {
-        return _ParsePromise2.default.as(target);
+        return _promise2.default.resolve(target);
       });
     }
-    return _ParsePromise2.default.as(target);
+    return _promise2.default.resolve(target);
   },
   save: function (target, options) {
     var RESTController = _CoreManager2.default.getRESTController();
     var stateController = _CoreManager2.default.getObjectStateController();
     if (Array.isArray(target)) {
       if (target.length < 1) {
-        return _ParsePromise2.default.as([]);
+        return _promise2.default.resolve([]);
       }
 
       var unsaved = target.concat();
@@ -5769,7 +5777,7 @@ var DefaultController = {
       }
       unsaved = (0, _unique2.default)(unsaved);
 
-      var filesSaved = _ParsePromise2.default.as();
+      var filesSaved = _promise2.default.resolve();
       var pending = [];
       unsaved.forEach(function (el) {
         if (el instanceof _ParseFile2.default) {
@@ -5783,7 +5791,7 @@ var DefaultController = {
 
       return filesSaved.then(function () {
         var objectError = null;
-        return _ParsePromise2.default._continueWhile(function () {
+        return (0, _promiseUtils.continueWhile)(function () {
           return pending.length > 0;
         }, function () {
           var batch = [];
@@ -5797,16 +5805,26 @@ var DefaultController = {
           });
           pending = nextPending;
           if (batch.length < 1) {
-            return _ParsePromise2.default.error(new _ParseError2.default(_ParseError2.default.OTHER_CAUSE, 'Tried to save a batch with a cycle.'));
+            return _promise2.default.reject(new _ParseError2.default(_ParseError2.default.OTHER_CAUSE, 'Tried to save a batch with a cycle.'));
           }
 
           // Queue up tasks for each object in the batch.
           // When every task is ready, the API request will execute
-          var batchReturned = new _ParsePromise2.default();
+          var res, rej;
+          var batchReturned = new _promise2.default(function (resolve, reject) {
+            res = resolve;rej = reject;
+          });
+          batchReturned.resolve = res;
+          batchReturned.reject = rej;
           var batchReady = [];
           var batchTasks = [];
           batch.forEach(function (obj, index) {
-            var ready = new _ParsePromise2.default();
+            var res, rej;
+            var ready = new _promise2.default(function (resolve, reject) {
+              res = resolve;rej = reject;
+            });
+            ready.resolve = res;
+            ready.reject = rej;
             batchReady.push(ready);
 
             stateController.pushPendingState(obj._getStateIdentifier());
@@ -5828,7 +5846,7 @@ var DefaultController = {
             }));
           });
 
-          _ParsePromise2.default.when(batchReady).then(function () {
+          (0, _promiseUtils.when)(batchReady).then(function () {
             // Kick off the batch request
             return RESTController.request('POST', 'batch', {
               requests: batch.map(function (obj) {
@@ -5839,14 +5857,16 @@ var DefaultController = {
             }, options);
           }).then(function (response, status) {
             batchReturned.resolve(response, status);
+          }, function (error) {
+            batchReturned.reject(new _ParseError2.default(_ParseError2.default.INCORRECT_TYPE, error.message));
           });
 
-          return _ParsePromise2.default.when(batchTasks);
+          return (0, _promiseUtils.when)(batchTasks);
         }).then(function () {
           if (objectError) {
-            return _ParsePromise2.default.error(objectError);
+            return _promise2.default.reject(objectError);
           }
-          return _ParsePromise2.default.as(target);
+          return _promise2.default.resolve(target);
         });
       });
     } else if (target instanceof ParseObject) {
@@ -5858,7 +5878,7 @@ var DefaultController = {
           targetCopy._handleSaveResponse(response, status);
         }, function (error) {
           targetCopy._handleSaveError();
-          return _ParsePromise2.default.error(error);
+          return _promise2.default.reject(error);
         });
       };
 
@@ -5866,17 +5886,17 @@ var DefaultController = {
       return stateController.enqueueTask(target._getStateIdentifier(), task).then(function () {
         return target;
       }, function (error) {
-        return _ParsePromise2.default.error(error);
+        return _promise2.default.reject(error);
       });
     }
-    return _ParsePromise2.default.as();
+    return _promise2.default.resolve();
   }
 };
 
 _CoreManager2.default.setObjectController(DefaultController);
 
 exports.default = ParseObject;
-},{"./CoreManager":3,"./ParseACL":11,"./ParseError":13,"./ParseFile":14,"./ParseOp":19,"./ParsePromise":21,"./ParseQuery":22,"./ParseRelation":23,"./SingleInstanceStateController":30,"./UniqueInstanceStateController":34,"./canBeSerialized":36,"./decode":37,"./encode":38,"./equals":39,"./escape":40,"./parseDate":42,"./unique":43,"./unsavedChildren":44,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/object/create":48,"babel-runtime/core-js/object/define-property":49,"babel-runtime/core-js/object/freeze":50,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],19:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseACL":11,"./ParseError":13,"./ParseFile":14,"./ParseOp":19,"./ParseQuery":21,"./ParseRelation":22,"./SingleInstanceStateController":29,"./UniqueInstanceStateController":33,"./canBeSerialized":35,"./decode":36,"./encode":37,"./equals":38,"./escape":39,"./parseDate":41,"./promiseUtils":42,"./unique":43,"./unsavedChildren":44,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/object/create":48,"babel-runtime/core-js/object/define-property":49,"babel-runtime/core-js/object/freeze":50,"babel-runtime/core-js/object/keys":53,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/typeof":64}],19:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6456,7 +6476,7 @@ var RelationOp = exports.RelationOp = function (_Op7) {
   }]);
   return RelationOp;
 }(Op);
-},{"./ParseObject":18,"./ParseRelation":23,"./arrayContainsObject":35,"./decode":37,"./encode":38,"./unique":43,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62}],20:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"./ParseRelation":22,"./arrayContainsObject":34,"./decode":36,"./encode":37,"./unique":43,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63}],20:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6648,734 +6668,7 @@ var ParsePolygon = function () {
       */
 
 exports.default = ParsePolygon;
-},{"./ParseGeoPoint":15,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],21:[function(_dereq_,module,exports){
-(function (process){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _getIterator2 = _dereq_('babel-runtime/core-js/get-iterator');
-
-var _getIterator3 = _interopRequireDefault(_getIterator2);
-
-var _typeof2 = _dereq_('babel-runtime/helpers/typeof');
-
-var _typeof3 = _interopRequireDefault(_typeof2);
-
-var _classCallCheck2 = _dereq_('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = _dereq_('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj };
-}
-
-/**
- * Copyright (c) 2015-present, Parse, LLC.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- */
-
-/**
- * @private
- */
-var _isPromisesAPlusCompliant = true;
-
-/**
- * A Promise is returned by async methods as a hook to provide callbacks to be
- * called when the async task is fulfilled.
- *
- * <p>Typical usage would be like:<pre>
- *    query.find().then(function(results) {
- *      results[0].set("foo", "bar");
- *      return results[0].saveAsync();
- *    }).then(function(result) {
- *      console.log("Updated " + result.id);
- *    });
- * </pre></p>
- *
- * @alias Parse.Promise
- */
-
-var ParsePromise = function () {
-  function ParsePromise(executor) {
-    (0, _classCallCheck3.default)(this, ParsePromise);
-
-    this._resolved = false;
-    this._rejected = false;
-    this._resolvedCallbacks = [];
-    this._rejectedCallbacks = [];
-
-    if (typeof executor === 'function') {
-      executor(this.resolve.bind(this), this.reject.bind(this));
-    }
-  }
-
-  /**
-   * Marks this promise as fulfilled, firing any callbacks waiting on it.
-    * @param {Object} result the result to pass to the callbacks.
-   */
-
-  (0, _createClass3.default)(ParsePromise, [{
-    key: 'resolve',
-    value: function () {
-      if (this._resolved || this._rejected) {
-        throw new Error('A promise was resolved even though it had already been ' + (this._resolved ? 'resolved' : 'rejected') + '.');
-      }
-      this._resolved = true;
-
-      for (var _len = arguments.length, results = Array(_len), _key = 0; _key < _len; _key++) {
-        results[_key] = arguments[_key];
-      }
-
-      this._result = results;
-      for (var i = 0; i < this._resolvedCallbacks.length; i++) {
-        this._resolvedCallbacks[i].apply(this, results);
-      }
-
-      this._resolvedCallbacks = [];
-      this._rejectedCallbacks = [];
-    }
-
-    /**
-     * Marks this promise as fulfilled, firing any callbacks waiting on it.
-      * @param {Object} error the error to pass to the callbacks.
-     */
-
-  }, {
-    key: 'reject',
-    value: function (error) {
-      if (this._resolved || this._rejected) {
-        throw new Error('A promise was rejected even though it had already been ' + (this._resolved ? 'resolved' : 'rejected') + '.');
-      }
-      this._rejected = true;
-      this._error = error;
-      for (var i = 0; i < this._rejectedCallbacks.length; i++) {
-        this._rejectedCallbacks[i](error);
-      }
-      this._resolvedCallbacks = [];
-      this._rejectedCallbacks = [];
-    }
-
-    /**
-     * Adds callbacks to be called when this promise is fulfilled. Returns a new
-     * Promise that will be fulfilled when the callback is complete. It allows
-     * chaining. If the callback itself returns a Promise, then the one returned
-     * by "then" will not be fulfilled until that one returned by the callback
-     * is fulfilled.
-      * @param {Function} resolvedCallback Function that is called when this
-     * Promise is resolved. Once the callback is complete, then the Promise
-     * returned by "then" will also be fulfilled.
-     * @param {Function} rejectedCallback Function that is called when this
-     * Promise is rejected with an error. Once the callback is complete, then
-     * the promise returned by "then" with be resolved successfully. If
-     * rejectedCallback is null, or it returns a rejected Promise, then the
-     * Promise returned by "then" will be rejected with that error.
-     * @return {Parse.Promise} A new Promise that will be fulfilled after this
-     * Promise is fulfilled and either callback has completed. If the callback
-     * returned a Promise, then this Promise will not be fulfilled until that
-     * one is.
-     */
-
-  }, {
-    key: 'then',
-    value: function (resolvedCallback, rejectedCallback) {
-      var _this = this;
-
-      var promise = new ParsePromise();
-
-      var wrappedResolvedCallback = function () {
-        for (var _len2 = arguments.length, results = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-          results[_key2] = arguments[_key2];
-        }
-
-        if (typeof resolvedCallback === 'function') {
-          if (_isPromisesAPlusCompliant) {
-            try {
-              results = [resolvedCallback.apply(this, results)];
-            } catch (e) {
-              results = [ParsePromise.error(e)];
-            }
-          } else {
-            results = [resolvedCallback.apply(this, results)];
-          }
-        }
-        if (results.length === 1 && ParsePromise.is(results[0])) {
-          results[0].then(function () {
-            promise.resolve.apply(promise, arguments);
-          }, function (error) {
-            promise.reject(error);
-          });
-        } else {
-          promise.resolve.apply(promise, results);
-        }
-      };
-
-      var wrappedRejectedCallback = function (error) {
-        var result = [];
-        if (typeof rejectedCallback === 'function') {
-          if (_isPromisesAPlusCompliant) {
-            try {
-              result = [rejectedCallback(error)];
-            } catch (e) {
-              result = [ParsePromise.error(e)];
-            }
-          } else {
-            result = [rejectedCallback(error)];
-          }
-          if (result.length === 1 && ParsePromise.is(result[0])) {
-            result[0].then(function () {
-              promise.resolve.apply(promise, arguments);
-            }, function (error) {
-              promise.reject(error);
-            });
-          } else {
-            if (_isPromisesAPlusCompliant) {
-              promise.resolve.apply(promise, result);
-            } else {
-              promise.reject(result[0]);
-            }
-          }
-        } else {
-          promise.reject(error);
-        }
-      };
-
-      var runLater = function (fn) {
-        fn.call();
-      };
-      if (_isPromisesAPlusCompliant) {
-        if (typeof process !== 'undefined' && typeof process.nextTick === 'function') {
-          runLater = function (fn) {
-            process.nextTick(fn);
-          };
-        } else if (typeof setTimeout === 'function') {
-          runLater = function (fn) {
-            setTimeout(fn, 0);
-          };
-        }
-      }
-
-      if (this._resolved) {
-        runLater(function () {
-          wrappedResolvedCallback.apply(_this, _this._result);
-        });
-      } else if (this._rejected) {
-        runLater(function () {
-          wrappedRejectedCallback(_this._error);
-        });
-      } else {
-        this._resolvedCallbacks.push(wrappedResolvedCallback);
-        this._rejectedCallbacks.push(wrappedRejectedCallback);
-      }
-
-      return promise;
-    }
-
-    /**
-     * Add handlers to be called when the promise
-     * is either resolved or rejected
-      */
-
-  }, {
-    key: 'always',
-    value: function (callback) {
-      return this.then(callback, callback);
-    }
-
-    /**
-     * Add handlers to be called when the Promise object is resolved
-      */
-
-  }, {
-    key: 'done',
-    value: function (callback) {
-      return this.then(callback);
-    }
-
-    /**
-     * Add handlers to be called when the Promise object is rejected
-     * Alias for catch().
-      */
-
-  }, {
-    key: 'fail',
-    value: function (callback) {
-      return this.then(null, callback);
-    }
-
-    /**
-     * Add handlers to be called when the Promise object is rejected
-      */
-
-  }, {
-    key: 'catch',
-    value: function (callback) {
-      return this.then(null, callback);
-    }
-
-    /**
-     * Run the given callbacks after this promise is fulfilled.
-      * @param optionsOrCallback {} A Backbone-style options callback, or a
-     * callback function. If this is an options object and contains a "model"
-     * attributes, that will be passed to error callbacks as the first argument.
-     * @param model {} If truthy, this will be passed as the first result of
-     * error callbacks. This is for Backbone-compatability.
-     * @return {Parse.Promise} A promise that will be resolved after the
-     * callbacks are run, with the same result as this.
-     */
-
-  }, {
-    key: '_thenRunCallbacks',
-    value: function (optionsOrCallback, model) {
-      var options = {};
-      if (typeof optionsOrCallback === 'function') {
-        options.success = function (result) {
-          optionsOrCallback(result, null);
-        };
-        options.error = function (error) {
-          optionsOrCallback(null, error);
-        };
-      } else if ((typeof optionsOrCallback === 'undefined' ? 'undefined' : (0, _typeof3.default)(optionsOrCallback)) === 'object') {
-        if (typeof optionsOrCallback.success === 'function') {
-          options.success = optionsOrCallback.success;
-        }
-        if (typeof optionsOrCallback.error === 'function') {
-          options.error = optionsOrCallback.error;
-        }
-      }
-
-      return this.then(function () {
-        for (var _len3 = arguments.length, results = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-          results[_key3] = arguments[_key3];
-        }
-
-        if (options.success) {
-          options.success.apply(this, results);
-        }
-        return ParsePromise.as.apply(ParsePromise, arguments);
-      }, function (error) {
-        if (options.error) {
-          if (typeof model !== 'undefined') {
-            options.error(model, error);
-          } else {
-            options.error(error);
-          }
-        }
-        // By explicitly returning a rejected Promise, this will work with
-        // either jQuery or Promises/A+ semantics.
-        return ParsePromise.error(error);
-      });
-    }
-
-    /**
-     * Adds a callback function that should be called regardless of whether
-     * this promise failed or succeeded. The callback will be given either the
-     * array of results for its first argument, or the error as its second,
-     * depending on whether this Promise was rejected or resolved. Returns a
-     * new Promise, like "then" would.
-      * @param {Function} continuation the callback.
-     */
-
-  }, {
-    key: '_continueWith',
-    value: function (continuation) {
-      return this.then(function () {
-        for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-          args[_key4] = arguments[_key4];
-        }
-
-        return continuation(args, null);
-      }, function (error) {
-        return continuation(null, error);
-      });
-    }
-
-    /**
-     * Returns true iff the given object fulfils the Promise interface.
-      * @param {Object} promise The object to test
-     * @static
-     * @return {Boolean}
-     */
-
-  }], [{
-    key: 'is',
-    value: function (promise) {
-      return promise != null && typeof promise.then === 'function';
-    }
-
-    /**
-     * Returns a new promise that is resolved with a given value.
-      * @param value The value to resolve the promise with
-     * @static
-     * @return {Parse.Promise} the new promise.
-     */
-
-  }, {
-    key: 'as',
-    value: function () {
-      var promise = new ParsePromise();
-
-      for (var _len5 = arguments.length, values = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-        values[_key5] = arguments[_key5];
-      }
-
-      promise.resolve.apply(promise, values);
-      return promise;
-    }
-
-    /**
-     * Returns a new promise that is resolved with a given value.
-     * If that value is a thenable Promise (has a .then() prototype
-     * method), the new promise will be chained to the end of the
-     * value.
-      * @param value The value to resolve the promise with
-     * @static
-     * @return {Parse.Promise} the new promise.
-     */
-
-  }, {
-    key: 'resolve',
-    value: function (value) {
-      return new ParsePromise(function (resolve, reject) {
-        if (ParsePromise.is(value)) {
-          value.then(resolve, reject);
-        } else {
-          resolve(value);
-        }
-      });
-    }
-
-    /**
-     * Returns a new promise that is rejected with a given error.
-      * @param error The error to reject the promise with
-     * @static
-     * @return {Parse.Promise} the new promise.
-     */
-
-  }, {
-    key: 'error',
-    value: function () {
-      var promise = new ParsePromise();
-
-      for (var _len6 = arguments.length, errors = Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
-        errors[_key6] = arguments[_key6];
-      }
-
-      promise.reject.apply(promise, errors);
-      return promise;
-    }
-
-    /**
-     * Returns a new promise that is rejected with a given error.
-     * This is an alias for Parse.Promise.error, for compliance with
-     * the ES6 implementation.
-      * @param error The error to reject the promise with
-     * @static
-     * @return {Parse.Promise} the new promise.
-     */
-
-  }, {
-    key: 'reject',
-    value: function () {
-      for (var _len7 = arguments.length, errors = Array(_len7), _key7 = 0; _key7 < _len7; _key7++) {
-        errors[_key7] = arguments[_key7];
-      }
-
-      return ParsePromise.error.apply(null, errors);
-    }
-
-    /**
-     * Returns a new promise that is fulfilled when all of the input promises
-     * are resolved. If any promise in the list fails, then the returned promise
-     * will be rejected with an array containing the error from each promise.
-     * If they all succeed, then the returned promise will succeed, with the
-     * results being the results of all the input
-     * promises. For example: <pre>
-     *   var p1 = Parse.Promise.as(1);
-     *   var p2 = Parse.Promise.as(2);
-     *   var p3 = Parse.Promise.as(3);
-     *
-     *   Parse.Promise.when(p1, p2, p3).then(function(r1, r2, r3) {
-     *     console.log(r1);  // prints 1
-     *     console.log(r2);  // prints 2
-     *     console.log(r3);  // prints 3
-     *   });</pre>
-     *
-     * The input promises can also be specified as an array: <pre>
-     *   var promises = [p1, p2, p3];
-     *   Parse.Promise.when(promises).then(function(results) {
-     *     console.log(results);  // prints [1,2,3]
-     *   });
-     * </pre>
-      * @param {Array} promises a list of promises to wait for.
-     * @static
-     * @return {Parse.Promise} the new promise.
-     */
-
-  }, {
-    key: 'when',
-    value: function (promises) {
-      var objects;
-      var arrayArgument = Array.isArray(promises);
-      if (arrayArgument) {
-        objects = promises;
-      } else {
-        objects = arguments;
-      }
-
-      var total = objects.length;
-      var hadError = false;
-      var results = [];
-      var returnValue = arrayArgument ? [results] : results;
-      var errors = [];
-      results.length = objects.length;
-      errors.length = objects.length;
-
-      if (total === 0) {
-        return ParsePromise.as.apply(this, returnValue);
-      }
-
-      var promise = new ParsePromise();
-
-      var resolveOne = function () {
-        total--;
-        if (total <= 0) {
-          if (hadError) {
-            promise.reject(errors);
-          } else {
-            promise.resolve.apply(promise, returnValue);
-          }
-        }
-      };
-
-      var chain = function (object, index) {
-        if (ParsePromise.is(object)) {
-          object.then(function (result) {
-            results[index] = result;
-            resolveOne();
-          }, function (error) {
-            errors[index] = error;
-            hadError = true;
-            resolveOne();
-          });
-        } else {
-          results[i] = object;
-          resolveOne();
-        }
-      };
-      for (var i = 0; i < objects.length; i++) {
-        chain(objects[i], i);
-      }
-
-      return promise;
-    }
-
-    /**
-     * Returns a new promise that is fulfilled when all of the promises in the
-     * iterable argument are resolved. If any promise in the list fails, then
-     * the returned promise will be immediately rejected with the reason that
-     * single promise rejected. If they all succeed, then the returned promise
-     * will succeed, with the results being the results of all the input
-     * promises. If the iterable provided is empty, the returned promise will
-     * be immediately resolved.
-     * 
-     * For example: <pre>
-     *   var p1 = Parse.Promise.as(1);
-     *   var p2 = Parse.Promise.as(2);
-     *   var p3 = Parse.Promise.as(3);
-     *
-     *   Parse.Promise.all([p1, p2, p3]).then(function([r1, r2, r3]) {
-     *     console.log(r1);  // prints 1
-     *     console.log(r2);  // prints 2
-     *     console.log(r3);  // prints 3
-     *   });</pre>
-     *
-      * @param {Iterable} promises an iterable of promises to wait for.
-     * @static
-     * @return {Parse.Promise} the new promise.
-     */
-
-  }, {
-    key: 'all',
-    value: function (promises) {
-      var total = 0;
-      var objects = [];
-
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = (0, _getIterator3.default)(promises), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var p = _step.value;
-
-          objects[total++] = p;
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      if (total === 0) {
-        return ParsePromise.as([]);
-      }
-
-      var hadError = false;
-      var promise = new ParsePromise();
-      var resolved = 0;
-      var results = [];
-      objects.forEach(function (object, i) {
-        if (ParsePromise.is(object)) {
-          object.then(function (result) {
-            if (hadError) {
-              return false;
-            }
-            results[i] = result;
-            resolved++;
-            if (resolved >= total) {
-              promise.resolve(results);
-            }
-          }, function (error) {
-            // Reject immediately
-            promise.reject(error);
-            hadError = true;
-          });
-        } else {
-          results[i] = object;
-          resolved++;
-          if (!hadError && resolved >= total) {
-            promise.resolve(results);
-          }
-        }
-      });
-
-      return promise;
-    }
-
-    /**
-     * Returns a new promise that is immediately fulfilled when any of the
-     * promises in the iterable argument are resolved or rejected. If the
-     * first promise to complete is resolved, the returned promise will be
-     * resolved with the same value. Likewise, if the first promise to
-     * complete is rejected, the returned promise will be rejected with the
-     * same reason.
-     *
-      * @param {Iterable} promises an iterable of promises to wait for.
-     * @static
-     * @return {Parse.Promise} the new promise.
-     */
-
-  }, {
-    key: 'race',
-    value: function (promises) {
-      var completed = false;
-      var promise = new ParsePromise();
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = (0, _getIterator3.default)(promises), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var p = _step2.value;
-
-          if (ParsePromise.is(p)) {
-            p.then(function (result) {
-              if (completed) {
-                return;
-              }
-              completed = true;
-              promise.resolve(result);
-            }, function (error) {
-              if (completed) {
-                return;
-              }
-              completed = true;
-              promise.reject(error);
-            });
-          } else if (!completed) {
-            completed = true;
-            promise.resolve(p);
-          }
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
-      }
-
-      return promise;
-    }
-
-    /**
-     * Runs the given asyncFunction repeatedly, as long as the predicate
-     * function returns a truthy value. Stops repeating if asyncFunction returns
-     * a rejected promise.
-      * @param {Function} predicate should return false when ready to stop.
-     * @param {Function} asyncFunction should return a Promise.
-     * @static
-     */
-
-  }, {
-    key: '_continueWhile',
-    value: function (predicate, asyncFunction) {
-      if (predicate()) {
-        return asyncFunction().then(function () {
-          return ParsePromise._continueWhile(predicate, asyncFunction);
-        });
-      }
-      return ParsePromise.as();
-    }
-  }, {
-    key: 'isPromisesAPlusCompliant',
-    value: function () {
-      return _isPromisesAPlusCompliant;
-    }
-  }, {
-    key: 'enableAPlusCompliant',
-    value: function () {
-      _isPromisesAPlusCompliant = true;
-    }
-  }, {
-    key: 'disableAPlusCompliant',
-    value: function () {
-      _isPromisesAPlusCompliant = false;
-    }
-  }]);
-  return ParsePromise;
-}();
-
-exports.default = ParsePromise;
-}).call(this,_dereq_('_process'))
-},{"_process":64,"babel-runtime/core-js/get-iterator":45,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],22:[function(_dereq_,module,exports){
+},{"./ParseGeoPoint":15,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],21:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -7385,6 +6678,10 @@ Object.defineProperty(exports, "__esModule", {
 var _typeof2 = _dereq_('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _classCallCheck2 = _dereq_('babel-runtime/helpers/classCallCheck');
 
@@ -7406,6 +6703,8 @@ var _encode = _dereq_('./encode');
 
 var _encode2 = _interopRequireDefault(_encode);
 
+var _promiseUtils = _dereq_('./promiseUtils');
+
 var _ParseError = _dereq_('./ParseError');
 
 var _ParseError2 = _interopRequireDefault(_ParseError);
@@ -7421,10 +6720,6 @@ var _ParsePolygon2 = _interopRequireDefault(_ParsePolygon);
 var _ParseObject = _dereq_('./ParseObject');
 
 var _ParseObject2 = _interopRequireDefault(_ParseObject);
-
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
 
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
@@ -7510,32 +6805,31 @@ function handleSelectResult(data, select) {
   });
 
   if ((0, _keys2.default)(serverDataMask).length > 0) {
-    (function () {
-
-      // When selecting from sub-objects, we don't want to blow away the missing
-      // information that we may have retrieved before. We've already added any
-      // missing selected keys to sub-objects, but we still need to add in the
-      // data for any previously retrieved sub-objects that were not selected.
-
-      var serverData = _CoreManager2.default.getObjectStateController().getServerData({ id: data.objectId, className: data.className });
-
-      (function copyMissingDataWithMask(src, dest, mask, copyThisLevel) {
-        //copy missing elements at this level
-        if (copyThisLevel) {
-          for (var key in src) {
-            if (src.hasOwnProperty(key) && !dest.hasOwnProperty(key)) {
-              dest[key] = src[key];
-            }
+    var copyMissingDataWithMask = function copyMissingDataWithMask(src, dest, mask, copyThisLevel) {
+      //copy missing elements at this level
+      if (copyThisLevel) {
+        for (var key in src) {
+          if (src.hasOwnProperty(key) && !dest.hasOwnProperty(key)) {
+            dest[key] = src[key];
           }
         }
-        for (var key in mask) {
-          if (dest[key] !== undefined && dest[key] !== null && src !== undefined && src !== null) {
-            //traverse into objects as needed
-            copyMissingDataWithMask(src[key], dest[key], mask[key], true);
-          }
+      }
+      for (var key in mask) {
+        if (dest[key] !== undefined && dest[key] !== null && src !== undefined && src !== null) {
+          //traverse into objects as needed
+          copyMissingDataWithMask(src[key], dest[key], mask[key], true);
         }
-      })(serverData, data, serverDataMask, false);
-    })();
+      }
+    };
+
+    // When selecting from sub-objects, we don't want to blow away the missing
+    // information that we may have retrieved before. We've already added any
+    // missing selected keys to sub-objects, but we still need to add in the
+    // data for any previously retrieved sub-objects that were not selected.
+
+    var serverData = _CoreManager2.default.getObjectStateController().getServerData({ id: data.objectId, className: data.className });
+
+    copyMissingDataWithMask(serverData, data, serverDataMask, false);
   }
 }
 
@@ -7549,47 +6843,35 @@ function handleSelectResult(data, select) {
  * whether the fetch succeeded or not.
  *
  * <pre>
- * var query = new parse.query(myclass);
- * query.find({
- *   success: function(results) {
- *     // results is an array of parse.object.
- *   },
- *
- *   error: function(error) {
- *     // error is an instance of parse.error.
- *   }
+ * var query = new Parse.Query(myclass);
+ * query.find().then((results) => {
+ *   // results is an array of parse.object.
+ * }).catch((error) =>  {
+ *  // error is an instance of parse.error.
  * });</pre></p>
  *
- * <p>a parse.query can also be used to retrieve a single object whose id is
+ * <p>a Parse.Query can also be used to retrieve a single object whose id is
  * known, through the get method. for example, this sample code fetches an
  * object of class <code>myclass</code> and id <code>myid</code>. it calls a
  * different function depending on whether the fetch succeeded or not.
  *
  * <pre>
- * var query = new parse.query(myclass);
- * query.get(myid, {
- *   success: function(object) {
+ * var query = new Parse.Query(myclass);
+ * query.get(myid).then((object) => {
  *     // object is an instance of parse.object.
- *   },
- *
- *   error: function(object, error) {
- *     // error is an instance of parse.error.
- *   }
+ * }).catch((error) =>  {
+ *  // error is an instance of parse.error.
  * });</pre></p>
  *
- * <p>a parse.query can also be used to count the number of objects that match
+ * <p>a Parse.Query can also be used to count the number of objects that match
  * the query without retrieving all of those objects. for example, this
  * sample code counts the number of objects of the class <code>myclass</code>
  * <pre>
- * var query = new parse.query(myclass);
- * query.count({
- *   success: function(number) {
+ * var query = new Parse.Query(myclass);
+ * query.count().then((number) => {
  *     // there are number instances of myclass.
- *   },
- *
- *   error: function(error) {
+ * }).catch((error) => {
  *     // error is an instance of Parse.Error.
- *   }
  * });</pre></p>
  * @alias Parse.Query
  */
@@ -7680,6 +6962,16 @@ var ParseQuery = function () {
       }
       this._where[key][condition] = (0, _encode2.default)(value, false, true);
       return this;
+    }
+
+    /**
+     * Converts string for regular expression at the beginning
+     */
+
+  }, {
+    key: '_regexStartWith',
+    value: function (string) {
+      return '^' + quote(string);
     }
 
     /**
@@ -7788,20 +7080,18 @@ var ParseQuery = function () {
     /**
      * Constructs a Parse.Object whose id is already known by fetching data from
      * the server.  Either options.success or options.error is called when the
-     * find completes.
+     * find completes. Unlike the <code>first</code> method, it never returns undefined.
      *
      * @param {String} objectId The id of the object to be fetched.
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback
-     *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
      *
-     * @return {Parse.Promise} A promise that is resolved with the result when
+     * @return {Promise} A promise that is resolved with the result when
      * the query completes.
      */
     value: function (objectId, options) {
@@ -7821,8 +7111,8 @@ var ParseQuery = function () {
         }
 
         var errorObject = new _ParseError2.default(_ParseError2.default.OBJECT_NOT_FOUND, 'Object not found.');
-        return _ParsePromise2.default.error(errorObject);
-      })._thenRunCallbacks(options, null);
+        return _promise2.default.reject(errorObject);
+      });
     }
 
     /**
@@ -7830,24 +7120,22 @@ var ParseQuery = function () {
      * Either options.success or options.error is called when the find
      * completes.
      *
-     * @param {Object} options A Backbone-style options object. Valid options
+     * @param {Object} options Valid options
      * are:<ul>
-     *   <li>success: Function to call when the find completes successfully.
-     *   <li>error: Function to call when the find fails.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
      *
-     * @return {Parse.Promise} A promise that is resolved with the results when
+     * @return {Promise} A promise that is resolved with the results when
      * the query completes.
      */
 
   }, {
     key: 'find',
     value: function (options) {
-      var _this = this;
+      var _this2 = this;
 
       options = options || {};
 
@@ -7867,7 +7155,7 @@ var ParseQuery = function () {
         return response.results.map(function (data) {
           // In cases of relations, the server may send back a className
           // on the top level of the payload
-          var override = response.className || _this.className;
+          var override = response.className || _this2.className;
           if (!data.className) {
             data.className = override;
           }
@@ -7881,7 +7169,7 @@ var ParseQuery = function () {
 
           return _ParseObject2.default.fromJSON(data, !select);
         });
-      })._thenRunCallbacks(options);
+      });
     }
 
     /**
@@ -7889,17 +7177,15 @@ var ParseQuery = function () {
      * Either options.success or options.error is called when the count
      * completes.
      *
-     * @param {Object} options A Backbone-style options object. Valid options
-     * are:<ul>
-     *   <li>success: Function to call when the count completes successfully.
-     *   <li>error: Function to call when the find fails.
+     * @param {Object} options 
+     * Valid options are:<ul>
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
      *
-     * @return {Parse.Promise} A promise that is resolved with the count when
+     * @return {Promise} A promise that is resolved with the count when
      * the query completes.
      */
 
@@ -7924,22 +7210,20 @@ var ParseQuery = function () {
 
       return controller.find(this.className, params, findOptions).then(function (result) {
         return result.count;
-      })._thenRunCallbacks(options);
+      });
     }
 
     /**
      * Executes a distinct query and returns unique values
      *
      * @param {String} key A field to find distinct values
-     * @param {Object} options A Backbone-style options object. Valid options
-     * are:<ul>
-     *   <li>success: Function to call when the count completes successfully.
-     *   <li>error: Function to call when the find fails.
+     * @param {Object} options 
+     * Valid options are:<ul>
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
      *
-     * @return {Parse.Promise} A promise that is resolved with the query completes.
+     * @return {Promise} A promise that is resolved with the query completes.
      */
 
   }, {
@@ -7961,22 +7245,19 @@ var ParseQuery = function () {
 
       return controller.aggregate(this.className, params, distinctOptions).then(function (results) {
         return results.results;
-      })._thenRunCallbacks(options);
+      });
     }
 
     /**
     * Executes an aggregate query and returns aggregate results
     *
     * @param {Mixed} pipeline Array or Object of stages to process query
-    * @param {Object} options A Backbone-style options object. Valid options
-    * are:<ul>
-    *   <li>success: Function to call when the count completes successfully.
-    *   <li>error: Function to call when the find fails.
+    * @param {Object} options Valid options are:<ul>
     *   <li>sessionToken: A valid session token, used for making a request on
     *       behalf of a specific user.
     * </ul>
     *
-    * @return {Parse.Promise} A promise that is resolved with the query completes.
+    * @return {Promise} A promise that is resolved with the query completes.
     */
 
   }, {
@@ -8007,7 +7288,7 @@ var ParseQuery = function () {
 
       return controller.aggregate(this.className, stages, aggregateOptions).then(function (results) {
         return results.results;
-      })._thenRunCallbacks(options);
+      });
     }
 
     /**
@@ -8016,24 +7297,21 @@ var ParseQuery = function () {
      * Either options.success or options.error is called when it completes.
      * success is passed the object if there is one. otherwise, undefined.
      *
-     * @param {Object} options A Backbone-style options object. Valid options
-     * are:<ul>
-     *   <li>success: Function to call when the find completes successfully.
-     *   <li>error: Function to call when the find fails.
+     * @param {Object} options Valid options are:<ul>
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
      *
-     * @return {Parse.Promise} A promise that is resolved with the object when
+     * @return {Promise} A promise that is resolved with the object when
      * the query completes.
      */
 
   }, {
     key: 'first',
     value: function (options) {
-      var _this2 = this;
+      var _this3 = this;
 
       options = options || {};
 
@@ -8058,7 +7336,7 @@ var ParseQuery = function () {
           return undefined;
         }
         if (!objects[0].className) {
-          objects[0].className = _this2.className;
+          objects[0].className = _this3.className;
         }
 
         // Make sure the data object contains keys for all objects that
@@ -8069,7 +7347,7 @@ var ParseQuery = function () {
         }
 
         return _ParseObject2.default.fromJSON(objects[0], !select);
-      })._thenRunCallbacks(options);
+      });
     }
 
     /**
@@ -8081,16 +7359,13 @@ var ParseQuery = function () {
      * and may not use limit or skip.
      * @param {Function} callback Callback that will be called with each result
      *     of the query.
-     * @param {Object} options A Backbone-style options object. Valid options
-     * are:<ul>
-     *   <li>success: Function to call when the iteration completes successfully.
-     *   <li>error: Function to call when the iteration fails.
+     * @param {Object} options Valid options are:<ul>
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
-     * @return {Parse.Promise} A promise that will be fulfilled once the
+     * @return {Promise} A promise that will be fulfilled once the
      *     iteration has completed.
      */
 
@@ -8100,11 +7375,8 @@ var ParseQuery = function () {
       options = options || {};
 
       if (this._order || this._skip || this._limit >= 0) {
-        return _ParsePromise2.default.error('Cannot iterate on a query with sort, skip, or limit.')._thenRunCallbacks(options);
+        return _promise2.default.reject('Cannot iterate on a query with sort, skip, or limit.');
       }
-
-      new _ParsePromise2.default();
-
 
       var query = new ParseQuery(this.className);
       // We can override the batch size from the options.
@@ -8148,11 +7420,11 @@ var ParseQuery = function () {
       }
 
       var finished = false;
-      return _ParsePromise2.default._continueWhile(function () {
+      return (0, _promiseUtils.continueWhile)(function () {
         return !finished;
       }, function () {
         return query.find(findOptions).then(function (results) {
-          var callbacksDone = _ParsePromise2.default.as();
+          var callbacksDone = _promise2.default.resolve();
           results.forEach(function (result) {
             callbacksDone = callbacksDone.then(function () {
               return callback(result);
@@ -8167,7 +7439,7 @@ var ParseQuery = function () {
             }
           });
         });
-      })._thenRunCallbacks(options);
+      });
     }
 
     /** Query Conditions **/
@@ -8301,6 +7573,29 @@ var ParseQuery = function () {
     key: 'containsAll',
     value: function (key, values) {
       return this._addCondition(key, '$all', values);
+    }
+
+    /**
+     * Adds a constraint to the query that requires a particular key's value to
+     * contain each one of the provided list of values starting with given strings.
+     * @param {String} key The key to check.  This key's value must be an array.
+     * @param {Array<String>} values The string values that will match as starting string.
+     * @return {Parse.Query} Returns the query, so you can chain this call.
+     */
+
+  }, {
+    key: 'containsAllStartingWith',
+    value: function (key, values) {
+      var _this = this;
+      if (!Array.isArray(values)) {
+        values = [values];
+      }
+
+      values = values.map(function (value) {
+        return { "$regex": _this._regexStartWith(value) };
+      });
+
+      return this.containsAll(key, values);
     }
 
     /**
@@ -8456,7 +7751,7 @@ var ParseQuery = function () {
     *
     * In order to sort you must use select and ascending ($score is required)
     *  <pre>
-    *   query.fullText('term');
+    *   query.fullText('field', 'term');
     *   query.ascending('$score');
     *   query.select('$score');
     *  </pre>
@@ -8466,14 +7761,25 @@ var ParseQuery = function () {
     *   object->get('score');
     *  </pre>
     *
+    * You can define optionals by providing an object as a third parameter
+    *  <pre>
+    *   query.fullText('field', 'term', { language: 'es', diacriticSensitive: true });
+    *  </pre>
+    *
     * @param {String} key The key that the string to match is stored in.
     * @param {String} value The string to search
+    * @param {Object} options (Optional)
+    * @param {String} options.language The language that determines the list of stop words for the search and the rules for the stemmer and tokenizer.
+    * @param {Boolean} options.caseSensitive A boolean flag to enable or disable case sensitive search.
+    * @param {Boolean} options.diacriticSensitive A boolean flag to enable or disable diacritic sensitive search.
     * @return {Parse.Query} Returns the query, so you can chain this call.
     */
 
   }, {
     key: 'fullText',
-    value: function (key, value) {
+    value: function (key, value, options) {
+      options = options || {};
+
       if (!key) {
         throw new Error('A key is required.');
       }
@@ -8484,7 +7790,39 @@ var ParseQuery = function () {
         throw new Error('The value being searched for must be a string.');
       }
 
-      return this._addCondition(key, '$text', { $search: { $term: value } });
+      var fullOptions = { $term: value };
+      for (var option in options) {
+        switch (option) {
+          case 'language':
+            fullOptions.$language = options[option];
+            break;
+          case 'caseSensitive':
+            fullOptions.$caseSensitive = options[option];
+            break;
+          case 'diacriticSensitive':
+            fullOptions.$diacriticSensitive = options[option];
+            break;
+          default:
+            throw new Error('Unknown option: ' + option);
+            break;
+        }
+      }
+
+      return this._addCondition(key, '$text', { $search: fullOptions });
+    }
+
+    /**
+     * Method to sort the full text search by text score
+     *
+     * @return {Parse.Query} Returns the query, so you can chain this call.
+     */
+
+  }, {
+    key: 'sortByTextScore',
+    value: function () {
+      this.ascending('$score');
+      this.select(['$score']);
+      return this;
     }
 
     /**
@@ -8502,7 +7840,7 @@ var ParseQuery = function () {
       if (typeof value !== 'string') {
         throw new Error('The value being searched for must be a string.');
       }
-      return this._addCondition(key, '$regex', '^' + quote(value));
+      return this._addCondition(key, '$regex', this._regexStartWith(value));
     }
 
     /**
@@ -8547,14 +7885,21 @@ var ParseQuery = function () {
      * @param {Parse.GeoPoint} point The reference Parse.GeoPoint that is used.
      * @param {Number} maxDistance Maximum distance (in radians) of results to
      *   return.
+     * @param {Boolean} sorted A Bool value that is true if results should be
+     *   sorted by distance ascending, false is no sorting is required,
+     *   defaults to true.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
 
   }, {
     key: 'withinRadians',
-    value: function (key, point, distance) {
-      this.near(key, point);
-      return this._addCondition(key, '$maxDistance', distance);
+    value: function (key, point, distance, sorted) {
+      if (sorted || sorted === undefined) {
+        this.near(key, point);
+        return this._addCondition(key, '$maxDistance', distance);
+      } else {
+        return this._addCondition(key, '$geoWithin', { '$centerSphere': [[point.longitude, point.latitude], distance] });
+      }
     }
 
     /**
@@ -8564,14 +7909,17 @@ var ParseQuery = function () {
      * @param {String} key The key that the Parse.GeoPoint is stored in.
      * @param {Parse.GeoPoint} point The reference Parse.GeoPoint that is used.
      * @param {Number} maxDistance Maximum distance (in miles) of results to
-     *     return.
+     *   return.
+     * @param {Boolean} sorted A Bool value that is true if results should be
+     *   sorted by distance ascending, false is no sorting is required,
+     *   defaults to true.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
 
   }, {
     key: 'withinMiles',
-    value: function (key, point, distance) {
-      return this.withinRadians(key, point, distance / 3958.8);
+    value: function (key, point, distance, sorted) {
+      return this.withinRadians(key, point, distance / 3958.8, sorted);
     }
 
     /**
@@ -8581,14 +7929,17 @@ var ParseQuery = function () {
      * @param {String} key The key that the Parse.GeoPoint is stored in.
      * @param {Parse.GeoPoint} point The reference Parse.GeoPoint that is used.
      * @param {Number} maxDistance Maximum distance (in kilometers) of results
-     *     to return.
+     *   to return.
+     * @param {Boolean} sorted A Bool value that is true if results should be
+     *   sorted by distance ascending, false is no sorting is required,
+     *   defaults to true.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
 
   }, {
     key: 'withinKilometers',
-    value: function (key, point, distance) {
-      return this.withinRadians(key, point, distance / 6371.0);
+    value: function (key, point, distance, sorted) {
+      return this.withinRadians(key, point, distance / 6371.0, sorted);
     }
 
     /**
@@ -8683,7 +8034,7 @@ var ParseQuery = function () {
   }, {
     key: 'addAscending',
     value: function () {
-      var _this3 = this;
+      var _this4 = this;
 
       if (!this._order) {
         this._order = [];
@@ -8697,7 +8048,7 @@ var ParseQuery = function () {
         if (Array.isArray(key)) {
           key = key.join();
         }
-        _this3._order = _this3._order.concat(key.replace(/\s/g, '').split(','));
+        _this4._order = _this4._order.concat(key.replace(/\s/g, '').split(','));
       });
 
       return this;
@@ -8735,7 +8086,7 @@ var ParseQuery = function () {
   }, {
     key: 'addDescending',
     value: function () {
-      var _this4 = this;
+      var _this5 = this;
 
       if (!this._order) {
         this._order = [];
@@ -8749,7 +8100,7 @@ var ParseQuery = function () {
         if (Array.isArray(key)) {
           key = key.join();
         }
-        _this4._order = _this4._order.concat(key.replace(/\s/g, '').split(',').map(function (k) {
+        _this5._order = _this5._order.concat(key.replace(/\s/g, '').split(',').map(function (k) {
           return '-' + k;
         }));
       });
@@ -8804,7 +8155,7 @@ var ParseQuery = function () {
   }, {
     key: 'include',
     value: function () {
-      var _this5 = this;
+      var _this6 = this;
 
       for (var _len5 = arguments.length, keys = Array(_len5), _key6 = 0; _key6 < _len5; _key6++) {
         keys[_key6] = arguments[_key6];
@@ -8812,9 +8163,9 @@ var ParseQuery = function () {
 
       keys.forEach(function (key) {
         if (Array.isArray(key)) {
-          _this5._include = _this5._include.concat(key);
+          _this6._include = _this6._include.concat(key);
         } else {
-          _this5._include.push(key);
+          _this6._include.push(key);
         }
       });
       return this;
@@ -8831,7 +8182,7 @@ var ParseQuery = function () {
   }, {
     key: 'select',
     value: function () {
-      var _this6 = this;
+      var _this7 = this;
 
       if (!this._select) {
         this._select = [];
@@ -8843,9 +8194,9 @@ var ParseQuery = function () {
 
       keys.forEach(function (key) {
         if (Array.isArray(key)) {
-          _this6._select = _this6._select.concat(key);
+          _this7._select = _this7._select.concat(key);
         } else {
-          _this6._select.push(key);
+          _this7._select.push(key);
         }
       });
       return this;
@@ -8902,7 +8253,6 @@ var ParseQuery = function () {
      *
      * will create a compoundQuery that is an and of the query1, query2, and
      * query3.
-     * @method and
      * @param {...Parse.Query} var_args The list of queries to AND.
      * @static
      * @return {Parse.Query} The query that is the AND of the passed in queries.
@@ -8940,7 +8290,7 @@ var DefaultController = {
 _CoreManager2.default.setQueryController(DefaultController);
 
 exports.default = ParseQuery;
-},{"./CoreManager":3,"./ParseError":13,"./ParseGeoPoint":15,"./ParseObject":18,"./ParsePolygon":20,"./ParsePromise":21,"./encode":38,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],23:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./ParseGeoPoint":15,"./ParseObject":18,"./ParsePolygon":20,"./encode":37,"./promiseUtils":42,"babel-runtime/core-js/object/keys":53,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/typeof":64}],22:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -9121,7 +8471,7 @@ var ParseRelation = function () {
       */
 
 exports.default = ParseRelation;
-},{"./ParseObject":18,"./ParseOp":19,"./ParseQuery":22,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],24:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"./ParseOp":19,"./ParseQuery":21,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],23:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -9316,7 +8666,7 @@ var ParseRole = function (_ParseObject) {
 _ParseObject3.default.registerSubclass('_Role', ParseRole);
 
 exports.default = ParseRole;
-},{"./ParseACL":11,"./ParseError":13,"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/get":60,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62}],25:[function(_dereq_,module,exports){
+},{"./ParseACL":11,"./ParseError":13,"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/get":61,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63}],24:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -9335,24 +8685,9 @@ var _CoreManager = _dereq_('./CoreManager');
 
 var _CoreManager2 = _interopRequireDefault(_CoreManager);
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
-
-/**
- * Copyright (c) 2015-present, Parse, LLC.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * 
- */
 
 var FIELD_TYPES = ['String', 'Number', 'Boolean', 'Date', 'File', 'GeoPoint', 'Polygon', 'Array', 'Object', 'Pointer', 'Relation'];
 
@@ -9368,6 +8703,16 @@ var FIELD_TYPES = ['String', 'Number', 'Boolean', 'Date', 'File', 'GeoPoint', 'P
  * </pre>
  * </p>
  * @alias Parse.Schema
+ */
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
  */
 
 var ParseSchema = function () {
@@ -9393,17 +8738,15 @@ var ParseSchema = function () {
   /**
    * Static method to get all schemas
    *
-   * @param {Object} options A Backbone-style options object.
+   * @param {Object} options
    * Valid options are:<ul>
-   *   <li>success: A Backbone-style success callback
-   *   <li>error: An Backbone-style error callback.
    *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
    *     be used for this request.
    *   <li>sessionToken: A valid session token, used for making a request on
    *       behalf of a specific user.
    * </ul>
    *
-   * @return {Parse.Promise} A promise that is resolved with the result when
+   * @return {Promise} A promise that is resolved with the result when
    * the query completes.
    */
 
@@ -9413,17 +8756,15 @@ var ParseSchema = function () {
     /**
      * Get the Schema from Parse
      *
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback
-     *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
      *
-     * @return {Parse.Promise} A promise that is resolved with the result when
+     * @return {Promise} A promise that is resolved with the result when
      * the query completes.
      */
     value: function (options) {
@@ -9437,23 +8778,21 @@ var ParseSchema = function () {
           throw new Error('Schema not found.');
         }
         return response;
-      })._thenRunCallbacks(options);
+      });
     }
 
     /**
      * Create a new Schema on Parse
      *
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback
-     *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
      *
-     * @return {Parse.Promise} A promise that is resolved with the result when
+     * @return {Promise} A promise that is resolved with the result when
      * the query completes.
      */
 
@@ -9472,23 +8811,21 @@ var ParseSchema = function () {
 
       return controller.create(this.className, params, options).then(function (response) {
         return response;
-      })._thenRunCallbacks(options);
+      });
     }
 
     /**
      * Update a Schema on Parse
      *
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback
-     *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
      *
-     * @return {Parse.Promise} A promise that is resolved with the result when
+     * @return {Promise} A promise that is resolved with the result when
      * the query completes.
      */
 
@@ -9510,24 +8847,22 @@ var ParseSchema = function () {
 
       return controller.update(this.className, params, options).then(function (response) {
         return response;
-      })._thenRunCallbacks(options);
+      });
     }
 
     /**
      * Removing a Schema from Parse
      * Can only be used on Schema without objects
      *
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback
-     *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
      *
-     * @return {Parse.Promise} A promise that is resolved with the result when
+     * @return {Promise} A promise that is resolved with the result when
      * the query completes.
      */
 
@@ -9541,37 +8876,35 @@ var ParseSchema = function () {
 
       return controller.delete(this.className, options).then(function (response) {
         return response;
-      })._thenRunCallbacks(options);
+      });
     }
 
     /**
      * Removes all objects from a Schema (class) in Parse.
      * EXERCISE CAUTION, running this will delete all objects for this schema and cannot be reversed
      *
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * Valid options are:<ul>
-     *   <li>success: A Backbone-style success callback
-     *   <li>error: An Backbone-style error callback.
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
      *
-     * @return {Parse.Promise} A promise that is resolved with the result when
+     * @return {Promise} A promise that is resolved with the result when
      * the query completes.
      */
 
   }, {
     key: 'purge',
-    value: function (options) {
+    value: function () {
       this.assertClassName();
 
       var controller = _CoreManager2.default.getSchemaController();
 
       return controller.purge(this.className).then(function (response) {
         return response;
-      })._thenRunCallbacks(options);
+      });
     }
 
     /**
@@ -9842,7 +9175,7 @@ var ParseSchema = function () {
           throw new Error('Schema not found.');
         }
         return response.results;
-      })._thenRunCallbacks(options);
+      });
     }
   }]);
   return ParseSchema;
@@ -9878,12 +9211,16 @@ var DefaultController = {
 _CoreManager2.default.setSchemaController(DefaultController);
 
 exports.default = ParseSchema;
-},{"./CoreManager":3,"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],26:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],25:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _typeof2 = _dereq_('babel-runtime/helpers/typeof');
 
@@ -9921,10 +9258,6 @@ var _ParseObject2 = _dereq_('./ParseObject');
 
 var _ParseObject3 = _interopRequireDefault(_ParseObject2);
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
 var _ParseUser = _dereq_('./ParseUser');
 
 var _ParseUser2 = _interopRequireDefault(_ParseUser);
@@ -9940,6 +9273,17 @@ function _interopRequireDefault(obj) {
  * @alias Parse.Session
  * @extends Parse.Object
  */
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
+
 var ParseSession = function (_ParseObject) {
   (0, _inherits3.default)(ParseSession, _ParseObject);
 
@@ -9983,7 +9327,7 @@ var ParseSession = function (_ParseObject) {
     /**
      * Retrieves the Session object for the currently logged in session.
       * @static
-     * @return {Parse.Promise} A promise that is resolved with the Parse.Session
+     * @return {Promise} A promise that is resolved with the Parse.Session
      *   object after it has been fetched. If there is no current user, the
      *   promise will be rejected.
      */
@@ -10000,7 +9344,7 @@ var ParseSession = function (_ParseObject) {
       }
       return _ParseUser2.default.currentAsync().then(function (user) {
         if (!user) {
-          return _ParsePromise2.default.error('There is no current user.');
+          return _promise2.default.reject('There is no current user.');
         }
         user.getSessionToken();
 
@@ -10030,16 +9374,7 @@ var ParseSession = function (_ParseObject) {
     }
   }]);
   return ParseSession;
-}(_ParseObject3.default); /**
-                           * Copyright (c) 2015-present, Parse, LLC.
-                           * All rights reserved.
-                           *
-                           * This source code is licensed under the BSD-style license found in the
-                           * LICENSE file in the root directory of this source tree. An additional grant
-                           * of patent rights can be found in the PATENTS file in the same directory.
-                           *
-                           * 
-                           */
+}(_ParseObject3.default);
 
 _ParseObject3.default.registerSubclass('_Session', ParseSession);
 
@@ -10059,7 +9394,7 @@ var DefaultController = {
 _CoreManager2.default.setSessionController(DefaultController);
 
 exports.default = ParseSession;
-},{"./CoreManager":3,"./ParseObject":18,"./ParsePromise":21,"./ParseUser":27,"./isRevocableSession":41,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],27:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseObject":18,"./ParseUser":26,"./isRevocableSession":40,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63,"babel-runtime/helpers/typeof":64}],26:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -10073,6 +9408,10 @@ var _stringify2 = _interopRequireDefault(_stringify);
 var _defineProperty = _dereq_('babel-runtime/core-js/object/define-property');
 
 var _defineProperty2 = _interopRequireDefault(_defineProperty);
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _typeof2 = _dereq_('babel-runtime/helpers/typeof');
 
@@ -10118,10 +9457,6 @@ var _ParseObject2 = _dereq_('./ParseObject');
 
 var _ParseObject3 = _interopRequireDefault(_ParseObject2);
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
 var _ParseSession = _dereq_('./ParseSession');
 
 var _ParseSession2 = _interopRequireDefault(_ParseSession);
@@ -10134,17 +9469,18 @@ function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
 
-var CURRENT_USER_KEY = 'currentUser'; /**
-                                       * Copyright (c) 2015-present, Parse, LLC.
-                                       * All rights reserved.
-                                       *
-                                       * This source code is licensed under the BSD-style license found in the
-                                       * LICENSE file in the root directory of this source tree. An additional grant
-                                       * of patent rights can be found in the PATENTS file in the same directory.
-                                       *
-                                       * 
-                                       */
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
 
+var CURRENT_USER_KEY = 'currentUser';
 var canUseCurrentUser = !_CoreManager2.default.get('IS_NODE');
 var currentUserCacheMatchesDisk = false;
 var currentUserCache = null;
@@ -10182,8 +9518,8 @@ var ParseUser = function (_ParseObject) {
 
   /**
    * Request a revocable session token to replace the older style of token.
-    * @param {Object} options A Backbone-style options object.
-   * @return {Parse.Promise} A promise that is resolved when the replacement
+    * @param {Object} options
+   * @return {Promise} A promise that is resolved when the replacement
    *   token has been fetched.
    */
 
@@ -10198,7 +9534,7 @@ var ParseUser = function (_ParseObject) {
       }
 
       var controller = _CoreManager2.default.getUserController();
-      return controller.upgradeToRevocableSession(this, upgradeOptions)._thenRunCallbacks(options);
+      return controller.upgradeToRevocableSession(this, upgradeOptions);
     }
 
     /**
@@ -10226,33 +9562,24 @@ var ParseUser = function (_ParseObject) {
         authData[authType] = options.authData;
 
         var controller = _CoreManager2.default.getUserController();
-        return controller.linkWith(this, authData)._thenRunCallbacks(options, this);
+        return controller.linkWith(this, authData);
       } else {
-        var promise = new _ParsePromise2.default();
-        provider.authenticate({
-          success: function (provider, result) {
-            var opts = {};
-            opts.authData = result;
-            if (options.success) {
-              opts.success = options.success;
+        return new _promise2.default(function (resolve, reject) {
+          provider.authenticate({
+            success: function (provider, result) {
+              var opts = {};
+              opts.authData = result;
+              _this2._linkWith(provider, opts).then(function () {
+                resolve(_this2);
+              }, function (error) {
+                reject(error);
+              });
+            },
+            error: function (provider, _error) {
+              reject(_error);
             }
-            if (options.error) {
-              opts.error = options.error;
-            }
-            _this2._linkWith(provider, opts).then(function () {
-              promise.resolve(_this2);
-            }, function (error) {
-              promise.reject(error);
-            });
-          },
-          error: function (provider, _error) {
-            if (typeof options.error === 'function') {
-              options.error(_this2, _error);
-            }
-            promise.reject(_error);
-          }
+          });
         });
-        return promise;
       }
     }
 
@@ -10330,7 +9657,7 @@ var ParseUser = function (_ParseObject) {
 
   }, {
     key: '_unlinkFrom',
-    value: function (provider, options) {
+    value: function (provider) {
       var _this3 = this;
 
       if (typeof provider === 'string') {
@@ -10340,8 +9667,8 @@ var ParseUser = function (_ParseObject) {
       }
       return this._linkWith(provider, { authData: null }).then(function () {
         _this3._synchronizeAuthData(provider);
-        return _ParsePromise2.default.as(_this3);
-      })._thenRunCallbacks(options);
+        return _promise2.default.resolve(_this3);
+      });
     }
 
     /**
@@ -10443,7 +9770,7 @@ var ParseUser = function (_ParseObject) {
     /**
      * Calls set("username", username, options) and returns the result.
       * @param {String} username
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * @return {Boolean}
      */
 
@@ -10463,7 +9790,7 @@ var ParseUser = function (_ParseObject) {
     /**
      * Calls set("password", password, options) and returns the result.
       * @param {String} password
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * @return {Boolean}
      */
 
@@ -10489,16 +9816,15 @@ var ParseUser = function (_ParseObject) {
     }
 
     /**
-     * Calls set("email", email, options) and returns the result.
+     * Calls set("email", email) and returns the result.
       * @param {String} email
-     * @param {Object} options A Backbone-style options object.
      * @return {Boolean}
      */
 
   }, {
     key: 'setEmail',
     value: function (email) {
-      this.set('email', email);
+      return this.set('email', email);
     }
 
     /**
@@ -10541,8 +9867,8 @@ var ParseUser = function (_ParseObject) {
      * <p>Calls options.success or options.error on completion.</p>
      *
       * @param {Object} attrs Extra fields to set on the new user, or null.
-     * @param {Object} options A Backbone-style options object.
-     * @return {Parse.Promise} A promise that is fulfilled when the signup
+     * @param {Object} options
+     * @return {Promise} A promise that is fulfilled when the signup
      *     finishes.
      */
 
@@ -10560,7 +9886,7 @@ var ParseUser = function (_ParseObject) {
       }
 
       var controller = _CoreManager2.default.getUserController();
-      return controller.signUp(this, attrs, signupOptions)._thenRunCallbacks(options, this);
+      return controller.signUp(this, attrs, signupOptions);
     }
 
     /**
@@ -10572,8 +9898,8 @@ var ParseUser = function (_ParseObject) {
      *
      * <p>Calls options.success or options.error on completion.</p>
      *
-      * @param {Object} options A Backbone-style options object.
-     * @return {Parse.Promise} A promise that is fulfilled with the user when
+      * @param {Object} options
+     * @return {Promise} A promise that is fulfilled with the user when
      *     the login is complete.
      */
 
@@ -10591,7 +9917,7 @@ var ParseUser = function (_ParseObject) {
       }
 
       var controller = _CoreManager2.default.getUserController();
-      return controller.logIn(this, loginOptions)._thenRunCallbacks(options, this);
+      return controller.logIn(this, loginOptions);
     }
 
     /**
@@ -10725,7 +10051,7 @@ var ParseUser = function (_ParseObject) {
     /**
      * Retrieves the currently logged in ParseUser from asynchronous Storage.
       * @static
-     * @return {Parse.Promise} A Promise that is resolved with the currently
+     * @return {Promise} A Promise that is resolved with the currently
      *   logged in Parse User
      */
 
@@ -10733,7 +10059,7 @@ var ParseUser = function (_ParseObject) {
     key: 'currentAsync',
     value: function () {
       if (!canUseCurrentUser) {
-        return _ParsePromise2.default.as(null);
+        return _promise2.default.resolve(null);
       }
       var controller = _CoreManager2.default.getUserController();
       return controller.currentUserAsync();
@@ -10750,9 +10076,9 @@ var ParseUser = function (_ParseObject) {
       * @param {String} username The username (or email) to sign up with.
      * @param {String} password The password to sign up with.
      * @param {Object} attrs Extra fields to set on the new user.
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * @static
-     * @return {Parse.Promise} A promise that is fulfilled with the user when
+     * @return {Promise} A promise that is fulfilled with the user when
      *     the signup completes.
      */
 
@@ -10775,9 +10101,9 @@ var ParseUser = function (_ParseObject) {
      *
       * @param {String} username The username (or email) to log in with.
      * @param {String} password The password to log in with.
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * @static
-     * @return {Parse.Promise} A promise that is fulfilled with the user when
+     * @return {Promise} A promise that is fulfilled with the user when
      *     the login completes.
      */
 
@@ -10785,9 +10111,9 @@ var ParseUser = function (_ParseObject) {
     key: 'logIn',
     value: function (username, password, options) {
       if (typeof username !== 'string') {
-        return _ParsePromise2.default.error(new _ParseError2.default(_ParseError2.default.OTHER_CAUSE, 'Username must be a string.'));
+        return _promise2.default.reject(new _ParseError2.default(_ParseError2.default.OTHER_CAUSE, 'Username must be a string.'));
       } else if (typeof password !== 'string') {
-        return _ParsePromise2.default.error(new _ParseError2.default(_ParseError2.default.OTHER_CAUSE, 'Password must be a string.'));
+        return _promise2.default.reject(new _ParseError2.default(_ParseError2.default.OTHER_CAUSE, 'Password must be a string.'));
       }
       var user = new ParseUser();
       user._finishFetch({ username: username, password: password });
@@ -10802,9 +10128,9 @@ var ParseUser = function (_ParseObject) {
      * <p>Calls options.success or options.error on completion.</p>
      *
       * @param {String} sessionToken The sessionToken to log in with.
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * @static
-     * @return {Parse.Promise} A promise that is fulfilled with the user when
+     * @return {Promise} A promise that is fulfilled with the user when
      *     the login completes.
      */
 
@@ -10824,7 +10150,7 @@ var ParseUser = function (_ParseObject) {
       }
 
       var controller = _CoreManager2.default.getUserController();
-      return controller.become(becomeOptions)._thenRunCallbacks(options);
+      return controller.become(becomeOptions);
     }
   }, {
     key: 'logInWith',
@@ -10837,7 +10163,7 @@ var ParseUser = function (_ParseObject) {
      * session from disk, log out of linked services, and future calls to
      * <code>current</code> will return <code>null</code>.
       * @static
-     * @return {Parse.Promise} A promise that is resolved when the session is
+     * @return {Promise} A promise that is resolved when the session is
      *   destroyed on the server.
      */
 
@@ -10861,9 +10187,9 @@ var ParseUser = function (_ParseObject) {
      *
       * @param {String} email The email address associated with the user that
      *     forgot their password.
-     * @param {Object} options A Backbone-style options object.
+     * @param {Object} options
      * @static
-     * @returns {Parse.Promise}
+     * @returns {Promise}
      */
 
   }, {
@@ -10877,7 +10203,7 @@ var ParseUser = function (_ParseObject) {
       }
 
       var controller = _CoreManager2.default.getUserController();
-      return controller.requestPasswordReset(email, requestOptions)._thenRunCallbacks(options);
+      return controller.requestPasswordReset(email, requestOptions);
     }
 
     /**
@@ -10903,9 +10229,9 @@ var ParseUser = function (_ParseObject) {
      * It is not necessary to call this method from cloud code unless you are
      * handling user signup or login from the server side. In a cloud code call,
      * this function will not attempt to upgrade the current token.
-      * @param {Object} options A Backbone-style options object.
+      * @param {Object} options
      * @static
-     * @return {Parse.Promise} A promise that is resolved when the process has
+     * @return {Promise} A promise that is resolved when the process has
      *   completed. If a replacement session token is requested, the promise
      *   will be resolved after a new token has been fetched.
      */
@@ -10921,7 +10247,7 @@ var ParseUser = function (_ParseObject) {
           return current._upgradeToRevocableSession(options);
         }
       }
-      return _ParsePromise2.default.as()._thenRunCallbacks(options);
+      return _promise2.default.resolve();
     }
 
     /**
@@ -11042,17 +10368,17 @@ var DefaultController = {
   },
   currentUserAsync: function () {
     if (currentUserCache) {
-      return _ParsePromise2.default.as(currentUserCache);
+      return _promise2.default.resolve(currentUserCache);
     }
     if (currentUserCacheMatchesDisk) {
-      return _ParsePromise2.default.as(null);
+      return _promise2.default.resolve(null);
     }
     var path = _Storage2.default.generatePath(CURRENT_USER_KEY);
     return _Storage2.default.getItemAsync(path).then(function (userData) {
       currentUserCacheMatchesDisk = true;
       if (!userData) {
         currentUserCache = null;
-        return _ParsePromise2.default.as(null);
+        return _promise2.default.resolve(null);
       }
       userData = JSON.parse(userData);
       if (!userData.className) {
@@ -11071,7 +10397,7 @@ var DefaultController = {
       var current = _ParseObject3.default.fromJSON(userData);
       currentUserCache = current;
       current._synchronizeAllAuthData();
-      return _ParsePromise2.default.as(current);
+      return _promise2.default.resolve(current);
     });
   },
   signUp: function (user, attrs, options) {
@@ -11079,10 +10405,10 @@ var DefaultController = {
     var password = attrs && attrs.password || user.get('password');
 
     if (!username || !username.length) {
-      return _ParsePromise2.default.error(new _ParseError2.default(_ParseError2.default.OTHER_CAUSE, 'Cannot sign up user with an empty name.'));
+      return _promise2.default.reject(new _ParseError2.default(_ParseError2.default.OTHER_CAUSE, 'Cannot sign up user with an empty name.'));
     }
     if (!password || !password.length) {
-      return _ParsePromise2.default.error(new _ParseError2.default(_ParseError2.default.OTHER_CAUSE, 'Cannot sign up user with an empty password.'));
+      return _promise2.default.reject(new _ParseError2.default(_ParseError2.default.OTHER_CAUSE, 'Cannot sign up user with an empty password.'));
     }
 
     return user.save(attrs, options).then(function () {
@@ -11111,7 +10437,7 @@ var DefaultController = {
       user._finishFetch(response);
       if (!canUseCurrentUser) {
         // We can't set the current user, so just return the one we logged in
-        return _ParsePromise2.default.as(user);
+        return _promise2.default.resolve(user);
       }
       return DefaultController.setCurrentUser(user);
     });
@@ -11153,7 +10479,7 @@ var DefaultController = {
   upgradeToRevocableSession: function (user, options) {
     var token = user.getSessionToken();
     if (!token) {
-      return _ParsePromise2.default.error(new _ParseError2.default(_ParseError2.default.SESSION_MISSING, 'Cannot upgrade a user with no session token'));
+      return _promise2.default.reject(new _ParseError2.default(_ParseError2.default.SESSION_MISSING, 'Cannot upgrade a user with no session token'));
     }
 
     options.sessionToken = token;
@@ -11166,7 +10492,7 @@ var DefaultController = {
       if (user.isCurrent()) {
         return DefaultController.setCurrentUser(user);
       }
-      return _ParsePromise2.default.as(user);
+      return _promise2.default.resolve(user);
     });
   },
   linkWith: function (user, authData) {
@@ -11182,7 +10508,7 @@ var DefaultController = {
 _CoreManager2.default.setUserController(DefaultController);
 
 exports.default = ParseUser;
-},{"./CoreManager":3,"./ParseError":13,"./ParseObject":18,"./ParsePromise":21,"./ParseSession":26,"./Storage":31,"./isRevocableSession":41,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/object/define-property":49,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/get":60,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],28:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./ParseObject":18,"./ParseSession":25,"./Storage":30,"./isRevocableSession":40,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/object/define-property":49,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/get":61,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63,"babel-runtime/helpers/typeof":64}],27:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11234,7 +10560,7 @@ function _interopRequireDefault(obj) {
  * that takes no arguments and will be called on a successful push, and
  * an error function that takes a Parse.Error and will be called if the push
  * failed.
- * @return {Parse.Promise} A promise that is fulfilled when the push request
+ * @return {Promise} A promise that is fulfilled when the push request
  *     completes.
  */
 /**
@@ -11269,7 +10595,7 @@ function send(data, options) {
 
   return _CoreManager2.default.getPushController().send(data, {
     useMasterKey: options.useMasterKey
-  })._thenRunCallbacks(options);
+  });
 }
 
 var DefaultController = {
@@ -11278,12 +10604,12 @@ var DefaultController = {
 
     var request = RESTController.request('POST', 'push', data, { useMasterKey: !!options.useMasterKey });
 
-    return request._thenRunCallbacks(options);
+    return request;
   }
 };
 
 _CoreManager2.default.setPushController(DefaultController);
-},{"./CoreManager":3,"./ParseQuery":22,"babel-runtime/helpers/typeof":63}],29:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseQuery":21,"babel-runtime/helpers/typeof":64}],28:[function(_dereq_,module,exports){
 (function (process){
 'use strict';
 
@@ -11295,6 +10621,10 @@ var _stringify = _dereq_('babel-runtime/core-js/json/stringify');
 
 var _stringify2 = _interopRequireDefault(_stringify);
 
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
+
 var _CoreManager = _dereq_('./CoreManager');
 
 var _CoreManager2 = _interopRequireDefault(_CoreManager);
@@ -11302,10 +10632,6 @@ var _CoreManager2 = _interopRequireDefault(_CoreManager);
 var _ParseError = _dereq_('./ParseError');
 
 var _ParseError2 = _interopRequireDefault(_ParseError);
-
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
 
 var _Storage = _dereq_('./Storage');
 
@@ -11315,18 +10641,17 @@ function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
 
-/**
- * Copyright (c) 2015-present, Parse, LLC.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * 
- */
+var XHR = null; /**
+                 * Copyright (c) 2015-present, Parse, LLC.
+                 * All rights reserved.
+                 *
+                 * This source code is licensed under the BSD-style license found in the
+                 * LICENSE file in the root directory of this source tree. An additional grant
+                 * of patent rights can be found in the PATENTS file in the same directory.
+                 *
+                 * 
+                 */
 
-var XHR = null;
 if (typeof XMLHttpRequest !== 'undefined') {
   XHR = XMLHttpRequest;
 }
@@ -11338,33 +10663,33 @@ if (typeof XDomainRequest !== 'undefined' && !('withCredentials' in new XMLHttpR
 }
 
 function ajaxIE9(method, url, data) {
-  var promise = new _ParsePromise2.default();
-  var xdr = new XDomainRequest();
-  xdr.onload = function () {
-    var response;
-    try {
-      response = JSON.parse(xdr.responseText);
-    } catch (e) {
-      promise.reject(e);
-    }
-    if (response) {
-      promise.resolve(response);
-    }
-  };
-  xdr.onerror = xdr.ontimeout = function () {
-    // Let's fake a real error message.
-    var fakeResponse = {
-      responseText: (0, _stringify2.default)({
-        code: _ParseError2.default.X_DOMAIN_REQUEST,
-        error: 'IE\'s XDomainRequest does not supply error info.'
-      })
+  return new _promise2.default(function (resolve, reject) {
+    var xdr = new XDomainRequest();
+    xdr.onload = function () {
+      var response;
+      try {
+        response = JSON.parse(xdr.responseText);
+      } catch (e) {
+        reject(e);
+      }
+      if (response) {
+        resolve({ response: response });
+      }
     };
-    promise.reject(fakeResponse);
-  };
-  xdr.onprogress = function () {};
-  xdr.open(method, url);
-  xdr.send(data);
-  return promise;
+    xdr.onerror = xdr.ontimeout = function () {
+      // Let's fake a real error message.
+      var fakeResponse = {
+        responseText: (0, _stringify2.default)({
+          code: _ParseError2.default.X_DOMAIN_REQUEST,
+          error: 'IE\'s XDomainRequest does not supply error info.'
+        })
+      };
+      reject(fakeResponse);
+    };
+    xdr.onprogress = function () {};
+    xdr.open(method, url);
+    xdr.send(data);
+  });
 }
 
 var RESTController = {
@@ -11373,16 +10698,20 @@ var RESTController = {
       return ajaxIE9(method, url, data, headers);
     }
 
-    var promise = new _ParsePromise2.default();
+    var res, rej;
+    var promise = new _promise2.default(function (resolve, reject) {
+      res = resolve;rej = reject;
+    });
+    promise.resolve = res;
+    promise.reject = rej;
     var attempts = 0;
 
-    (function dispatch() {
+    var dispatch = function dispatch() {
       if (XHR == null) {
         throw new Error('Cannot make a request: No definition of XMLHttpRequest was found.');
       }
       var handled = false;
       var xhr = new XHR();
-
       xhr.onreadystatechange = function () {
         if (xhr.readyState !== 4 || handled) {
           return;
@@ -11393,11 +10722,18 @@ var RESTController = {
           var response;
           try {
             response = JSON.parse(xhr.responseText);
+
+            if (typeof xhr.getResponseHeader === 'function') {
+              var jobStatusId = xhr.getResponseHeader('x-parse-job-status-id');
+              if (jobStatusId) {
+                response = jobStatusId;
+              }
+            }
           } catch (e) {
             promise.reject(e.toString());
           }
           if (response) {
-            promise.resolve(response, xhr.status, xhr);
+            promise.resolve({ response: response, status: xhr.status, xhr: xhr });
           }
         } else if (xhr.status >= 500 || xhr.status === 0) {
           // retry on 5XX or node-xmlhttprequest error
@@ -11429,7 +10765,8 @@ var RESTController = {
         xhr.setRequestHeader(h, headers[h]);
       }
       xhr.send(data);
-    })();
+    };
+    dispatch();
 
     return promise;
   },
@@ -11480,7 +10817,7 @@ var RESTController = {
     var installationId = options.installationId;
     var installationIdPromise;
     if (installationId && typeof installationId === 'string') {
-      installationIdPromise = _ParsePromise2.default.as(installationId);
+      installationIdPromise = _promise2.default.resolve(installationId);
     } else {
       var installationController = _CoreManager2.default.getInstallationController();
       installationIdPromise = installationController.currentInstallationId();
@@ -11490,16 +10827,16 @@ var RESTController = {
       payload._InstallationId = iid;
       var userController = _CoreManager2.default.getUserController();
       if (options && typeof options.sessionToken === 'string') {
-        return _ParsePromise2.default.as(options.sessionToken);
+        return _promise2.default.resolve(options.sessionToken);
       } else if (userController) {
         return userController.currentUserAsync().then(function (user) {
           if (user) {
-            return _ParsePromise2.default.as(user.getSessionToken());
+            return _promise2.default.resolve(user.getSessionToken());
           }
-          return _ParsePromise2.default.as(null);
+          return _promise2.default.resolve(null);
         });
       }
-      return _ParsePromise2.default.as(null);
+      return _promise2.default.resolve(null);
     }).then(function (token) {
       if (token) {
         payload._SessionToken = token;
@@ -11507,8 +10844,12 @@ var RESTController = {
 
       var payloadString = (0, _stringify2.default)(payload);
 
-      return RESTController.ajax(method, url, payloadString);
-    }).then(null, function (response) {
+      return RESTController.ajax(method, url, payloadString).then(function (_ref) {
+        var response = _ref.response;
+
+        return response;
+      });
+    }).catch(function (response) {
       // Transform the error into an instance of ParseError by trying to parse
       // the error string as JSON
       var error;
@@ -11524,7 +10865,7 @@ var RESTController = {
         error = new _ParseError2.default(_ParseError2.default.CONNECTION_FAILED, 'XMLHttpRequest failed: ' + (0, _stringify2.default)(response));
       }
 
-      return _ParsePromise2.default.error(error);
+      return _promise2.default.reject(error);
     });
   },
   _setXHR: function (xhr) {
@@ -11534,7 +10875,7 @@ var RESTController = {
 
 module.exports = RESTController;
 }).call(this,_dereq_('_process'))
-},{"./CoreManager":3,"./ParseError":13,"./ParsePromise":21,"./Storage":31,"_process":64,"babel-runtime/core-js/json/stringify":46,"babel-runtime/helpers/typeof":63}],30:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./Storage":30,"_process":65,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/typeof":64}],29:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11695,31 +11036,20 @@ function clearAllState() {
 function duplicateState(source, dest) {
   dest.id = source.id;
 }
-},{"./ObjectStateMutations":9}],31:[function(_dereq_,module,exports){
+},{"./ObjectStateMutations":9}],30:[function(_dereq_,module,exports){
 'use strict';
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _CoreManager = _dereq_('./CoreManager');
 
 var _CoreManager2 = _interopRequireDefault(_CoreManager);
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
-
-/**
- * Copyright (c) 2015-present, Parse, LLC.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * 
- */
 
 var Storage = {
   async: function () {
@@ -11738,7 +11068,7 @@ var Storage = {
     if (controller.async === 1) {
       return controller.getItemAsync(path);
     }
-    return _ParsePromise2.default.as(controller.getItem(path));
+    return _promise2.default.resolve(controller.getItem(path));
   },
   setItem: function (path, value) {
     var controller = _CoreManager2.default.getStorageController();
@@ -11752,7 +11082,7 @@ var Storage = {
     if (controller.async === 1) {
       return controller.setItemAsync(path, value);
     }
-    return _ParsePromise2.default.as(controller.setItem(path, value));
+    return _promise2.default.resolve(controller.setItem(path, value));
   },
   removeItem: function (path) {
     var controller = _CoreManager2.default.getStorageController();
@@ -11766,7 +11096,7 @@ var Storage = {
     if (controller.async === 1) {
       return controller.removeItemAsync(path);
     }
-    return _ParsePromise2.default.as(controller.removeItem(path));
+    return _promise2.default.resolve(controller.removeItem(path));
   },
   generatePath: function (path) {
     if (!_CoreManager2.default.get('APPLICATION_ID')) {
@@ -11786,21 +11116,33 @@ var Storage = {
       controller.clear();
     }
   }
-};
+}; /**
+    * Copyright (c) 2015-present, Parse, LLC.
+    * All rights reserved.
+    *
+    * This source code is licensed under the BSD-style license found in the
+    * LICENSE file in the root directory of this source tree. An additional grant
+    * of patent rights can be found in the PATENTS file in the same directory.
+    *
+    * 
+    */
 
 module.exports = Storage;
 
 _CoreManager2.default.setStorageController(_dereq_('./StorageController.browser'));
-},{"./CoreManager":3,"./ParsePromise":21,"./StorageController.browser":32}],32:[function(_dereq_,module,exports){
-'use strict';
+},{"./CoreManager":3,"./StorageController.browser":31,"babel-runtime/core-js/promise":55}],31:[function(_dereq_,module,exports){
+"use strict";
 
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
-
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj };
-}
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
 
 var StorageController = {
   async: 0,
@@ -11821,32 +11163,23 @@ var StorageController = {
   clear: function () {
     localStorage.clear();
   }
-}; /**
-    * Copyright (c) 2015-present, Parse, LLC.
-    * All rights reserved.
-    *
-    * This source code is licensed under the BSD-style license found in the
-    * LICENSE file in the root directory of this source tree. An additional grant
-    * of patent rights can be found in the PATENTS file in the same directory.
-    *
-    * 
-    */
+};
 
 module.exports = StorageController;
-},{"./ParsePromise":21}],33:[function(_dereq_,module,exports){
-'use strict';
+},{}],32:[function(_dereq_,module,exports){
+"use strict";
 
-var _classCallCheck2 = _dereq_('babel-runtime/helpers/classCallCheck');
+var _promise = _dereq_("babel-runtime/core-js/promise");
+
+var _promise2 = _interopRequireDefault(_promise);
+
+var _classCallCheck2 = _dereq_("babel-runtime/helpers/classCallCheck");
 
 var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
-var _createClass2 = _dereq_('babel-runtime/helpers/createClass');
+var _createClass2 = _dereq_("babel-runtime/helpers/createClass");
 
 var _createClass3 = _interopRequireDefault(_createClass2);
-
-var _ParsePromise = _dereq_('./ParsePromise');
-
-var _ParsePromise2 = _interopRequireDefault(_ParsePromise);
 
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
@@ -11860,11 +11193,18 @@ var TaskQueue = function () {
   }
 
   (0, _createClass3.default)(TaskQueue, [{
-    key: 'enqueue',
+    key: "enqueue",
     value: function (task) {
       var _this = this;
 
-      var taskComplete = new _ParsePromise2.default();
+      var res;
+      var rej;
+      var taskComplete = new _promise2.default(function (resolve, reject) {
+        res = resolve;
+        rej = reject;
+      });
+      taskComplete.resolve = res;
+      taskComplete.reject = rej;
       this.queue.push({
         task: task,
         _completion: taskComplete
@@ -11881,7 +11221,7 @@ var TaskQueue = function () {
       return taskComplete;
     }
   }, {
-    key: '_dequeue',
+    key: "_dequeue",
     value: function () {
       var _this2 = this;
 
@@ -11911,7 +11251,7 @@ var TaskQueue = function () {
       */
 
 module.exports = TaskQueue;
-},{"./ParsePromise":21,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],34:[function(_dereq_,module,exports){
+},{"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],33:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12101,7 +11441,7 @@ function duplicateState(source, dest) {
 function clearAllState() {
   objectState = new _weakMap2.default();
 }
-},{"./ObjectStateMutations":9,"./TaskQueue":33,"babel-runtime/core-js/weak-map":57}],35:[function(_dereq_,module,exports){
+},{"./ObjectStateMutations":9,"./TaskQueue":32,"babel-runtime/core-js/weak-map":58}],34:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12137,7 +11477,7 @@ function arrayContainsObject(array, object) {
    *
    * 
    */
-},{"./ParseObject":18}],36:[function(_dereq_,module,exports){
+},{"./ParseObject":18}],35:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12220,7 +11560,7 @@ function canBeSerializedHelper(value) {
   }
   return true;
 }
-},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":23,"babel-runtime/helpers/typeof":63}],37:[function(_dereq_,module,exports){
+},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":22,"babel-runtime/helpers/typeof":64}],36:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12319,7 +11659,7 @@ function decode(value) {
    *
    * 
    */
-},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":23,"babel-runtime/helpers/typeof":63}],38:[function(_dereq_,module,exports){
+},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":22,"babel-runtime/helpers/typeof":64}],37:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12426,7 +11766,7 @@ function encode(value, disallowObjects, forcePointers, seen) {
 
   return value;
 }
-},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":23,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/typeof":63}],39:[function(_dereq_,module,exports){
+},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":22,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/typeof":64}],38:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12511,7 +11851,7 @@ function equals(a, b) {
   }
   return true;
 }
-},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/typeof":63}],40:[function(_dereq_,module,exports){
+},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/typeof":64}],39:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12543,7 +11883,7 @@ function escape(str) {
     return encoded[char];
   });
 }
-},{}],41:[function(_dereq_,module,exports){
+},{}],40:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12564,7 +11904,7 @@ exports.default = isRevocableSession;
 function isRevocableSession(token) {
   return token.indexOf('r:') > -1;
 }
-},{}],42:[function(_dereq_,module,exports){
+},{}],41:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12599,7 +11939,102 @@ function parseDate(iso8601) {
 
   return new Date(Date.UTC(year, month, day, hour, minute, second, milli));
 }
-},{}],43:[function(_dereq_,module,exports){
+},{}],42:[function(_dereq_,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _promise = _dereq_('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
+
+exports.resolvingPromise = resolvingPromise;
+exports.when = when;
+exports.continueWhile = continueWhile;
+
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
+
+function resolvingPromise() {
+  var res = void 0;
+  var rej = void 0;
+  var promise = new _promise2.default(function (resolve, reject) {
+    res = resolve;
+    rej = reject;
+  });
+  promise.resolve = res;
+  promise.reject = rej;
+  return promise;
+}
+
+function when(promises) {
+  var objects;
+  var arrayArgument = Array.isArray(promises);
+  if (arrayArgument) {
+    objects = promises;
+  } else {
+    objects = arguments;
+  }
+
+  var total = objects.length;
+  var hadError = false;
+  var results = [];
+  var returnValue = arrayArgument ? [results] : results;
+  var errors = [];
+  results.length = objects.length;
+  errors.length = objects.length;
+
+  if (total === 0) {
+    return _promise2.default.resolve(returnValue);
+  }
+
+  var promise = new resolvingPromise();
+
+  var resolveOne = function () {
+    total--;
+    if (total <= 0) {
+      if (hadError) {
+        promise.reject(errors);
+      } else {
+        promise.resolve(returnValue);
+      }
+    }
+  };
+
+  var chain = function (object, index) {
+    if (object && typeof object.then === 'function') {
+      object.then(function (result) {
+        results[index] = result;
+        resolveOne();
+      }, function (error) {
+        errors[index] = error;
+        hadError = true;
+        resolveOne();
+      });
+    } else {
+      results[i] = object;
+      resolveOne();
+    }
+  };
+  for (var i = 0; i < objects.length; i++) {
+    chain(objects[i], i);
+  }
+
+  return promise;
+}
+
+function continueWhile(test, emitter) {
+  if (test()) {
+    return emitter().then(function () {
+      return continueWhile(test, emitter);
+    });
+  }
+  return _promise2.default.resolve();
+}
+},{"babel-runtime/core-js/promise":55}],43:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12645,7 +12080,7 @@ function unique(arr) {
   });
   return uniques;
 }
-},{"./ParseObject":18,"./arrayContainsObject":35}],44:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"./arrayContainsObject":34}],44:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12748,7 +12183,7 @@ function traverse(obj, encountered, shouldThrow, allowDeepUnsaved) {
     }
   }
 }
-},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":23,"babel-runtime/helpers/typeof":63}],45:[function(_dereq_,module,exports){
+},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":22,"babel-runtime/helpers/typeof":64}],45:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/get-iterator"), __esModule: true };
 },{"core-js/library/fn/get-iterator":66}],46:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/json/stringify"), __esModule: true };
@@ -12769,12 +12204,14 @@ module.exports = { "default": _dereq_("core-js/library/fn/object/keys"), __esMod
 },{"core-js/library/fn/object/keys":74}],54:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/set-prototype-of"), __esModule: true };
 },{"core-js/library/fn/object/set-prototype-of":75}],55:[function(_dereq_,module,exports){
+module.exports = { "default": _dereq_("core-js/library/fn/promise"), __esModule: true };
+},{"core-js/library/fn/promise":76}],56:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/symbol"), __esModule: true };
-},{"core-js/library/fn/symbol":76}],56:[function(_dereq_,module,exports){
+},{"core-js/library/fn/symbol":77}],57:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/symbol/iterator"), __esModule: true };
-},{"core-js/library/fn/symbol/iterator":77}],57:[function(_dereq_,module,exports){
+},{"core-js/library/fn/symbol/iterator":78}],58:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/weak-map"), __esModule: true };
-},{"core-js/library/fn/weak-map":78}],58:[function(_dereq_,module,exports){
+},{"core-js/library/fn/weak-map":79}],59:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12784,7 +12221,7 @@ exports.default = function (instance, Constructor) {
     throw new TypeError("Cannot call a class as a function");
   }
 };
-},{}],59:[function(_dereq_,module,exports){
+},{}],60:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12812,7 +12249,7 @@ exports.default = function () {
     return Constructor;
   };
 }();
-},{"../core-js/object/define-property":49}],60:[function(_dereq_,module,exports){
+},{"../core-js/object/define-property":49}],61:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12851,7 +12288,7 @@ exports.default = function get(object, property, receiver) {
     return getter.call(receiver);
   }
 };
-},{"../core-js/object/get-own-property-descriptor":51,"../core-js/object/get-prototype-of":52}],61:[function(_dereq_,module,exports){
+},{"../core-js/object/get-own-property-descriptor":51,"../core-js/object/get-prototype-of":52}],62:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12885,7 +12322,7 @@ exports.default = function (subClass, superClass) {
   });
   if (superClass) _setPrototypeOf2.default ? (0, _setPrototypeOf2.default)(subClass, superClass) : subClass.__proto__ = superClass;
 };
-},{"../core-js/object/create":48,"../core-js/object/set-prototype-of":54,"../helpers/typeof":63}],62:[function(_dereq_,module,exports){
+},{"../core-js/object/create":48,"../core-js/object/set-prototype-of":54,"../helpers/typeof":64}],63:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12903,7 +12340,7 @@ exports.default = function (self, call) {
 
   return call && ((typeof call === "undefined" ? "undefined" : (0, _typeof3.default)(call)) === "object" || typeof call === "function") ? call : self;
 };
-},{"../helpers/typeof":63}],63:[function(_dereq_,module,exports){
+},{"../helpers/typeof":64}],64:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12916,403 +12353,105 @@ var _symbol = _dereq_("../core-js/symbol");
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
-var _typeof = typeof _symbol2.default === "function" && typeof _iterator2.default === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2.default === "function" && obj.constructor === _symbol2.default ? "symbol" : typeof obj; };
+var _typeof = typeof _symbol2.default === "function" && typeof _iterator2.default === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2.default === "function" && obj.constructor === _symbol2.default && obj !== _symbol2.default.prototype ? "symbol" : typeof obj; };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = typeof _symbol2.default === "function" && _typeof(_iterator2.default) === "symbol" ? function (obj) {
   return typeof obj === "undefined" ? "undefined" : _typeof(obj);
 } : function (obj) {
-  return obj && typeof _symbol2.default === "function" && obj.constructor === _symbol2.default ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof(obj);
+  return obj && typeof _symbol2.default === "function" && obj.constructor === _symbol2.default && obj !== _symbol2.default.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof(obj);
 };
-},{"../core-js/symbol":55,"../core-js/symbol/iterator":56}],64:[function(_dereq_,module,exports){
-
-},{}],65:[function(_dereq_,module,exports){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-function EventEmitter() {
-  this._events = this._events || {};
-  this._maxListeners = this._maxListeners || undefined;
-}
-module.exports = EventEmitter;
-
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
-
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._maxListeners = undefined;
-
-// By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-EventEmitter.defaultMaxListeners = 10;
-
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!isNumber(n) || n < 0 || isNaN(n))
-    throw TypeError('n must be a positive number');
-  this._maxListeners = n;
-  return this;
-};
-
-EventEmitter.prototype.emit = function(type) {
-  var er, handler, len, args, i, listeners;
-
-  if (!this._events)
-    this._events = {};
-
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events.error ||
-        (isObject(this._events.error) && !this._events.error.length)) {
-      er = arguments[1];
-      if (er instanceof Error) {
-        throw er; // Unhandled 'error' event
-      } else {
-        // At least give some kind of context to the user
-        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
-        err.context = er;
-        throw err;
-      }
-    }
-  }
-
-  handler = this._events[type];
-
-  if (isUndefined(handler))
-    return false;
-
-  if (isFunction(handler)) {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        args = Array.prototype.slice.call(arguments, 1);
-        handler.apply(this, args);
-    }
-  } else if (isObject(handler)) {
-    args = Array.prototype.slice.call(arguments, 1);
-    listeners = handler.slice();
-    len = listeners.length;
-    for (i = 0; i < len; i++)
-      listeners[i].apply(this, args);
-  }
-
-  return true;
-};
-
-EventEmitter.prototype.addListener = function(type, listener) {
-  var m;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events)
-    this._events = {};
-
-  // To avoid recursion in the case that type === "newListener"! Before
-  // adding it to the listeners, first emit "newListener".
-  if (this._events.newListener)
-    this.emit('newListener', type,
-              isFunction(listener.listener) ?
-              listener.listener : listener);
-
-  if (!this._events[type])
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  else if (isObject(this._events[type]))
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  else
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-
-  // Check for listener leak
-  if (isObject(this._events[type]) && !this._events[type].warned) {
-    if (!isUndefined(this._maxListeners)) {
-      m = this._maxListeners;
-    } else {
-      m = EventEmitter.defaultMaxListeners;
-    }
-
-    if (m && m > 0 && this._events[type].length > m) {
-      this._events[type].warned = true;
-      console.error('(node) warning: possible EventEmitter memory ' +
-                    'leak detected. %d listeners added. ' +
-                    'Use emitter.setMaxListeners() to increase limit.',
-                    this._events[type].length);
-      if (typeof console.trace === 'function') {
-        // not supported in IE 10
-        console.trace();
-      }
-    }
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  var fired = false;
-
-  function g() {
-    this.removeListener(type, g);
-
-    if (!fired) {
-      fired = true;
-      listener.apply(this, arguments);
-    }
-  }
-
-  g.listener = listener;
-  this.on(type, g);
-
-  return this;
-};
-
-// emits a 'removeListener' event iff the listener was removed
-EventEmitter.prototype.removeListener = function(type, listener) {
-  var list, position, length, i;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events || !this._events[type])
-    return this;
-
-  list = this._events[type];
-  length = list.length;
-  position = -1;
-
-  if (list === listener ||
-      (isFunction(list.listener) && list.listener === listener)) {
-    delete this._events[type];
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-
-  } else if (isObject(list)) {
-    for (i = length; i-- > 0;) {
-      if (list[i] === listener ||
-          (list[i].listener && list[i].listener === listener)) {
-        position = i;
-        break;
-      }
-    }
-
-    if (position < 0)
-      return this;
-
-    if (list.length === 1) {
-      list.length = 0;
-      delete this._events[type];
-    } else {
-      list.splice(position, 1);
-    }
-
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  var key, listeners;
-
-  if (!this._events)
-    return this;
-
-  // not listening for removeListener, no need to emit
-  if (!this._events.removeListener) {
-    if (arguments.length === 0)
-      this._events = {};
-    else if (this._events[type])
-      delete this._events[type];
-    return this;
-  }
-
-  // emit removeListener for all listeners on all events
-  if (arguments.length === 0) {
-    for (key in this._events) {
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-    this.removeAllListeners('removeListener');
-    this._events = {};
-    return this;
-  }
-
-  listeners = this._events[type];
-
-  if (isFunction(listeners)) {
-    this.removeListener(type, listeners);
-  } else if (listeners) {
-    // LIFO order
-    while (listeners.length)
-      this.removeListener(type, listeners[listeners.length - 1]);
-  }
-  delete this._events[type];
-
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  var ret;
-  if (!this._events || !this._events[type])
-    ret = [];
-  else if (isFunction(this._events[type]))
-    ret = [this._events[type]];
-  else
-    ret = this._events[type].slice();
-  return ret;
-};
-
-EventEmitter.prototype.listenerCount = function(type) {
-  if (this._events) {
-    var evlistener = this._events[type];
-
-    if (isFunction(evlistener))
-      return 1;
-    else if (evlistener)
-      return evlistener.length;
-  }
-  return 0;
-};
-
-EventEmitter.listenerCount = function(emitter, type) {
-  return emitter.listenerCount(type);
-};
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
+},{"../core-js/symbol":56,"../core-js/symbol/iterator":57}],65:[function(_dereq_,module,exports){
 
 },{}],66:[function(_dereq_,module,exports){
 _dereq_('../modules/web.dom.iterable');
 _dereq_('../modules/es6.string.iterator');
 module.exports = _dereq_('../modules/core.get-iterator');
-},{"../modules/core.get-iterator":154,"../modules/es6.string.iterator":165,"../modules/web.dom.iterable":171}],67:[function(_dereq_,module,exports){
+},{"../modules/core.get-iterator":160,"../modules/es6.string.iterator":172,"../modules/web.dom.iterable":178}],67:[function(_dereq_,module,exports){
 var core  = _dereq_('../../modules/_core')
   , $JSON = core.JSON || (core.JSON = {stringify: JSON.stringify});
 module.exports = function stringify(it){ // eslint-disable-line no-unused-vars
   return $JSON.stringify.apply($JSON, arguments);
 };
-},{"../../modules/_core":94}],68:[function(_dereq_,module,exports){
+},{"../../modules/_core":95}],68:[function(_dereq_,module,exports){
 _dereq_('../modules/es6.object.to-string');
 _dereq_('../modules/es6.string.iterator');
 _dereq_('../modules/web.dom.iterable');
 _dereq_('../modules/es6.map');
 _dereq_('../modules/es7.map.to-json');
 module.exports = _dereq_('../modules/_core').Map;
-},{"../modules/_core":94,"../modules/es6.map":156,"../modules/es6.object.to-string":164,"../modules/es6.string.iterator":165,"../modules/es7.map.to-json":168,"../modules/web.dom.iterable":171}],69:[function(_dereq_,module,exports){
+},{"../modules/_core":95,"../modules/es6.map":162,"../modules/es6.object.to-string":170,"../modules/es6.string.iterator":172,"../modules/es7.map.to-json":175,"../modules/web.dom.iterable":178}],69:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.create');
 var $Object = _dereq_('../../modules/_core').Object;
 module.exports = function create(P, D){
   return $Object.create(P, D);
 };
-},{"../../modules/_core":94,"../../modules/es6.object.create":157}],70:[function(_dereq_,module,exports){
+},{"../../modules/_core":95,"../../modules/es6.object.create":163}],70:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.define-property');
 var $Object = _dereq_('../../modules/_core').Object;
 module.exports = function defineProperty(it, key, desc){
   return $Object.defineProperty(it, key, desc);
 };
-},{"../../modules/_core":94,"../../modules/es6.object.define-property":158}],71:[function(_dereq_,module,exports){
+},{"../../modules/_core":95,"../../modules/es6.object.define-property":164}],71:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.freeze');
 module.exports = _dereq_('../../modules/_core').Object.freeze;
-},{"../../modules/_core":94,"../../modules/es6.object.freeze":159}],72:[function(_dereq_,module,exports){
+},{"../../modules/_core":95,"../../modules/es6.object.freeze":165}],72:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.get-own-property-descriptor');
 var $Object = _dereq_('../../modules/_core').Object;
 module.exports = function getOwnPropertyDescriptor(it, key){
   return $Object.getOwnPropertyDescriptor(it, key);
 };
-},{"../../modules/_core":94,"../../modules/es6.object.get-own-property-descriptor":160}],73:[function(_dereq_,module,exports){
+},{"../../modules/_core":95,"../../modules/es6.object.get-own-property-descriptor":166}],73:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.get-prototype-of');
 module.exports = _dereq_('../../modules/_core').Object.getPrototypeOf;
-},{"../../modules/_core":94,"../../modules/es6.object.get-prototype-of":161}],74:[function(_dereq_,module,exports){
+},{"../../modules/_core":95,"../../modules/es6.object.get-prototype-of":167}],74:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.keys');
 module.exports = _dereq_('../../modules/_core').Object.keys;
-},{"../../modules/_core":94,"../../modules/es6.object.keys":162}],75:[function(_dereq_,module,exports){
+},{"../../modules/_core":95,"../../modules/es6.object.keys":168}],75:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.set-prototype-of');
 module.exports = _dereq_('../../modules/_core').Object.setPrototypeOf;
-},{"../../modules/_core":94,"../../modules/es6.object.set-prototype-of":163}],76:[function(_dereq_,module,exports){
+},{"../../modules/_core":95,"../../modules/es6.object.set-prototype-of":169}],76:[function(_dereq_,module,exports){
+_dereq_('../modules/es6.object.to-string');
+_dereq_('../modules/es6.string.iterator');
+_dereq_('../modules/web.dom.iterable');
+_dereq_('../modules/es6.promise');
+module.exports = _dereq_('../modules/_core').Promise;
+},{"../modules/_core":95,"../modules/es6.object.to-string":170,"../modules/es6.promise":171,"../modules/es6.string.iterator":172,"../modules/web.dom.iterable":178}],77:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.symbol');
 _dereq_('../../modules/es6.object.to-string');
 _dereq_('../../modules/es7.symbol.async-iterator');
 _dereq_('../../modules/es7.symbol.observable');
 module.exports = _dereq_('../../modules/_core').Symbol;
-},{"../../modules/_core":94,"../../modules/es6.object.to-string":164,"../../modules/es6.symbol":166,"../../modules/es7.symbol.async-iterator":169,"../../modules/es7.symbol.observable":170}],77:[function(_dereq_,module,exports){
+},{"../../modules/_core":95,"../../modules/es6.object.to-string":170,"../../modules/es6.symbol":173,"../../modules/es7.symbol.async-iterator":176,"../../modules/es7.symbol.observable":177}],78:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.string.iterator');
 _dereq_('../../modules/web.dom.iterable');
 module.exports = _dereq_('../../modules/_wks-ext').f('iterator');
-},{"../../modules/_wks-ext":151,"../../modules/es6.string.iterator":165,"../../modules/web.dom.iterable":171}],78:[function(_dereq_,module,exports){
+},{"../../modules/_wks-ext":157,"../../modules/es6.string.iterator":172,"../../modules/web.dom.iterable":178}],79:[function(_dereq_,module,exports){
 _dereq_('../modules/es6.object.to-string');
 _dereq_('../modules/web.dom.iterable');
 _dereq_('../modules/es6.weak-map');
 module.exports = _dereq_('../modules/_core').WeakMap;
-},{"../modules/_core":94,"../modules/es6.object.to-string":164,"../modules/es6.weak-map":167,"../modules/web.dom.iterable":171}],79:[function(_dereq_,module,exports){
+},{"../modules/_core":95,"../modules/es6.object.to-string":170,"../modules/es6.weak-map":174,"../modules/web.dom.iterable":178}],80:[function(_dereq_,module,exports){
 module.exports = function(it){
   if(typeof it != 'function')throw TypeError(it + ' is not a function!');
   return it;
 };
-},{}],80:[function(_dereq_,module,exports){
-module.exports = function(){ /* empty */ };
 },{}],81:[function(_dereq_,module,exports){
+module.exports = function(){ /* empty */ };
+},{}],82:[function(_dereq_,module,exports){
 module.exports = function(it, Constructor, name, forbiddenField){
   if(!(it instanceof Constructor) || (forbiddenField !== undefined && forbiddenField in it)){
     throw TypeError(name + ': incorrect invocation!');
   } return it;
 };
-},{}],82:[function(_dereq_,module,exports){
+},{}],83:[function(_dereq_,module,exports){
 var isObject = _dereq_('./_is-object');
 module.exports = function(it){
   if(!isObject(it))throw TypeError(it + ' is not an object!');
   return it;
 };
-},{"./_is-object":112}],83:[function(_dereq_,module,exports){
+},{"./_is-object":114}],84:[function(_dereq_,module,exports){
 var forOf = _dereq_('./_for-of');
 
 module.exports = function(iter, ITERATOR){
@@ -13321,7 +12460,7 @@ module.exports = function(iter, ITERATOR){
   return result;
 };
 
-},{"./_for-of":103}],84:[function(_dereq_,module,exports){
+},{"./_for-of":104}],85:[function(_dereq_,module,exports){
 // false -> Array#indexOf
 // true  -> Array#includes
 var toIObject = _dereq_('./_to-iobject')
@@ -13343,7 +12482,7 @@ module.exports = function(IS_INCLUDES){
     } return !IS_INCLUDES && -1;
   };
 };
-},{"./_to-index":143,"./_to-iobject":145,"./_to-length":146}],85:[function(_dereq_,module,exports){
+},{"./_to-index":149,"./_to-iobject":151,"./_to-length":152}],86:[function(_dereq_,module,exports){
 // 0 -> Array#forEach
 // 1 -> Array#map
 // 2 -> Array#filter
@@ -13388,7 +12527,7 @@ module.exports = function(TYPE, $create){
     return IS_FIND_INDEX ? -1 : IS_SOME || IS_EVERY ? IS_EVERY : result;
   };
 };
-},{"./_array-species-create":87,"./_ctx":95,"./_iobject":109,"./_to-length":146,"./_to-object":147}],86:[function(_dereq_,module,exports){
+},{"./_array-species-create":88,"./_ctx":96,"./_iobject":111,"./_to-length":152,"./_to-object":153}],87:[function(_dereq_,module,exports){
 var isObject = _dereq_('./_is-object')
   , isArray  = _dereq_('./_is-array')
   , SPECIES  = _dereq_('./_wks')('species');
@@ -13405,14 +12544,14 @@ module.exports = function(original){
     }
   } return C === undefined ? Array : C;
 };
-},{"./_is-array":111,"./_is-object":112,"./_wks":152}],87:[function(_dereq_,module,exports){
+},{"./_is-array":113,"./_is-object":114,"./_wks":158}],88:[function(_dereq_,module,exports){
 // 9.4.2.3 ArraySpeciesCreate(originalArray, length)
 var speciesConstructor = _dereq_('./_array-species-constructor');
 
 module.exports = function(original, length){
   return new (speciesConstructor(original))(length);
 };
-},{"./_array-species-constructor":86}],88:[function(_dereq_,module,exports){
+},{"./_array-species-constructor":87}],89:[function(_dereq_,module,exports){
 // getting tag from 19.1.3.6 Object.prototype.toString()
 var cof = _dereq_('./_cof')
   , TAG = _dereq_('./_wks')('toStringTag')
@@ -13436,13 +12575,13 @@ module.exports = function(it){
     // ES3 arguments fallback
     : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
 };
-},{"./_cof":89,"./_wks":152}],89:[function(_dereq_,module,exports){
+},{"./_cof":90,"./_wks":158}],90:[function(_dereq_,module,exports){
 var toString = {}.toString;
 
 module.exports = function(it){
   return toString.call(it).slice(8, -1);
 };
-},{}],90:[function(_dereq_,module,exports){
+},{}],91:[function(_dereq_,module,exports){
 'use strict';
 var dP          = _dereq_('./_object-dp').f
   , create      = _dereq_('./_object-create')
@@ -13585,7 +12724,7 @@ module.exports = {
     setSpecies(NAME);
   }
 };
-},{"./_an-instance":81,"./_ctx":95,"./_defined":96,"./_descriptors":97,"./_for-of":103,"./_iter-define":115,"./_iter-step":116,"./_meta":120,"./_object-create":122,"./_object-dp":123,"./_redefine-all":135,"./_set-species":138}],91:[function(_dereq_,module,exports){
+},{"./_an-instance":82,"./_ctx":96,"./_defined":97,"./_descriptors":98,"./_for-of":104,"./_iter-define":117,"./_iter-step":119,"./_meta":123,"./_object-create":126,"./_object-dp":127,"./_redefine-all":139,"./_set-species":142}],92:[function(_dereq_,module,exports){
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var classof = _dereq_('./_classof')
   , from    = _dereq_('./_array-from-iterable');
@@ -13595,7 +12734,7 @@ module.exports = function(NAME){
     return from(this);
   };
 };
-},{"./_array-from-iterable":83,"./_classof":88}],92:[function(_dereq_,module,exports){
+},{"./_array-from-iterable":84,"./_classof":89}],93:[function(_dereq_,module,exports){
 'use strict';
 var redefineAll       = _dereq_('./_redefine-all')
   , getWeak           = _dereq_('./_meta').getWeak
@@ -13679,7 +12818,7 @@ module.exports = {
   },
   ufstore: uncaughtFrozenStore
 };
-},{"./_an-instance":81,"./_an-object":82,"./_array-methods":85,"./_for-of":103,"./_has":105,"./_is-object":112,"./_meta":120,"./_redefine-all":135}],93:[function(_dereq_,module,exports){
+},{"./_an-instance":82,"./_an-object":83,"./_array-methods":86,"./_for-of":104,"./_has":106,"./_is-object":114,"./_meta":123,"./_redefine-all":139}],94:[function(_dereq_,module,exports){
 'use strict';
 var global         = _dereq_('./_global')
   , $export        = _dereq_('./_export')
@@ -13739,10 +12878,10 @@ module.exports = function(NAME, wrapper, methods, common, IS_MAP, IS_WEAK){
 
   return C;
 };
-},{"./_an-instance":81,"./_array-methods":85,"./_descriptors":97,"./_export":101,"./_fails":102,"./_for-of":103,"./_global":104,"./_hide":106,"./_is-object":112,"./_meta":120,"./_object-dp":123,"./_redefine-all":135,"./_set-to-string-tag":139}],94:[function(_dereq_,module,exports){
+},{"./_an-instance":82,"./_array-methods":86,"./_descriptors":98,"./_export":102,"./_fails":103,"./_for-of":104,"./_global":105,"./_hide":107,"./_is-object":114,"./_meta":123,"./_object-dp":127,"./_redefine-all":139,"./_set-to-string-tag":143}],95:[function(_dereq_,module,exports){
 var core = module.exports = {version: '2.4.0'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
-},{}],95:[function(_dereq_,module,exports){
+},{}],96:[function(_dereq_,module,exports){
 // optional / simple context binding
 var aFunction = _dereq_('./_a-function');
 module.exports = function(fn, that, length){
@@ -13763,18 +12902,18 @@ module.exports = function(fn, that, length){
     return fn.apply(that, arguments);
   };
 };
-},{"./_a-function":79}],96:[function(_dereq_,module,exports){
+},{"./_a-function":80}],97:[function(_dereq_,module,exports){
 // 7.2.1 RequireObjectCoercible(argument)
 module.exports = function(it){
   if(it == undefined)throw TypeError("Can't call method on  " + it);
   return it;
 };
-},{}],97:[function(_dereq_,module,exports){
+},{}],98:[function(_dereq_,module,exports){
 // Thank's IE8 for his funny defineProperty
 module.exports = !_dereq_('./_fails')(function(){
   return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
 });
-},{"./_fails":102}],98:[function(_dereq_,module,exports){
+},{"./_fails":103}],99:[function(_dereq_,module,exports){
 var isObject = _dereq_('./_is-object')
   , document = _dereq_('./_global').document
   // in old IE typeof document.createElement is 'object'
@@ -13782,12 +12921,12 @@ var isObject = _dereq_('./_is-object')
 module.exports = function(it){
   return is ? document.createElement(it) : {};
 };
-},{"./_global":104,"./_is-object":112}],99:[function(_dereq_,module,exports){
+},{"./_global":105,"./_is-object":114}],100:[function(_dereq_,module,exports){
 // IE 8- don't enum bug keys
 module.exports = (
   'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
 ).split(',');
-},{}],100:[function(_dereq_,module,exports){
+},{}],101:[function(_dereq_,module,exports){
 // all enumerable object keys, includes symbols
 var getKeys = _dereq_('./_object-keys')
   , gOPS    = _dereq_('./_object-gops')
@@ -13803,7 +12942,7 @@ module.exports = function(it){
     while(symbols.length > i)if(isEnum.call(it, key = symbols[i++]))result.push(key);
   } return result;
 };
-},{"./_object-gops":128,"./_object-keys":131,"./_object-pie":132}],101:[function(_dereq_,module,exports){
+},{"./_object-gops":132,"./_object-keys":135,"./_object-pie":136}],102:[function(_dereq_,module,exports){
 var global    = _dereq_('./_global')
   , core      = _dereq_('./_core')
   , ctx       = _dereq_('./_ctx')
@@ -13865,7 +13004,7 @@ $export.W = 32;  // wrap
 $export.U = 64;  // safe
 $export.R = 128; // real proto method for `library` 
 module.exports = $export;
-},{"./_core":94,"./_ctx":95,"./_global":104,"./_hide":106}],102:[function(_dereq_,module,exports){
+},{"./_core":95,"./_ctx":96,"./_global":105,"./_hide":107}],103:[function(_dereq_,module,exports){
 module.exports = function(exec){
   try {
     return !!exec();
@@ -13873,7 +13012,7 @@ module.exports = function(exec){
     return true;
   }
 };
-},{}],103:[function(_dereq_,module,exports){
+},{}],104:[function(_dereq_,module,exports){
 var ctx         = _dereq_('./_ctx')
   , call        = _dereq_('./_iter-call')
   , isArrayIter = _dereq_('./_is-array-iter')
@@ -13899,17 +13038,17 @@ var exports = module.exports = function(iterable, entries, fn, that, ITERATOR){
 };
 exports.BREAK  = BREAK;
 exports.RETURN = RETURN;
-},{"./_an-object":82,"./_ctx":95,"./_is-array-iter":110,"./_iter-call":113,"./_to-length":146,"./core.get-iterator-method":153}],104:[function(_dereq_,module,exports){
+},{"./_an-object":83,"./_ctx":96,"./_is-array-iter":112,"./_iter-call":115,"./_to-length":152,"./core.get-iterator-method":159}],105:[function(_dereq_,module,exports){
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
   ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
 if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
-},{}],105:[function(_dereq_,module,exports){
+},{}],106:[function(_dereq_,module,exports){
 var hasOwnProperty = {}.hasOwnProperty;
 module.exports = function(it, key){
   return hasOwnProperty.call(it, key);
 };
-},{}],106:[function(_dereq_,module,exports){
+},{}],107:[function(_dereq_,module,exports){
 var dP         = _dereq_('./_object-dp')
   , createDesc = _dereq_('./_property-desc');
 module.exports = _dereq_('./_descriptors') ? function(object, key, value){
@@ -13918,19 +13057,36 @@ module.exports = _dereq_('./_descriptors') ? function(object, key, value){
   object[key] = value;
   return object;
 };
-},{"./_descriptors":97,"./_object-dp":123,"./_property-desc":134}],107:[function(_dereq_,module,exports){
+},{"./_descriptors":98,"./_object-dp":127,"./_property-desc":138}],108:[function(_dereq_,module,exports){
 module.exports = _dereq_('./_global').document && document.documentElement;
-},{"./_global":104}],108:[function(_dereq_,module,exports){
+},{"./_global":105}],109:[function(_dereq_,module,exports){
 module.exports = !_dereq_('./_descriptors') && !_dereq_('./_fails')(function(){
   return Object.defineProperty(_dereq_('./_dom-create')('div'), 'a', {get: function(){ return 7; }}).a != 7;
 });
-},{"./_descriptors":97,"./_dom-create":98,"./_fails":102}],109:[function(_dereq_,module,exports){
+},{"./_descriptors":98,"./_dom-create":99,"./_fails":103}],110:[function(_dereq_,module,exports){
+// fast apply, http://jsperf.lnkit.com/fast-apply/5
+module.exports = function(fn, args, that){
+  var un = that === undefined;
+  switch(args.length){
+    case 0: return un ? fn()
+                      : fn.call(that);
+    case 1: return un ? fn(args[0])
+                      : fn.call(that, args[0]);
+    case 2: return un ? fn(args[0], args[1])
+                      : fn.call(that, args[0], args[1]);
+    case 3: return un ? fn(args[0], args[1], args[2])
+                      : fn.call(that, args[0], args[1], args[2]);
+    case 4: return un ? fn(args[0], args[1], args[2], args[3])
+                      : fn.call(that, args[0], args[1], args[2], args[3]);
+  } return              fn.apply(that, args);
+};
+},{}],111:[function(_dereq_,module,exports){
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
 var cof = _dereq_('./_cof');
 module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
   return cof(it) == 'String' ? it.split('') : Object(it);
 };
-},{"./_cof":89}],110:[function(_dereq_,module,exports){
+},{"./_cof":90}],112:[function(_dereq_,module,exports){
 // check on default Array iterator
 var Iterators  = _dereq_('./_iterators')
   , ITERATOR   = _dereq_('./_wks')('iterator')
@@ -13939,17 +13095,17 @@ var Iterators  = _dereq_('./_iterators')
 module.exports = function(it){
   return it !== undefined && (Iterators.Array === it || ArrayProto[ITERATOR] === it);
 };
-},{"./_iterators":117,"./_wks":152}],111:[function(_dereq_,module,exports){
+},{"./_iterators":120,"./_wks":158}],113:[function(_dereq_,module,exports){
 // 7.2.2 IsArray(argument)
 var cof = _dereq_('./_cof');
 module.exports = Array.isArray || function isArray(arg){
   return cof(arg) == 'Array';
 };
-},{"./_cof":89}],112:[function(_dereq_,module,exports){
+},{"./_cof":90}],114:[function(_dereq_,module,exports){
 module.exports = function(it){
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
-},{}],113:[function(_dereq_,module,exports){
+},{}],115:[function(_dereq_,module,exports){
 // call something on iterator step with safe closing on error
 var anObject = _dereq_('./_an-object');
 module.exports = function(iterator, fn, value, entries){
@@ -13962,7 +13118,7 @@ module.exports = function(iterator, fn, value, entries){
     throw e;
   }
 };
-},{"./_an-object":82}],114:[function(_dereq_,module,exports){
+},{"./_an-object":83}],116:[function(_dereq_,module,exports){
 'use strict';
 var create         = _dereq_('./_object-create')
   , descriptor     = _dereq_('./_property-desc')
@@ -13976,7 +13132,7 @@ module.exports = function(Constructor, NAME, next){
   Constructor.prototype = create(IteratorPrototype, {next: descriptor(1, next)});
   setToStringTag(Constructor, NAME + ' Iterator');
 };
-},{"./_hide":106,"./_object-create":122,"./_property-desc":134,"./_set-to-string-tag":139,"./_wks":152}],115:[function(_dereq_,module,exports){
+},{"./_hide":107,"./_object-create":126,"./_property-desc":138,"./_set-to-string-tag":143,"./_wks":158}],117:[function(_dereq_,module,exports){
 'use strict';
 var LIBRARY        = _dereq_('./_library')
   , $export        = _dereq_('./_export')
@@ -14047,13 +13203,35 @@ module.exports = function(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED
   }
   return methods;
 };
-},{"./_export":101,"./_has":105,"./_hide":106,"./_iter-create":114,"./_iterators":117,"./_library":119,"./_object-gpo":129,"./_redefine":136,"./_set-to-string-tag":139,"./_wks":152}],116:[function(_dereq_,module,exports){
+},{"./_export":102,"./_has":106,"./_hide":107,"./_iter-create":116,"./_iterators":120,"./_library":122,"./_object-gpo":133,"./_redefine":140,"./_set-to-string-tag":143,"./_wks":158}],118:[function(_dereq_,module,exports){
+var ITERATOR     = _dereq_('./_wks')('iterator')
+  , SAFE_CLOSING = false;
+
+try {
+  var riter = [7][ITERATOR]();
+  riter['return'] = function(){ SAFE_CLOSING = true; };
+  Array.from(riter, function(){ throw 2; });
+} catch(e){ /* empty */ }
+
+module.exports = function(exec, skipClosing){
+  if(!skipClosing && !SAFE_CLOSING)return false;
+  var safe = false;
+  try {
+    var arr  = [7]
+      , iter = arr[ITERATOR]();
+    iter.next = function(){ return {done: safe = true}; };
+    arr[ITERATOR] = function(){ return iter; };
+    exec(arr);
+  } catch(e){ /* empty */ }
+  return safe;
+};
+},{"./_wks":158}],119:[function(_dereq_,module,exports){
 module.exports = function(done, value){
   return {value: value, done: !!done};
 };
-},{}],117:[function(_dereq_,module,exports){
+},{}],120:[function(_dereq_,module,exports){
 module.exports = {};
-},{}],118:[function(_dereq_,module,exports){
+},{}],121:[function(_dereq_,module,exports){
 var getKeys   = _dereq_('./_object-keys')
   , toIObject = _dereq_('./_to-iobject');
 module.exports = function(object, el){
@@ -14064,9 +13242,9 @@ module.exports = function(object, el){
     , key;
   while(length > index)if(O[key = keys[index++]] === el)return key;
 };
-},{"./_object-keys":131,"./_to-iobject":145}],119:[function(_dereq_,module,exports){
+},{"./_object-keys":135,"./_to-iobject":151}],122:[function(_dereq_,module,exports){
 module.exports = true;
-},{}],120:[function(_dereq_,module,exports){
+},{}],123:[function(_dereq_,module,exports){
 var META     = _dereq_('./_uid')('meta')
   , isObject = _dereq_('./_is-object')
   , has      = _dereq_('./_has')
@@ -14120,7 +13298,76 @@ var meta = module.exports = {
   getWeak:  getWeak,
   onFreeze: onFreeze
 };
-},{"./_fails":102,"./_has":105,"./_is-object":112,"./_object-dp":123,"./_uid":149}],121:[function(_dereq_,module,exports){
+},{"./_fails":103,"./_has":106,"./_is-object":114,"./_object-dp":127,"./_uid":155}],124:[function(_dereq_,module,exports){
+var global    = _dereq_('./_global')
+  , macrotask = _dereq_('./_task').set
+  , Observer  = global.MutationObserver || global.WebKitMutationObserver
+  , process   = global.process
+  , Promise   = global.Promise
+  , isNode    = _dereq_('./_cof')(process) == 'process';
+
+module.exports = function(){
+  var head, last, notify;
+
+  var flush = function(){
+    var parent, fn;
+    if(isNode && (parent = process.domain))parent.exit();
+    while(head){
+      fn   = head.fn;
+      head = head.next;
+      try {
+        fn();
+      } catch(e){
+        if(head)notify();
+        else last = undefined;
+        throw e;
+      }
+    } last = undefined;
+    if(parent)parent.enter();
+  };
+
+  // Node.js
+  if(isNode){
+    notify = function(){
+      process.nextTick(flush);
+    };
+  // browsers with MutationObserver
+  } else if(Observer){
+    var toggle = true
+      , node   = document.createTextNode('');
+    new Observer(flush).observe(node, {characterData: true}); // eslint-disable-line no-new
+    notify = function(){
+      node.data = toggle = !toggle;
+    };
+  // environments with maybe non-completely correct, but existent Promise
+  } else if(Promise && Promise.resolve){
+    var promise = Promise.resolve();
+    notify = function(){
+      promise.then(flush);
+    };
+  // for other environments - macrotask based on:
+  // - setImmediate
+  // - MessageChannel
+  // - window.postMessag
+  // - onreadystatechange
+  // - setTimeout
+  } else {
+    notify = function(){
+      // strange IE + webpack dev server bug - use .call(global)
+      macrotask.call(global, flush);
+    };
+  }
+
+  return function(fn){
+    var task = {fn: fn, next: undefined};
+    if(last)last.next = task;
+    if(!head){
+      head = task;
+      notify();
+    } last = task;
+  };
+};
+},{"./_cof":90,"./_global":105,"./_task":148}],125:[function(_dereq_,module,exports){
 'use strict';
 // 19.1.2.1 Object.assign(target, source, ...)
 var getKeys  = _dereq_('./_object-keys')
@@ -14154,7 +13401,7 @@ module.exports = !$assign || _dereq_('./_fails')(function(){
     while(length > j)if(isEnum.call(S, key = keys[j++]))T[key] = S[key];
   } return T;
 } : $assign;
-},{"./_fails":102,"./_iobject":109,"./_object-gops":128,"./_object-keys":131,"./_object-pie":132,"./_to-object":147}],122:[function(_dereq_,module,exports){
+},{"./_fails":103,"./_iobject":111,"./_object-gops":132,"./_object-keys":135,"./_object-pie":136,"./_to-object":153}],126:[function(_dereq_,module,exports){
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject    = _dereq_('./_an-object')
   , dPs         = _dereq_('./_object-dps')
@@ -14197,7 +13444,7 @@ module.exports = Object.create || function create(O, Properties){
   return Properties === undefined ? result : dPs(result, Properties);
 };
 
-},{"./_an-object":82,"./_dom-create":98,"./_enum-bug-keys":99,"./_html":107,"./_object-dps":124,"./_shared-key":140}],123:[function(_dereq_,module,exports){
+},{"./_an-object":83,"./_dom-create":99,"./_enum-bug-keys":100,"./_html":108,"./_object-dps":128,"./_shared-key":144}],127:[function(_dereq_,module,exports){
 var anObject       = _dereq_('./_an-object')
   , IE8_DOM_DEFINE = _dereq_('./_ie8-dom-define')
   , toPrimitive    = _dereq_('./_to-primitive')
@@ -14214,7 +13461,7 @@ exports.f = _dereq_('./_descriptors') ? Object.defineProperty : function defineP
   if('value' in Attributes)O[P] = Attributes.value;
   return O;
 };
-},{"./_an-object":82,"./_descriptors":97,"./_ie8-dom-define":108,"./_to-primitive":148}],124:[function(_dereq_,module,exports){
+},{"./_an-object":83,"./_descriptors":98,"./_ie8-dom-define":109,"./_to-primitive":154}],128:[function(_dereq_,module,exports){
 var dP       = _dereq_('./_object-dp')
   , anObject = _dereq_('./_an-object')
   , getKeys  = _dereq_('./_object-keys');
@@ -14228,7 +13475,7 @@ module.exports = _dereq_('./_descriptors') ? Object.defineProperties : function 
   while(length > i)dP.f(O, P = keys[i++], Properties[P]);
   return O;
 };
-},{"./_an-object":82,"./_descriptors":97,"./_object-dp":123,"./_object-keys":131}],125:[function(_dereq_,module,exports){
+},{"./_an-object":83,"./_descriptors":98,"./_object-dp":127,"./_object-keys":135}],129:[function(_dereq_,module,exports){
 var pIE            = _dereq_('./_object-pie')
   , createDesc     = _dereq_('./_property-desc')
   , toIObject      = _dereq_('./_to-iobject')
@@ -14245,7 +13492,7 @@ exports.f = _dereq_('./_descriptors') ? gOPD : function getOwnPropertyDescriptor
   } catch(e){ /* empty */ }
   if(has(O, P))return createDesc(!pIE.f.call(O, P), O[P]);
 };
-},{"./_descriptors":97,"./_has":105,"./_ie8-dom-define":108,"./_object-pie":132,"./_property-desc":134,"./_to-iobject":145,"./_to-primitive":148}],126:[function(_dereq_,module,exports){
+},{"./_descriptors":98,"./_has":106,"./_ie8-dom-define":109,"./_object-pie":136,"./_property-desc":138,"./_to-iobject":151,"./_to-primitive":154}],130:[function(_dereq_,module,exports){
 // fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
 var toIObject = _dereq_('./_to-iobject')
   , gOPN      = _dereq_('./_object-gopn').f
@@ -14266,7 +13513,7 @@ module.exports.f = function getOwnPropertyNames(it){
   return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
 };
 
-},{"./_object-gopn":127,"./_to-iobject":145}],127:[function(_dereq_,module,exports){
+},{"./_object-gopn":131,"./_to-iobject":151}],131:[function(_dereq_,module,exports){
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
 var $keys      = _dereq_('./_object-keys-internal')
   , hiddenKeys = _dereq_('./_enum-bug-keys').concat('length', 'prototype');
@@ -14274,9 +13521,9 @@ var $keys      = _dereq_('./_object-keys-internal')
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O){
   return $keys(O, hiddenKeys);
 };
-},{"./_enum-bug-keys":99,"./_object-keys-internal":130}],128:[function(_dereq_,module,exports){
+},{"./_enum-bug-keys":100,"./_object-keys-internal":134}],132:[function(_dereq_,module,exports){
 exports.f = Object.getOwnPropertySymbols;
-},{}],129:[function(_dereq_,module,exports){
+},{}],133:[function(_dereq_,module,exports){
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has         = _dereq_('./_has')
   , toObject    = _dereq_('./_to-object')
@@ -14290,7 +13537,7 @@ module.exports = Object.getPrototypeOf || function(O){
     return O.constructor.prototype;
   } return O instanceof Object ? ObjectProto : null;
 };
-},{"./_has":105,"./_shared-key":140,"./_to-object":147}],130:[function(_dereq_,module,exports){
+},{"./_has":106,"./_shared-key":144,"./_to-object":153}],134:[function(_dereq_,module,exports){
 var has          = _dereq_('./_has')
   , toIObject    = _dereq_('./_to-iobject')
   , arrayIndexOf = _dereq_('./_array-includes')(false)
@@ -14308,7 +13555,7 @@ module.exports = function(object, names){
   }
   return result;
 };
-},{"./_array-includes":84,"./_has":105,"./_shared-key":140,"./_to-iobject":145}],131:[function(_dereq_,module,exports){
+},{"./_array-includes":85,"./_has":106,"./_shared-key":144,"./_to-iobject":151}],135:[function(_dereq_,module,exports){
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys       = _dereq_('./_object-keys-internal')
   , enumBugKeys = _dereq_('./_enum-bug-keys');
@@ -14316,9 +13563,9 @@ var $keys       = _dereq_('./_object-keys-internal')
 module.exports = Object.keys || function keys(O){
   return $keys(O, enumBugKeys);
 };
-},{"./_enum-bug-keys":99,"./_object-keys-internal":130}],132:[function(_dereq_,module,exports){
+},{"./_enum-bug-keys":100,"./_object-keys-internal":134}],136:[function(_dereq_,module,exports){
 exports.f = {}.propertyIsEnumerable;
-},{}],133:[function(_dereq_,module,exports){
+},{}],137:[function(_dereq_,module,exports){
 // most Object methods by ES6 should accept primitives
 var $export = _dereq_('./_export')
   , core    = _dereq_('./_core')
@@ -14329,7 +13576,7 @@ module.exports = function(KEY, exec){
   exp[KEY] = exec(fn);
   $export($export.S + $export.F * fails(function(){ fn(1); }), 'Object', exp);
 };
-},{"./_core":94,"./_export":101,"./_fails":102}],134:[function(_dereq_,module,exports){
+},{"./_core":95,"./_export":102,"./_fails":103}],138:[function(_dereq_,module,exports){
 module.exports = function(bitmap, value){
   return {
     enumerable  : !(bitmap & 1),
@@ -14338,7 +13585,7 @@ module.exports = function(bitmap, value){
     value       : value
   };
 };
-},{}],135:[function(_dereq_,module,exports){
+},{}],139:[function(_dereq_,module,exports){
 var hide = _dereq_('./_hide');
 module.exports = function(target, src, safe){
   for(var key in src){
@@ -14346,9 +13593,9 @@ module.exports = function(target, src, safe){
     else hide(target, key, src[key]);
   } return target;
 };
-},{"./_hide":106}],136:[function(_dereq_,module,exports){
+},{"./_hide":107}],140:[function(_dereq_,module,exports){
 module.exports = _dereq_('./_hide');
-},{"./_hide":106}],137:[function(_dereq_,module,exports){
+},{"./_hide":107}],141:[function(_dereq_,module,exports){
 // Works with __proto__ only. Old v8 can't work with null proto objects.
 /* eslint-disable no-proto */
 var isObject = _dereq_('./_is-object')
@@ -14374,7 +13621,7 @@ module.exports = {
     }({}, false) : undefined),
   check: check
 };
-},{"./_an-object":82,"./_ctx":95,"./_is-object":112,"./_object-gopd":125}],138:[function(_dereq_,module,exports){
+},{"./_an-object":83,"./_ctx":96,"./_is-object":114,"./_object-gopd":129}],142:[function(_dereq_,module,exports){
 'use strict';
 var global      = _dereq_('./_global')
   , core        = _dereq_('./_core')
@@ -14389,7 +13636,7 @@ module.exports = function(KEY){
     get: function(){ return this; }
   });
 };
-},{"./_core":94,"./_descriptors":97,"./_global":104,"./_object-dp":123,"./_wks":152}],139:[function(_dereq_,module,exports){
+},{"./_core":95,"./_descriptors":98,"./_global":105,"./_object-dp":127,"./_wks":158}],143:[function(_dereq_,module,exports){
 var def = _dereq_('./_object-dp').f
   , has = _dereq_('./_has')
   , TAG = _dereq_('./_wks')('toStringTag');
@@ -14397,20 +13644,29 @@ var def = _dereq_('./_object-dp').f
 module.exports = function(it, tag, stat){
   if(it && !has(it = stat ? it : it.prototype, TAG))def(it, TAG, {configurable: true, value: tag});
 };
-},{"./_has":105,"./_object-dp":123,"./_wks":152}],140:[function(_dereq_,module,exports){
+},{"./_has":106,"./_object-dp":127,"./_wks":158}],144:[function(_dereq_,module,exports){
 var shared = _dereq_('./_shared')('keys')
   , uid    = _dereq_('./_uid');
 module.exports = function(key){
   return shared[key] || (shared[key] = uid(key));
 };
-},{"./_shared":141,"./_uid":149}],141:[function(_dereq_,module,exports){
+},{"./_shared":145,"./_uid":155}],145:[function(_dereq_,module,exports){
 var global = _dereq_('./_global')
   , SHARED = '__core-js_shared__'
   , store  = global[SHARED] || (global[SHARED] = {});
 module.exports = function(key){
   return store[key] || (store[key] = {});
 };
-},{"./_global":104}],142:[function(_dereq_,module,exports){
+},{"./_global":105}],146:[function(_dereq_,module,exports){
+// 7.3.20 SpeciesConstructor(O, defaultConstructor)
+var anObject  = _dereq_('./_an-object')
+  , aFunction = _dereq_('./_a-function')
+  , SPECIES   = _dereq_('./_wks')('species');
+module.exports = function(O, D){
+  var C = anObject(O).constructor, S;
+  return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? D : aFunction(S);
+};
+},{"./_a-function":80,"./_an-object":83,"./_wks":158}],147:[function(_dereq_,module,exports){
 var toInteger = _dereq_('./_to-integer')
   , defined   = _dereq_('./_defined');
 // true  -> String#at
@@ -14428,7 +13684,83 @@ module.exports = function(TO_STRING){
       : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
   };
 };
-},{"./_defined":96,"./_to-integer":144}],143:[function(_dereq_,module,exports){
+},{"./_defined":97,"./_to-integer":150}],148:[function(_dereq_,module,exports){
+var ctx                = _dereq_('./_ctx')
+  , invoke             = _dereq_('./_invoke')
+  , html               = _dereq_('./_html')
+  , cel                = _dereq_('./_dom-create')
+  , global             = _dereq_('./_global')
+  , process            = global.process
+  , setTask            = global.setImmediate
+  , clearTask          = global.clearImmediate
+  , MessageChannel     = global.MessageChannel
+  , counter            = 0
+  , queue              = {}
+  , ONREADYSTATECHANGE = 'onreadystatechange'
+  , defer, channel, port;
+var run = function(){
+  var id = +this;
+  if(queue.hasOwnProperty(id)){
+    var fn = queue[id];
+    delete queue[id];
+    fn();
+  }
+};
+var listener = function(event){
+  run.call(event.data);
+};
+// Node.js 0.9+ & IE10+ has setImmediate, otherwise:
+if(!setTask || !clearTask){
+  setTask = function setImmediate(fn){
+    var args = [], i = 1;
+    while(arguments.length > i)args.push(arguments[i++]);
+    queue[++counter] = function(){
+      invoke(typeof fn == 'function' ? fn : Function(fn), args);
+    };
+    defer(counter);
+    return counter;
+  };
+  clearTask = function clearImmediate(id){
+    delete queue[id];
+  };
+  // Node.js 0.8-
+  if(_dereq_('./_cof')(process) == 'process'){
+    defer = function(id){
+      process.nextTick(ctx(run, id, 1));
+    };
+  // Browsers with MessageChannel, includes WebWorkers
+  } else if(MessageChannel){
+    channel = new MessageChannel;
+    port    = channel.port2;
+    channel.port1.onmessage = listener;
+    defer = ctx(port.postMessage, port, 1);
+  // Browsers with postMessage, skip WebWorkers
+  // IE8 has postMessage, but it's sync & typeof its postMessage is 'object'
+  } else if(global.addEventListener && typeof postMessage == 'function' && !global.importScripts){
+    defer = function(id){
+      global.postMessage(id + '', '*');
+    };
+    global.addEventListener('message', listener, false);
+  // IE8-
+  } else if(ONREADYSTATECHANGE in cel('script')){
+    defer = function(id){
+      html.appendChild(cel('script'))[ONREADYSTATECHANGE] = function(){
+        html.removeChild(this);
+        run.call(id);
+      };
+    };
+  // Rest old browsers
+  } else {
+    defer = function(id){
+      setTimeout(ctx(run, id, 1), 0);
+    };
+  }
+}
+module.exports = {
+  set:   setTask,
+  clear: clearTask
+};
+},{"./_cof":90,"./_ctx":96,"./_dom-create":99,"./_global":105,"./_html":108,"./_invoke":110}],149:[function(_dereq_,module,exports){
 var toInteger = _dereq_('./_to-integer')
   , max       = Math.max
   , min       = Math.min;
@@ -14436,34 +13768,34 @@ module.exports = function(index, length){
   index = toInteger(index);
   return index < 0 ? max(index + length, 0) : min(index, length);
 };
-},{"./_to-integer":144}],144:[function(_dereq_,module,exports){
+},{"./_to-integer":150}],150:[function(_dereq_,module,exports){
 // 7.1.4 ToInteger
 var ceil  = Math.ceil
   , floor = Math.floor;
 module.exports = function(it){
   return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
 };
-},{}],145:[function(_dereq_,module,exports){
+},{}],151:[function(_dereq_,module,exports){
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = _dereq_('./_iobject')
   , defined = _dereq_('./_defined');
 module.exports = function(it){
   return IObject(defined(it));
 };
-},{"./_defined":96,"./_iobject":109}],146:[function(_dereq_,module,exports){
+},{"./_defined":97,"./_iobject":111}],152:[function(_dereq_,module,exports){
 // 7.1.15 ToLength
 var toInteger = _dereq_('./_to-integer')
   , min       = Math.min;
 module.exports = function(it){
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
 };
-},{"./_to-integer":144}],147:[function(_dereq_,module,exports){
+},{"./_to-integer":150}],153:[function(_dereq_,module,exports){
 // 7.1.13 ToObject(argument)
 var defined = _dereq_('./_defined');
 module.exports = function(it){
   return Object(defined(it));
 };
-},{"./_defined":96}],148:[function(_dereq_,module,exports){
+},{"./_defined":97}],154:[function(_dereq_,module,exports){
 // 7.1.1 ToPrimitive(input [, PreferredType])
 var isObject = _dereq_('./_is-object');
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
@@ -14476,13 +13808,13 @@ module.exports = function(it, S){
   if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
   throw TypeError("Can't convert object to primitive value");
 };
-},{"./_is-object":112}],149:[function(_dereq_,module,exports){
+},{"./_is-object":114}],155:[function(_dereq_,module,exports){
 var id = 0
   , px = Math.random();
 module.exports = function(key){
   return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
 };
-},{}],150:[function(_dereq_,module,exports){
+},{}],156:[function(_dereq_,module,exports){
 var global         = _dereq_('./_global')
   , core           = _dereq_('./_core')
   , LIBRARY        = _dereq_('./_library')
@@ -14492,9 +13824,9 @@ module.exports = function(name){
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
   if(name.charAt(0) != '_' && !(name in $Symbol))defineProperty($Symbol, name, {value: wksExt.f(name)});
 };
-},{"./_core":94,"./_global":104,"./_library":119,"./_object-dp":123,"./_wks-ext":151}],151:[function(_dereq_,module,exports){
+},{"./_core":95,"./_global":105,"./_library":122,"./_object-dp":127,"./_wks-ext":157}],157:[function(_dereq_,module,exports){
 exports.f = _dereq_('./_wks');
-},{"./_wks":152}],152:[function(_dereq_,module,exports){
+},{"./_wks":158}],158:[function(_dereq_,module,exports){
 var store      = _dereq_('./_shared')('wks')
   , uid        = _dereq_('./_uid')
   , Symbol     = _dereq_('./_global').Symbol
@@ -14506,7 +13838,7 @@ var $exports = module.exports = function(name){
 };
 
 $exports.store = store;
-},{"./_global":104,"./_shared":141,"./_uid":149}],153:[function(_dereq_,module,exports){
+},{"./_global":105,"./_shared":145,"./_uid":155}],159:[function(_dereq_,module,exports){
 var classof   = _dereq_('./_classof')
   , ITERATOR  = _dereq_('./_wks')('iterator')
   , Iterators = _dereq_('./_iterators');
@@ -14515,7 +13847,7 @@ module.exports = _dereq_('./_core').getIteratorMethod = function(it){
     || it['@@iterator']
     || Iterators[classof(it)];
 };
-},{"./_classof":88,"./_core":94,"./_iterators":117,"./_wks":152}],154:[function(_dereq_,module,exports){
+},{"./_classof":89,"./_core":95,"./_iterators":120,"./_wks":158}],160:[function(_dereq_,module,exports){
 var anObject = _dereq_('./_an-object')
   , get      = _dereq_('./core.get-iterator-method');
 module.exports = _dereq_('./_core').getIterator = function(it){
@@ -14523,7 +13855,7 @@ module.exports = _dereq_('./_core').getIterator = function(it){
   if(typeof iterFn != 'function')throw TypeError(it + ' is not iterable!');
   return anObject(iterFn.call(it));
 };
-},{"./_an-object":82,"./_core":94,"./core.get-iterator-method":153}],155:[function(_dereq_,module,exports){
+},{"./_an-object":83,"./_core":95,"./core.get-iterator-method":159}],161:[function(_dereq_,module,exports){
 'use strict';
 var addToUnscopables = _dereq_('./_add-to-unscopables')
   , step             = _dereq_('./_iter-step')
@@ -14558,7 +13890,7 @@ Iterators.Arguments = Iterators.Array;
 addToUnscopables('keys');
 addToUnscopables('values');
 addToUnscopables('entries');
-},{"./_add-to-unscopables":80,"./_iter-define":115,"./_iter-step":116,"./_iterators":117,"./_to-iobject":145}],156:[function(_dereq_,module,exports){
+},{"./_add-to-unscopables":81,"./_iter-define":117,"./_iter-step":119,"./_iterators":120,"./_to-iobject":151}],162:[function(_dereq_,module,exports){
 'use strict';
 var strong = _dereq_('./_collection-strong');
 
@@ -14576,15 +13908,15 @@ module.exports = _dereq_('./_collection')('Map', function(get){
     return strong.def(this, key === 0 ? 0 : key, value);
   }
 }, strong, true);
-},{"./_collection":93,"./_collection-strong":90}],157:[function(_dereq_,module,exports){
+},{"./_collection":94,"./_collection-strong":91}],163:[function(_dereq_,module,exports){
 var $export = _dereq_('./_export')
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 $export($export.S, 'Object', {create: _dereq_('./_object-create')});
-},{"./_export":101,"./_object-create":122}],158:[function(_dereq_,module,exports){
+},{"./_export":102,"./_object-create":126}],164:[function(_dereq_,module,exports){
 var $export = _dereq_('./_export');
 // 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
 $export($export.S + $export.F * !_dereq_('./_descriptors'), 'Object', {defineProperty: _dereq_('./_object-dp').f});
-},{"./_descriptors":97,"./_export":101,"./_object-dp":123}],159:[function(_dereq_,module,exports){
+},{"./_descriptors":98,"./_export":102,"./_object-dp":127}],165:[function(_dereq_,module,exports){
 // 19.1.2.5 Object.freeze(O)
 var isObject = _dereq_('./_is-object')
   , meta     = _dereq_('./_meta').onFreeze;
@@ -14594,7 +13926,7 @@ _dereq_('./_object-sap')('freeze', function($freeze){
     return $freeze && isObject(it) ? $freeze(meta(it)) : it;
   };
 });
-},{"./_is-object":112,"./_meta":120,"./_object-sap":133}],160:[function(_dereq_,module,exports){
+},{"./_is-object":114,"./_meta":123,"./_object-sap":137}],166:[function(_dereq_,module,exports){
 // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
 var toIObject                 = _dereq_('./_to-iobject')
   , $getOwnPropertyDescriptor = _dereq_('./_object-gopd').f;
@@ -14604,7 +13936,7 @@ _dereq_('./_object-sap')('getOwnPropertyDescriptor', function(){
     return $getOwnPropertyDescriptor(toIObject(it), key);
   };
 });
-},{"./_object-gopd":125,"./_object-sap":133,"./_to-iobject":145}],161:[function(_dereq_,module,exports){
+},{"./_object-gopd":129,"./_object-sap":137,"./_to-iobject":151}],167:[function(_dereq_,module,exports){
 // 19.1.2.9 Object.getPrototypeOf(O)
 var toObject        = _dereq_('./_to-object')
   , $getPrototypeOf = _dereq_('./_object-gpo');
@@ -14614,7 +13946,7 @@ _dereq_('./_object-sap')('getPrototypeOf', function(){
     return $getPrototypeOf(toObject(it));
   };
 });
-},{"./_object-gpo":129,"./_object-sap":133,"./_to-object":147}],162:[function(_dereq_,module,exports){
+},{"./_object-gpo":133,"./_object-sap":137,"./_to-object":153}],168:[function(_dereq_,module,exports){
 // 19.1.2.14 Object.keys(O)
 var toObject = _dereq_('./_to-object')
   , $keys    = _dereq_('./_object-keys');
@@ -14624,13 +13956,313 @@ _dereq_('./_object-sap')('keys', function(){
     return $keys(toObject(it));
   };
 });
-},{"./_object-keys":131,"./_object-sap":133,"./_to-object":147}],163:[function(_dereq_,module,exports){
+},{"./_object-keys":135,"./_object-sap":137,"./_to-object":153}],169:[function(_dereq_,module,exports){
 // 19.1.3.19 Object.setPrototypeOf(O, proto)
 var $export = _dereq_('./_export');
 $export($export.S, 'Object', {setPrototypeOf: _dereq_('./_set-proto').set});
-},{"./_export":101,"./_set-proto":137}],164:[function(_dereq_,module,exports){
-arguments[4][64][0].apply(exports,arguments)
-},{"dup":64}],165:[function(_dereq_,module,exports){
+},{"./_export":102,"./_set-proto":141}],170:[function(_dereq_,module,exports){
+arguments[4][65][0].apply(exports,arguments)
+},{"dup":65}],171:[function(_dereq_,module,exports){
+'use strict';
+var LIBRARY            = _dereq_('./_library')
+  , global             = _dereq_('./_global')
+  , ctx                = _dereq_('./_ctx')
+  , classof            = _dereq_('./_classof')
+  , $export            = _dereq_('./_export')
+  , isObject           = _dereq_('./_is-object')
+  , aFunction          = _dereq_('./_a-function')
+  , anInstance         = _dereq_('./_an-instance')
+  , forOf              = _dereq_('./_for-of')
+  , speciesConstructor = _dereq_('./_species-constructor')
+  , task               = _dereq_('./_task').set
+  , microtask          = _dereq_('./_microtask')()
+  , PROMISE            = 'Promise'
+  , TypeError          = global.TypeError
+  , process            = global.process
+  , $Promise           = global[PROMISE]
+  , process            = global.process
+  , isNode             = classof(process) == 'process'
+  , empty              = function(){ /* empty */ }
+  , Internal, GenericPromiseCapability, Wrapper;
+
+var USE_NATIVE = !!function(){
+  try {
+    // correct subclassing with @@species support
+    var promise     = $Promise.resolve(1)
+      , FakePromise = (promise.constructor = {})[_dereq_('./_wks')('species')] = function(exec){ exec(empty, empty); };
+    // unhandled rejections tracking support, NodeJS Promise without it fails @@species test
+    return (isNode || typeof PromiseRejectionEvent == 'function') && promise.then(empty) instanceof FakePromise;
+  } catch(e){ /* empty */ }
+}();
+
+// helpers
+var sameConstructor = function(a, b){
+  // with library wrapper special case
+  return a === b || a === $Promise && b === Wrapper;
+};
+var isThenable = function(it){
+  var then;
+  return isObject(it) && typeof (then = it.then) == 'function' ? then : false;
+};
+var newPromiseCapability = function(C){
+  return sameConstructor($Promise, C)
+    ? new PromiseCapability(C)
+    : new GenericPromiseCapability(C);
+};
+var PromiseCapability = GenericPromiseCapability = function(C){
+  var resolve, reject;
+  this.promise = new C(function($$resolve, $$reject){
+    if(resolve !== undefined || reject !== undefined)throw TypeError('Bad Promise constructor');
+    resolve = $$resolve;
+    reject  = $$reject;
+  });
+  this.resolve = aFunction(resolve);
+  this.reject  = aFunction(reject);
+};
+var perform = function(exec){
+  try {
+    exec();
+  } catch(e){
+    return {error: e};
+  }
+};
+var notify = function(promise, isReject){
+  if(promise._n)return;
+  promise._n = true;
+  var chain = promise._c;
+  microtask(function(){
+    var value = promise._v
+      , ok    = promise._s == 1
+      , i     = 0;
+    var run = function(reaction){
+      var handler = ok ? reaction.ok : reaction.fail
+        , resolve = reaction.resolve
+        , reject  = reaction.reject
+        , domain  = reaction.domain
+        , result, then;
+      try {
+        if(handler){
+          if(!ok){
+            if(promise._h == 2)onHandleUnhandled(promise);
+            promise._h = 1;
+          }
+          if(handler === true)result = value;
+          else {
+            if(domain)domain.enter();
+            result = handler(value);
+            if(domain)domain.exit();
+          }
+          if(result === reaction.promise){
+            reject(TypeError('Promise-chain cycle'));
+          } else if(then = isThenable(result)){
+            then.call(result, resolve, reject);
+          } else resolve(result);
+        } else reject(value);
+      } catch(e){
+        reject(e);
+      }
+    };
+    while(chain.length > i)run(chain[i++]); // variable length - can't use forEach
+    promise._c = [];
+    promise._n = false;
+    if(isReject && !promise._h)onUnhandled(promise);
+  });
+};
+var onUnhandled = function(promise){
+  task.call(global, function(){
+    var value = promise._v
+      , abrupt, handler, console;
+    if(isUnhandled(promise)){
+      abrupt = perform(function(){
+        if(isNode){
+          process.emit('unhandledRejection', value, promise);
+        } else if(handler = global.onunhandledrejection){
+          handler({promise: promise, reason: value});
+        } else if((console = global.console) && console.error){
+          console.error('Unhandled promise rejection', value);
+        }
+      });
+      // Browsers should not trigger `rejectionHandled` event if it was handled here, NodeJS - should
+      promise._h = isNode || isUnhandled(promise) ? 2 : 1;
+    } promise._a = undefined;
+    if(abrupt)throw abrupt.error;
+  });
+};
+var isUnhandled = function(promise){
+  if(promise._h == 1)return false;
+  var chain = promise._a || promise._c
+    , i     = 0
+    , reaction;
+  while(chain.length > i){
+    reaction = chain[i++];
+    if(reaction.fail || !isUnhandled(reaction.promise))return false;
+  } return true;
+};
+var onHandleUnhandled = function(promise){
+  task.call(global, function(){
+    var handler;
+    if(isNode){
+      process.emit('rejectionHandled', promise);
+    } else if(handler = global.onrejectionhandled){
+      handler({promise: promise, reason: promise._v});
+    }
+  });
+};
+var $reject = function(value){
+  var promise = this;
+  if(promise._d)return;
+  promise._d = true;
+  promise = promise._w || promise; // unwrap
+  promise._v = value;
+  promise._s = 2;
+  if(!promise._a)promise._a = promise._c.slice();
+  notify(promise, true);
+};
+var $resolve = function(value){
+  var promise = this
+    , then;
+  if(promise._d)return;
+  promise._d = true;
+  promise = promise._w || promise; // unwrap
+  try {
+    if(promise === value)throw TypeError("Promise can't be resolved itself");
+    if(then = isThenable(value)){
+      microtask(function(){
+        var wrapper = {_w: promise, _d: false}; // wrap
+        try {
+          then.call(value, ctx($resolve, wrapper, 1), ctx($reject, wrapper, 1));
+        } catch(e){
+          $reject.call(wrapper, e);
+        }
+      });
+    } else {
+      promise._v = value;
+      promise._s = 1;
+      notify(promise, false);
+    }
+  } catch(e){
+    $reject.call({_w: promise, _d: false}, e); // wrap
+  }
+};
+
+// constructor polyfill
+if(!USE_NATIVE){
+  // 25.4.3.1 Promise(executor)
+  $Promise = function Promise(executor){
+    anInstance(this, $Promise, PROMISE, '_h');
+    aFunction(executor);
+    Internal.call(this);
+    try {
+      executor(ctx($resolve, this, 1), ctx($reject, this, 1));
+    } catch(err){
+      $reject.call(this, err);
+    }
+  };
+  Internal = function Promise(executor){
+    this._c = [];             // <- awaiting reactions
+    this._a = undefined;      // <- checked in isUnhandled reactions
+    this._s = 0;              // <- state
+    this._d = false;          // <- done
+    this._v = undefined;      // <- value
+    this._h = 0;              // <- rejection state, 0 - default, 1 - handled, 2 - unhandled
+    this._n = false;          // <- notify
+  };
+  Internal.prototype = _dereq_('./_redefine-all')($Promise.prototype, {
+    // 25.4.5.3 Promise.prototype.then(onFulfilled, onRejected)
+    then: function then(onFulfilled, onRejected){
+      var reaction    = newPromiseCapability(speciesConstructor(this, $Promise));
+      reaction.ok     = typeof onFulfilled == 'function' ? onFulfilled : true;
+      reaction.fail   = typeof onRejected == 'function' && onRejected;
+      reaction.domain = isNode ? process.domain : undefined;
+      this._c.push(reaction);
+      if(this._a)this._a.push(reaction);
+      if(this._s)notify(this, false);
+      return reaction.promise;
+    },
+    // 25.4.5.1 Promise.prototype.catch(onRejected)
+    'catch': function(onRejected){
+      return this.then(undefined, onRejected);
+    }
+  });
+  PromiseCapability = function(){
+    var promise  = new Internal;
+    this.promise = promise;
+    this.resolve = ctx($resolve, promise, 1);
+    this.reject  = ctx($reject, promise, 1);
+  };
+}
+
+$export($export.G + $export.W + $export.F * !USE_NATIVE, {Promise: $Promise});
+_dereq_('./_set-to-string-tag')($Promise, PROMISE);
+_dereq_('./_set-species')(PROMISE);
+Wrapper = _dereq_('./_core')[PROMISE];
+
+// statics
+$export($export.S + $export.F * !USE_NATIVE, PROMISE, {
+  // 25.4.4.5 Promise.reject(r)
+  reject: function reject(r){
+    var capability = newPromiseCapability(this)
+      , $$reject   = capability.reject;
+    $$reject(r);
+    return capability.promise;
+  }
+});
+$export($export.S + $export.F * (LIBRARY || !USE_NATIVE), PROMISE, {
+  // 25.4.4.6 Promise.resolve(x)
+  resolve: function resolve(x){
+    // instanceof instead of internal slot check because we should fix it without replacement native Promise core
+    if(x instanceof $Promise && sameConstructor(x.constructor, this))return x;
+    var capability = newPromiseCapability(this)
+      , $$resolve  = capability.resolve;
+    $$resolve(x);
+    return capability.promise;
+  }
+});
+$export($export.S + $export.F * !(USE_NATIVE && _dereq_('./_iter-detect')(function(iter){
+  $Promise.all(iter)['catch'](empty);
+})), PROMISE, {
+  // 25.4.4.1 Promise.all(iterable)
+  all: function all(iterable){
+    var C          = this
+      , capability = newPromiseCapability(C)
+      , resolve    = capability.resolve
+      , reject     = capability.reject;
+    var abrupt = perform(function(){
+      var values    = []
+        , index     = 0
+        , remaining = 1;
+      forOf(iterable, false, function(promise){
+        var $index        = index++
+          , alreadyCalled = false;
+        values.push(undefined);
+        remaining++;
+        C.resolve(promise).then(function(value){
+          if(alreadyCalled)return;
+          alreadyCalled  = true;
+          values[$index] = value;
+          --remaining || resolve(values);
+        }, reject);
+      });
+      --remaining || resolve(values);
+    });
+    if(abrupt)reject(abrupt.error);
+    return capability.promise;
+  },
+  // 25.4.4.4 Promise.race(iterable)
+  race: function race(iterable){
+    var C          = this
+      , capability = newPromiseCapability(C)
+      , reject     = capability.reject;
+    var abrupt = perform(function(){
+      forOf(iterable, false, function(promise){
+        C.resolve(promise).then(capability.resolve, reject);
+      });
+    });
+    if(abrupt)reject(abrupt.error);
+    return capability.promise;
+  }
+});
+},{"./_a-function":80,"./_an-instance":82,"./_classof":89,"./_core":95,"./_ctx":96,"./_export":102,"./_for-of":104,"./_global":105,"./_is-object":114,"./_iter-detect":118,"./_library":122,"./_microtask":124,"./_redefine-all":139,"./_set-species":142,"./_set-to-string-tag":143,"./_species-constructor":146,"./_task":148,"./_wks":158}],172:[function(_dereq_,module,exports){
 'use strict';
 var $at  = _dereq_('./_string-at')(true);
 
@@ -14648,7 +14280,7 @@ _dereq_('./_iter-define')(String, 'String', function(iterated){
   this._i += point.length;
   return {value: point, done: false};
 });
-},{"./_iter-define":115,"./_string-at":142}],166:[function(_dereq_,module,exports){
+},{"./_iter-define":117,"./_string-at":147}],173:[function(_dereq_,module,exports){
 'use strict';
 // ECMAScript 6 symbols shim
 var global         = _dereq_('./_global')
@@ -14884,7 +14516,7 @@ setToStringTag($Symbol, 'Symbol');
 setToStringTag(Math, 'Math', true);
 // 24.3.3 JSON[@@toStringTag]
 setToStringTag(global.JSON, 'JSON', true);
-},{"./_an-object":82,"./_descriptors":97,"./_enum-keys":100,"./_export":101,"./_fails":102,"./_global":104,"./_has":105,"./_hide":106,"./_is-array":111,"./_keyof":118,"./_library":119,"./_meta":120,"./_object-create":122,"./_object-dp":123,"./_object-gopd":125,"./_object-gopn":127,"./_object-gopn-ext":126,"./_object-gops":128,"./_object-keys":131,"./_object-pie":132,"./_property-desc":134,"./_redefine":136,"./_set-to-string-tag":139,"./_shared":141,"./_to-iobject":145,"./_to-primitive":148,"./_uid":149,"./_wks":152,"./_wks-define":150,"./_wks-ext":151}],167:[function(_dereq_,module,exports){
+},{"./_an-object":83,"./_descriptors":98,"./_enum-keys":101,"./_export":102,"./_fails":103,"./_global":105,"./_has":106,"./_hide":107,"./_is-array":113,"./_keyof":121,"./_library":122,"./_meta":123,"./_object-create":126,"./_object-dp":127,"./_object-gopd":129,"./_object-gopn":131,"./_object-gopn-ext":130,"./_object-gops":132,"./_object-keys":135,"./_object-pie":136,"./_property-desc":138,"./_redefine":140,"./_set-to-string-tag":143,"./_shared":145,"./_to-iobject":151,"./_to-primitive":154,"./_uid":155,"./_wks":158,"./_wks-define":156,"./_wks-ext":157}],174:[function(_dereq_,module,exports){
 'use strict';
 var each         = _dereq_('./_array-methods')(0)
   , redefine     = _dereq_('./_redefine')
@@ -14941,16 +14573,16 @@ if(new $WeakMap().set((Object.freeze || Object)(tmp), 7).get(tmp) != 7){
     });
   });
 }
-},{"./_array-methods":85,"./_collection":93,"./_collection-weak":92,"./_is-object":112,"./_meta":120,"./_object-assign":121,"./_redefine":136}],168:[function(_dereq_,module,exports){
+},{"./_array-methods":86,"./_collection":94,"./_collection-weak":93,"./_is-object":114,"./_meta":123,"./_object-assign":125,"./_redefine":140}],175:[function(_dereq_,module,exports){
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var $export  = _dereq_('./_export');
 
 $export($export.P + $export.R, 'Map', {toJSON: _dereq_('./_collection-to-json')('Map')});
-},{"./_collection-to-json":91,"./_export":101}],169:[function(_dereq_,module,exports){
+},{"./_collection-to-json":92,"./_export":102}],176:[function(_dereq_,module,exports){
 _dereq_('./_wks-define')('asyncIterator');
-},{"./_wks-define":150}],170:[function(_dereq_,module,exports){
+},{"./_wks-define":156}],177:[function(_dereq_,module,exports){
 _dereq_('./_wks-define')('observable');
-},{"./_wks-define":150}],171:[function(_dereq_,module,exports){
+},{"./_wks-define":156}],178:[function(_dereq_,module,exports){
 _dereq_('./es6.array.iterator');
 var global        = _dereq_('./_global')
   , hide          = _dereq_('./_hide')
@@ -14964,5 +14596,530 @@ for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList'
   if(proto && !proto[TO_STRING_TAG])hide(proto, TO_STRING_TAG, NAME);
   Iterators[NAME] = Iterators.Array;
 }
-},{"./_global":104,"./_hide":106,"./_iterators":117,"./_wks":152,"./es6.array.iterator":155}]},{},[10])(10)
+},{"./_global":105,"./_hide":107,"./_iterators":120,"./_wks":158,"./es6.array.iterator":161}],179:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var objectCreate = Object.create || objectCreatePolyfill
+var objectKeys = Object.keys || objectKeysPolyfill
+var bind = Function.prototype.bind || functionBindPolyfill
+
+function EventEmitter() {
+  if (!this._events || !Object.prototype.hasOwnProperty.call(this, '_events')) {
+    this._events = objectCreate(null);
+    this._eventsCount = 0;
+  }
+
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+var defaultMaxListeners = 10;
+
+var hasDefineProperty;
+try {
+  var o = {};
+  if (Object.defineProperty) Object.defineProperty(o, 'x', { value: 0 });
+  hasDefineProperty = o.x === 0;
+} catch (err) { hasDefineProperty = false }
+if (hasDefineProperty) {
+  Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
+    enumerable: true,
+    get: function() {
+      return defaultMaxListeners;
+    },
+    set: function(arg) {
+      // check whether the input is a positive number (whose value is zero or
+      // greater and not a NaN).
+      if (typeof arg !== 'number' || arg < 0 || arg !== arg)
+        throw new TypeError('"defaultMaxListeners" must be a positive number');
+      defaultMaxListeners = arg;
+    }
+  });
+} else {
+  EventEmitter.defaultMaxListeners = defaultMaxListeners;
+}
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
+  if (typeof n !== 'number' || n < 0 || isNaN(n))
+    throw new TypeError('"n" argument must be a positive number');
+  this._maxListeners = n;
+  return this;
+};
+
+function $getMaxListeners(that) {
+  if (that._maxListeners === undefined)
+    return EventEmitter.defaultMaxListeners;
+  return that._maxListeners;
+}
+
+EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
+  return $getMaxListeners(this);
+};
+
+// These standalone emit* functions are used to optimize calling of event
+// handlers for fast cases because emit() itself often has a variable number of
+// arguments and can be deoptimized because of that. These functions always have
+// the same number of arguments and thus do not get deoptimized, so the code
+// inside them can execute faster.
+function emitNone(handler, isFn, self) {
+  if (isFn)
+    handler.call(self);
+  else {
+    var len = handler.length;
+    var listeners = arrayClone(handler, len);
+    for (var i = 0; i < len; ++i)
+      listeners[i].call(self);
+  }
+}
+function emitOne(handler, isFn, self, arg1) {
+  if (isFn)
+    handler.call(self, arg1);
+  else {
+    var len = handler.length;
+    var listeners = arrayClone(handler, len);
+    for (var i = 0; i < len; ++i)
+      listeners[i].call(self, arg1);
+  }
+}
+function emitTwo(handler, isFn, self, arg1, arg2) {
+  if (isFn)
+    handler.call(self, arg1, arg2);
+  else {
+    var len = handler.length;
+    var listeners = arrayClone(handler, len);
+    for (var i = 0; i < len; ++i)
+      listeners[i].call(self, arg1, arg2);
+  }
+}
+function emitThree(handler, isFn, self, arg1, arg2, arg3) {
+  if (isFn)
+    handler.call(self, arg1, arg2, arg3);
+  else {
+    var len = handler.length;
+    var listeners = arrayClone(handler, len);
+    for (var i = 0; i < len; ++i)
+      listeners[i].call(self, arg1, arg2, arg3);
+  }
+}
+
+function emitMany(handler, isFn, self, args) {
+  if (isFn)
+    handler.apply(self, args);
+  else {
+    var len = handler.length;
+    var listeners = arrayClone(handler, len);
+    for (var i = 0; i < len; ++i)
+      listeners[i].apply(self, args);
+  }
+}
+
+EventEmitter.prototype.emit = function emit(type) {
+  var er, handler, len, args, i, events;
+  var doError = (type === 'error');
+
+  events = this._events;
+  if (events)
+    doError = (doError && events.error == null);
+  else if (!doError)
+    return false;
+
+  // If there is no 'error' event listener then throw.
+  if (doError) {
+    if (arguments.length > 1)
+      er = arguments[1];
+    if (er instanceof Error) {
+      throw er; // Unhandled 'error' event
+    } else {
+      // At least give some kind of context to the user
+      var err = new Error('Unhandled "error" event. (' + er + ')');
+      err.context = er;
+      throw err;
+    }
+    return false;
+  }
+
+  handler = events[type];
+
+  if (!handler)
+    return false;
+
+  var isFn = typeof handler === 'function';
+  len = arguments.length;
+  switch (len) {
+      // fast cases
+    case 1:
+      emitNone(handler, isFn, this);
+      break;
+    case 2:
+      emitOne(handler, isFn, this, arguments[1]);
+      break;
+    case 3:
+      emitTwo(handler, isFn, this, arguments[1], arguments[2]);
+      break;
+    case 4:
+      emitThree(handler, isFn, this, arguments[1], arguments[2], arguments[3]);
+      break;
+      // slower
+    default:
+      args = new Array(len - 1);
+      for (i = 1; i < len; i++)
+        args[i - 1] = arguments[i];
+      emitMany(handler, isFn, this, args);
+  }
+
+  return true;
+};
+
+function _addListener(target, type, listener, prepend) {
+  var m;
+  var events;
+  var existing;
+
+  if (typeof listener !== 'function')
+    throw new TypeError('"listener" argument must be a function');
+
+  events = target._events;
+  if (!events) {
+    events = target._events = objectCreate(null);
+    target._eventsCount = 0;
+  } else {
+    // To avoid recursion in the case that type === "newListener"! Before
+    // adding it to the listeners, first emit "newListener".
+    if (events.newListener) {
+      target.emit('newListener', type,
+          listener.listener ? listener.listener : listener);
+
+      // Re-assign `events` because a newListener handler could have caused the
+      // this._events to be assigned to a new object
+      events = target._events;
+    }
+    existing = events[type];
+  }
+
+  if (!existing) {
+    // Optimize the case of one listener. Don't need the extra array object.
+    existing = events[type] = listener;
+    ++target._eventsCount;
+  } else {
+    if (typeof existing === 'function') {
+      // Adding the second element, need to change to array.
+      existing = events[type] =
+          prepend ? [listener, existing] : [existing, listener];
+    } else {
+      // If we've already got an array, just append.
+      if (prepend) {
+        existing.unshift(listener);
+      } else {
+        existing.push(listener);
+      }
+    }
+
+    // Check for listener leak
+    if (!existing.warned) {
+      m = $getMaxListeners(target);
+      if (m && m > 0 && existing.length > m) {
+        existing.warned = true;
+        var w = new Error('Possible EventEmitter memory leak detected. ' +
+            existing.length + ' "' + String(type) + '" listeners ' +
+            'added. Use emitter.setMaxListeners() to ' +
+            'increase limit.');
+        w.name = 'MaxListenersExceededWarning';
+        w.emitter = target;
+        w.type = type;
+        w.count = existing.length;
+        if (typeof console === 'object' && console.warn) {
+          console.warn('%s: %s', w.name, w.message);
+        }
+      }
+    }
+  }
+
+  return target;
+}
+
+EventEmitter.prototype.addListener = function addListener(type, listener) {
+  return _addListener(this, type, listener, false);
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.prependListener =
+    function prependListener(type, listener) {
+      return _addListener(this, type, listener, true);
+    };
+
+function onceWrapper() {
+  if (!this.fired) {
+    this.target.removeListener(this.type, this.wrapFn);
+    this.fired = true;
+    switch (arguments.length) {
+      case 0:
+        return this.listener.call(this.target);
+      case 1:
+        return this.listener.call(this.target, arguments[0]);
+      case 2:
+        return this.listener.call(this.target, arguments[0], arguments[1]);
+      case 3:
+        return this.listener.call(this.target, arguments[0], arguments[1],
+            arguments[2]);
+      default:
+        var args = new Array(arguments.length);
+        for (var i = 0; i < args.length; ++i)
+          args[i] = arguments[i];
+        this.listener.apply(this.target, args);
+    }
+  }
+}
+
+function _onceWrap(target, type, listener) {
+  var state = { fired: false, wrapFn: undefined, target: target, type: type, listener: listener };
+  var wrapped = bind.call(onceWrapper, state);
+  wrapped.listener = listener;
+  state.wrapFn = wrapped;
+  return wrapped;
+}
+
+EventEmitter.prototype.once = function once(type, listener) {
+  if (typeof listener !== 'function')
+    throw new TypeError('"listener" argument must be a function');
+  this.on(type, _onceWrap(this, type, listener));
+  return this;
+};
+
+EventEmitter.prototype.prependOnceListener =
+    function prependOnceListener(type, listener) {
+      if (typeof listener !== 'function')
+        throw new TypeError('"listener" argument must be a function');
+      this.prependListener(type, _onceWrap(this, type, listener));
+      return this;
+    };
+
+// Emits a 'removeListener' event if and only if the listener was removed.
+EventEmitter.prototype.removeListener =
+    function removeListener(type, listener) {
+      var list, events, position, i, originalListener;
+
+      if (typeof listener !== 'function')
+        throw new TypeError('"listener" argument must be a function');
+
+      events = this._events;
+      if (!events)
+        return this;
+
+      list = events[type];
+      if (!list)
+        return this;
+
+      if (list === listener || list.listener === listener) {
+        if (--this._eventsCount === 0)
+          this._events = objectCreate(null);
+        else {
+          delete events[type];
+          if (events.removeListener)
+            this.emit('removeListener', type, list.listener || listener);
+        }
+      } else if (typeof list !== 'function') {
+        position = -1;
+
+        for (i = list.length - 1; i >= 0; i--) {
+          if (list[i] === listener || list[i].listener === listener) {
+            originalListener = list[i].listener;
+            position = i;
+            break;
+          }
+        }
+
+        if (position < 0)
+          return this;
+
+        if (position === 0)
+          list.shift();
+        else
+          spliceOne(list, position);
+
+        if (list.length === 1)
+          events[type] = list[0];
+
+        if (events.removeListener)
+          this.emit('removeListener', type, originalListener || listener);
+      }
+
+      return this;
+    };
+
+EventEmitter.prototype.removeAllListeners =
+    function removeAllListeners(type) {
+      var listeners, events, i;
+
+      events = this._events;
+      if (!events)
+        return this;
+
+      // not listening for removeListener, no need to emit
+      if (!events.removeListener) {
+        if (arguments.length === 0) {
+          this._events = objectCreate(null);
+          this._eventsCount = 0;
+        } else if (events[type]) {
+          if (--this._eventsCount === 0)
+            this._events = objectCreate(null);
+          else
+            delete events[type];
+        }
+        return this;
+      }
+
+      // emit removeListener for all listeners on all events
+      if (arguments.length === 0) {
+        var keys = objectKeys(events);
+        var key;
+        for (i = 0; i < keys.length; ++i) {
+          key = keys[i];
+          if (key === 'removeListener') continue;
+          this.removeAllListeners(key);
+        }
+        this.removeAllListeners('removeListener');
+        this._events = objectCreate(null);
+        this._eventsCount = 0;
+        return this;
+      }
+
+      listeners = events[type];
+
+      if (typeof listeners === 'function') {
+        this.removeListener(type, listeners);
+      } else if (listeners) {
+        // LIFO order
+        for (i = listeners.length - 1; i >= 0; i--) {
+          this.removeListener(type, listeners[i]);
+        }
+      }
+
+      return this;
+    };
+
+function _listeners(target, type, unwrap) {
+  var events = target._events;
+
+  if (!events)
+    return [];
+
+  var evlistener = events[type];
+  if (!evlistener)
+    return [];
+
+  if (typeof evlistener === 'function')
+    return unwrap ? [evlistener.listener || evlistener] : [evlistener];
+
+  return unwrap ? unwrapListeners(evlistener) : arrayClone(evlistener, evlistener.length);
+}
+
+EventEmitter.prototype.listeners = function listeners(type) {
+  return _listeners(this, type, true);
+};
+
+EventEmitter.prototype.rawListeners = function rawListeners(type) {
+  return _listeners(this, type, false);
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  if (typeof emitter.listenerCount === 'function') {
+    return emitter.listenerCount(type);
+  } else {
+    return listenerCount.call(emitter, type);
+  }
+};
+
+EventEmitter.prototype.listenerCount = listenerCount;
+function listenerCount(type) {
+  var events = this._events;
+
+  if (events) {
+    var evlistener = events[type];
+
+    if (typeof evlistener === 'function') {
+      return 1;
+    } else if (evlistener) {
+      return evlistener.length;
+    }
+  }
+
+  return 0;
+}
+
+EventEmitter.prototype.eventNames = function eventNames() {
+  return this._eventsCount > 0 ? Reflect.ownKeys(this._events) : [];
+};
+
+// About 1.5x faster than the two-arg version of Array#splice().
+function spliceOne(list, index) {
+  for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1)
+    list[i] = list[k];
+  list.pop();
+}
+
+function arrayClone(arr, n) {
+  var copy = new Array(n);
+  for (var i = 0; i < n; ++i)
+    copy[i] = arr[i];
+  return copy;
+}
+
+function unwrapListeners(arr) {
+  var ret = new Array(arr.length);
+  for (var i = 0; i < ret.length; ++i) {
+    ret[i] = arr[i].listener || arr[i];
+  }
+  return ret;
+}
+
+function objectCreatePolyfill(proto) {
+  var F = function() {};
+  F.prototype = proto;
+  return new F;
+}
+function objectKeysPolyfill(obj) {
+  var keys = [];
+  for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k)) {
+    keys.push(k);
+  }
+  return k;
+}
+function functionBindPolyfill(context) {
+  var fn = this;
+  return function () {
+    return fn.apply(context, arguments);
+  };
+}
+
+},{}]},{},[10])(10)
 });
