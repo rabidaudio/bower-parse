@@ -14,4 +14,7 @@ npm install
 cd ..
 cp ./Parse-SDK-JS/dist/* .
 git commit -a -m "updated to $VERSION \n $MESSAGE"
+cd Parse-SDK-JS
+git reset --hard HEAD
+cd ..
 bower version "$VERSION"
