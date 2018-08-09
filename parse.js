@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.0.0
+ * Parse JavaScript SDK v2.0.1
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -289,7 +289,7 @@ var config = {
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + '2.0.0',
+  VERSION: 'js' + '2.0.1',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -3352,7 +3352,9 @@ var DefaultController = {
       url += '/';
     }
     url += 'files/' + name;
-    return _CoreManager2.default.getRESTController().ajax('POST', url, source.file, headers);
+    return _CoreManager2.default.getRESTController().ajax('POST', url, source.file, headers).then(function (res) {
+      return res.response;
+    });
   },
 
   saveBase64: function (name, source, options) {
@@ -8148,7 +8150,7 @@ var ParseQuery = function () {
     /**
      * Includes nested Parse.Objects for the provided key.  You can use dot
      * notation to specify which fields in the included object are also fetched.
-     * @param {String} key The name of the key to include.
+     * @param {...String|Array<String>} key The name(s) of the key(s) to include.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
 
@@ -8175,7 +8177,7 @@ var ParseQuery = function () {
      * Restricts the fields of the returned Parse.Objects to include only the
      * provided keys.  If this is called multiple times, then all of the keys
      * specified in each of the calls will be included.
-     * @param {Array} keys The names of the keys to include.
+     * @param {...String|Array<String>} keys The name(s) of the key(s) to include.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
 
@@ -10724,9 +10726,8 @@ var RESTController = {
             response = JSON.parse(xhr.responseText);
 
             if (typeof xhr.getResponseHeader === 'function') {
-              var jobStatusId = xhr.getResponseHeader('x-parse-job-status-id');
-              if (jobStatusId) {
-                response = jobStatusId;
+              if ((xhr.getAllResponseHeaders() || '').includes('x-parse-job-status-id: ')) {
+                response = xhr.getResponseHeader('x-parse-job-status-id');
               }
             }
           } catch (e) {
