@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.0.1
+ * Parse JavaScript SDK v2.0.2
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -30,38 +30,37 @@ function _interopRequireDefault(obj) {
  */
 
 /**
- * Tracks the occurrence of a custom event with additional dimensions.
- * Parse will store a data point at the time of invocation with the given
- * event name.
- *
- * Dimensions will allow segmentation of the occurrences of this custom
- * event. Keys and values should be {@code String}s, and will throw
- * otherwise.
- *
- * To track a user signup along with additional metadata, consider the
- * following:
- * <pre>
- * var dimensions = {
- *  gender: 'm',
- *  source: 'web',
- *  dayType: 'weekend'
- * };
- * Parse.Analytics.track('signup', dimensions);
- * </pre>
- *
- * There is a default limit of 8 dimensions per event tracked.
- *
- * @method track
- * @name Parse.Analytics.track
- * @param {String} name The name of the custom event to report to Parse as
- * having happened.
- * @param {Object} dimensions The dictionary of information by which to
- * segment this event.
- * @param {Object} options
- * @return {Promise} A promise that is resolved when the round-trip
- * to the server completes.
- */
-function track(name, dimensions, options) {
+  * Tracks the occurrence of a custom event with additional dimensions.
+  * Parse will store a data point at the time of invocation with the given
+  * event name.
+  *
+  * Dimensions will allow segmentation of the occurrences of this custom
+  * event. Keys and values should be {@code String}s, and will throw
+  * otherwise.
+  *
+  * To track a user signup along with additional metadata, consider the
+  * following:
+  * <pre>
+  * var dimensions = {
+  *  gender: 'm',
+  *  source: 'web',
+  *  dayType: 'weekend'
+  * };
+  * Parse.Analytics.track('signup', dimensions);
+  * </pre>
+  *
+  * There is a default limit of 8 dimensions per event tracked.
+  *
+  * @method track
+  * @name Parse.Analytics.track
+  * @param {String} name The name of the custom event to report to Parse as
+  * having happened.
+  * @param {Object} dimensions The dictionary of information by which to
+  * segment this event.
+  * @return {Promise} A promise that is resolved when the round-trip
+  * to the server completes.
+  */
+function track(name, dimensions) {
   name = name || '';
   name = name.replace(/^\s*/, '');
   name = name.replace(/\s*$/, '');
@@ -75,7 +74,6 @@ function track(name, dimensions, options) {
     }
   }
 
-  options = options || {};
   return _CoreManager2.default.getAnalyticsController().track(name, dimensions);
 } /**
    * Copyright (c) 2015-present, Parse, LLC.
@@ -149,15 +147,15 @@ function _interopRequireDefault(obj) {
  */
 
 /**
- * Makes a call to a cloud function.
- * @method run
- * @name Parse.Cloud.run
- * @param {String} name The function name.
- * @param {Object} data The parameters to send to the cloud function.
- * @param {Object} options
- * @return {Promise} A promise that will be resolved with the result
- * of the function.
- */
+  * Makes a call to a cloud function.
+  * @method run
+  * @name Parse.Cloud.run
+  * @param {String} name The function name.
+  * @param {Object} data The parameters to send to the cloud function.
+  * @param {Object} options
+  * @return {Promise} A promise that will be resolved with the result
+  * of the function.
+  */
 function run(name, data, options) {
   options = options || {};
 
@@ -177,13 +175,12 @@ function run(name, data, options) {
 }
 
 /**
- * Gets data for the current set of cloud jobs.
- * @method getJobsData
- * @name Parse.Cloud.getJobsData
- * @param {Object} options
- * @return {Promise} A promise that will be resolved with the result
- * of the function.
- */
+  * Gets data for the current set of cloud jobs.
+  * @method getJobsData
+  * @name Parse.Cloud.getJobsData
+  * @return {Promise} A promise that will be resolved with the result
+  * of the function.
+  */
 /**
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
@@ -195,26 +192,22 @@ function run(name, data, options) {
  * 
  */
 
-function getJobsData(options) {
-  options = options || {};
-
+function getJobsData() {
   return _CoreManager2.default.getCloudController().getJobsData({
     useMasterKey: true
   });
 }
 
 /**
- * Starts a given cloud job, which will process asynchronously.
- * @method startJob
- * @name Parse.Cloud.startJob
- * @param {String} name The function name.
- * @param {Object} data The parameters to send to the cloud function.
- * @param {Object} options
- * @return {Promise} A promise that will be resolved with the result
- * of the function.
- */
-function startJob(name, data, options) {
-  options = options || {};
+  * Starts a given cloud job, which will process asynchronously.
+  * @method startJob
+  * @name Parse.Cloud.startJob
+  * @param {String} name The function name.
+  * @param {Object} data The parameters to send to the cloud function.
+  * @return {Promise} A promise that will be resolved with the result
+  * of the function.
+  */
+function startJob(name, data) {
 
   if (typeof name !== 'string' || name.length === 0) {
     throw new TypeError('Cloud job name must be a string.');
@@ -226,12 +219,12 @@ function startJob(name, data, options) {
 }
 
 /**
- * Gets job status by Id
- * @method getJobStatus
- * @name Parse.Cloud.getJobStatus
- * @param {String} jobStatusId The Id of Job Status.
- * @return {Parse.Object} Status of Job.
- */
+  * Gets job status by Id
+  * @method getJobStatus
+  * @name Parse.Cloud.getJobStatus
+  * @param {String} jobStatusId The Id of Job Status.
+  * @return {Parse.Object} Status of Job.
+  */
 function getJobStatus(jobStatusId) {
   var query = new _ParseQuery2.default('_JobStatus');
   return query.get(jobStatusId, { useMasterKey: true });
@@ -268,7 +261,7 @@ var DefaultController = {
 };
 
 _CoreManager2.default.setCloudController(DefaultController);
-},{"./CoreManager":3,"./ParseError":13,"./ParseQuery":21,"./decode":36,"./encode":37,"babel-runtime/core-js/promise":55}],3:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./ParseQuery":21,"./decode":36,"./encode":37,"babel-runtime/core-js/promise":54}],3:[function(_dereq_,module,exports){
 (function (process){
 'use strict';
 
@@ -289,7 +282,7 @@ var config = {
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + '2.0.1',
+  VERSION: 'js' + '2.0.2',
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -445,7 +438,7 @@ module.exports = {
   }
 };
 }).call(this,_dereq_('_process'))
-},{"_process":65}],4:[function(_dereq_,module,exports){
+},{"_process":64}],4:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -461,7 +454,7 @@ module.exports = {
 
 module.exports = _dereq_('events').EventEmitter;
 var EventEmitter;
-},{"events":179}],5:[function(_dereq_,module,exports){
+},{"events":178}],5:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -490,9 +483,7 @@ function _interopRequireDefault(obj) {
  *
  * -weak
  */
-
-var PUBLIC_KEY = "*";
-
+/* global FB */
 var initialized = false;
 var requestedPermissions;
 var initOptions;
@@ -599,7 +590,7 @@ var FacebookUtils = {
       }
     }
     if (initOptions.status && typeof console !== 'undefined') {
-      var warn = console.warn || console.log || function () {};
+      var warn = console.warn || console.log || function () {}; // eslint-disable-line no-console
       warn.call(console, 'The "status" flag passed into' + ' FB.init, when set to true, can interfere with Parse Facebook' + ' integration, so it has been suppressed. Please call' + ' FB.getLoginStatus() explicitly if you require this behavior.');
     }
     initOptions.status = false;
@@ -714,16 +705,12 @@ var FacebookUtils = {
 };
 
 exports.default = FacebookUtils;
-},{"./ParseUser":26,"./parseDate":41}],6:[function(_dereq_,module,exports){
+},{"./ParseUser":26,"./parseDate":40}],6:[function(_dereq_,module,exports){
 'use strict';
 
 var _promise = _dereq_('babel-runtime/core-js/promise');
 
 var _promise2 = _interopRequireDefault(_promise);
-
-var _CoreManager = _dereq_('./CoreManager');
-
-var _CoreManager2 = _interopRequireDefault(_CoreManager);
 
 var _Storage = _dereq_('./Storage');
 
@@ -733,18 +720,16 @@ function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
 
-/**
- * Copyright (c) 2015-present, Parse, LLC.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * 
- */
-
-var iidCache = null;
+var iidCache = null; /**
+                      * Copyright (c) 2015-present, Parse, LLC.
+                      * All rights reserved.
+                      *
+                      * This source code is licensed under the BSD-style license found in the
+                      * LICENSE file in the root directory of this source tree. An additional grant
+                      * of patent rights can be found in the PATENTS file in the same directory.
+                      *
+                      * 
+                      */
 
 function hexOctet() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -781,7 +766,7 @@ var InstallationController = {
 };
 
 module.exports = InstallationController;
-},{"./CoreManager":3,"./Storage":30,"babel-runtime/core-js/promise":55}],7:[function(_dereq_,module,exports){
+},{"./Storage":30,"babel-runtime/core-js/promise":54}],7:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -852,6 +837,7 @@ function _interopRequireDefault(obj) {
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  */
+/* global WebSocket */
 
 var CLIENT_STATE = {
   INITIALIZED: 'initialized',
@@ -910,8 +896,8 @@ var generateInterval = function (k) {
  * Creates a new LiveQueryClient.
  * Extends events.EventEmitter
  * <a href="https://nodejs.org/api/events.html#events_class_eventemitter">cloud functions</a>.
- * 
- * A wrapper of a standard WebSocket client. We add several useful methods to 
+ *
+ * A wrapper of a standard WebSocket client. We add several useful methods to
  * help you connect/disconnect to LiveQueryServer, subscribe/unsubscribe a ParseQuery easily.
  *
  * javascriptKey and masterKey are used for verifying the LiveQueryClient when it tries
@@ -929,23 +915,23 @@ var generateInterval = function (k) {
  *   masterKey: ''
  *  });
  * </pre>
- * 
+ *
  * Open - When we establish the WebSocket connection to the LiveQuery server, you'll get this event.
  * <pre>
  * client.on('open', () => {
- * 
+ *
  * });</pre>
  *
  * Close - When we lose the WebSocket connection to the LiveQuery server, you'll get this event.
  * <pre>
  * client.on('close', () => {
- * 
+ *
  * });</pre>
  *
  * Error - When some network error or LiveQuery server error happens, you'll get this event.
  * <pre>
  * client.on('error', (error) => {
- * 
+ *
  * });</pre>
  * @alias Parse.LiveQueryClient
  */
@@ -998,16 +984,16 @@ var LiveQueryClient = function (_EventEmitter) {
 
     /**
      * Subscribes to a ParseQuery
-     * 
-     * If you provide the sessionToken, when the LiveQuery server gets ParseObject's 
-     * updates from parse server, it'll try to check whether the sessionToken fulfills 
-     * the ParseObject's ACL. The LiveQuery server will only send updates to clients whose 
+     *
+     * If you provide the sessionToken, when the LiveQuery server gets ParseObject's
+     * updates from parse server, it'll try to check whether the sessionToken fulfills
+     * the ParseObject's ACL. The LiveQuery server will only send updates to clients whose
      * sessionToken is fit for the ParseObject's ACL. You can check the LiveQuery protocol
-     * <a href="https://github.com/parse-community/parse-server/wiki/Parse-LiveQuery-Protocol-Specification">here</a> for more details. The subscription you get is the same subscription you get 
+     * <a href="https://github.com/parse-community/parse-server/wiki/Parse-LiveQuery-Protocol-Specification">here</a> for more details. The subscription you get is the same subscription you get
      * from our Standard API.
-     * 
+     *
      * @param {Object} query - the ParseQuery you want to subscribe to
-     * @param {string} sessionToken (optional) 
+     * @param {string} sessionToken (optional)
      * @return {Object} subscription
      */
 
@@ -1053,7 +1039,7 @@ var LiveQueryClient = function (_EventEmitter) {
 
     /**
      * After calling unsubscribe you'll stop receiving events from the subscription object.
-     * 
+     *
      * @param {Object} subscription - subscription you would like to unsubscribe from.
      */
 
@@ -1079,7 +1065,7 @@ var LiveQueryClient = function (_EventEmitter) {
     /**
      * After open is called, the LiveQueryClient will try to send a connect request
      * to the LiveQuery server.
-     * 
+     *
      */
 
   }, {
@@ -1150,9 +1136,9 @@ var LiveQueryClient = function (_EventEmitter) {
     }
 
     /**
-     * This method will close the WebSocket connection to this LiveQueryClient, 
+     * This method will close the WebSocket connection to this LiveQueryClient,
      * cancel the auto reconnect and unsubscribe all subscriptions based on it.
-     * 
+     *
      */
 
   }, {
@@ -1261,17 +1247,19 @@ var LiveQueryClient = function (_EventEmitter) {
           // We have already deleted subscription in unsubscribe(), do nothing here
           break;
         default:
-          // create, update, enter, leave, delete cases
-          var className = data.object.className;
-          // Delete the extrea __type and className fields during transfer to full JSON
-          delete data.object.__type;
-          delete data.object.className;
-          var parseObject = new _ParseObject2.default(className);
-          parseObject._finishFetch(data.object);
-          if (!subscription) {
-            break;
+          {
+            // create, update, enter, leave, delete cases
+            var className = data.object.className;
+            // Delete the extrea __type and className fields during transfer to full JSON
+            delete data.object.__type;
+            delete data.object.className;
+            var parseObject = new _ParseObject2.default(className);
+            parseObject._finishFetch(data.object);
+            if (!subscription) {
+              break;
+            }
+            subscription.emit(data.op, parseObject);
           }
-          subscription.emit(data.op, parseObject);
       }
     }
   }, {
@@ -1374,7 +1362,7 @@ var LiveQueryClient = function (_EventEmitter) {
 }(_EventEmitter3.default);
 
 exports.default = LiveQueryClient;
-},{"./EventEmitter":4,"./LiveQuerySubscription":8,"./ParseObject":18,"./promiseUtils":42,"babel-runtime/core-js/get-iterator":45,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/map":47,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63,"babel-runtime/helpers/typeof":64}],8:[function(_dereq_,module,exports){
+},{"./EventEmitter":4,"./LiveQuerySubscription":8,"./ParseObject":18,"./promiseUtils":41,"babel-runtime/core-js/get-iterator":44,"babel-runtime/core-js/json/stringify":45,"babel-runtime/core-js/map":46,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],8:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1417,73 +1405,73 @@ function _interopRequireDefault(obj) {
  * Creates a new LiveQuery Subscription.
  * Extends events.EventEmitter
  * <a href="https://nodejs.org/api/events.html#events_class_eventemitter">cloud functions</a>.
- * 
  *
- * <p>Open Event - When you call query.subscribe(), we send a subscribe request to 
+ *
+ * <p>Open Event - When you call query.subscribe(), we send a subscribe request to
  * the LiveQuery server, when we get the confirmation from the LiveQuery server,
  * this event will be emitted. When the client loses WebSocket connection to the
  * LiveQuery server, we will try to auto reconnect the LiveQuery server. If we
  * reconnect the LiveQuery server and successfully resubscribe the ParseQuery,
  * you'll also get this event.
- * 
+ *
  * <pre>
  * subscription.on('open', () => {
- * 
+ *
  * });</pre></p>
  *
  * <p>Create Event - When a new ParseObject is created and it fulfills the ParseQuery you subscribe,
  * you'll get this event. The object is the ParseObject which is created.
- * 
+ *
  * <pre>
  * subscription.on('create', (object) => {
- * 
+ *
  * });</pre></p>
  *
- * <p>Update Event - When an existing ParseObject which fulfills the ParseQuery you subscribe 
+ * <p>Update Event - When an existing ParseObject which fulfills the ParseQuery you subscribe
  * is updated (The ParseObject fulfills the ParseQuery before and after changes),
  * you'll get this event. The object is the ParseObject which is updated.
  * Its content is the latest value of the ParseObject.
- * 
+ *
  * <pre>
  * subscription.on('update', (object) => {
- * 
+ *
  * });</pre></p>
- * 
+ *
  * <p>Enter Event - When an existing ParseObject's old value doesn't fulfill the ParseQuery
  * but its new value fulfills the ParseQuery, you'll get this event. The object is the
  * ParseObject which enters the ParseQuery. Its content is the latest value of the ParseObject.
- * 
+ *
  * <pre>
  * subscription.on('enter', (object) => {
- * 
+ *
  * });</pre></p>
  *
  *
  * <p>Update Event - When an existing ParseObject's old value fulfills the ParseQuery but its new value
  * doesn't fulfill the ParseQuery, you'll get this event. The object is the ParseObject
  * which leaves the ParseQuery. Its content is the latest value of the ParseObject.
- * 
+ *
  * <pre>
  * subscription.on('leave', (object) => {
- * 
+ *
  * });</pre></p>
  *
  *
  * <p>Delete Event - When an existing ParseObject which fulfills the ParseQuery is deleted, you'll
  * get this event. The object is the ParseObject which is deleted.
- * 
+ *
  * <pre>
  * subscription.on('delete', (object) => {
- * 
+ *
  * });</pre></p>
  *
  *
  * <p>Close Event - When the client loses the WebSocket connection to the LiveQuery
  * server and we stop receiving events, you'll get this event.
- * 
+ *
  * <pre>
  * subscription.on('close', () => {
- * 
+ *
  * });</pre></p>
  *
  * @alias Parse.LiveQuerySubscription
@@ -1529,7 +1517,6 @@ var Subscription = function (_EventEmitter) {
       return _CoreManager2.default.getLiveQueryController().getDefaultLiveQueryClient().then(function (liveQueryClient) {
         liveQueryClient.unsubscribe(_this2);
         _this2.emit('close');
-        _this2.resolve();
       });
     }
   }]);
@@ -1537,7 +1524,7 @@ var Subscription = function (_EventEmitter) {
 }(_EventEmitter3.default);
 
 exports.default = Subscription;
-},{"./CoreManager":3,"./EventEmitter":4,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63}],9:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./EventEmitter":4,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62}],9:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1701,12 +1688,8 @@ function commitServerChanges(serverData, objectCache, changes) {
     }
   }
 }
-},{"./ParseFile":14,"./ParseObject":18,"./ParseOp":19,"./ParseRelation":22,"./TaskQueue":32,"./encode":37,"babel-runtime/core-js/json/stringify":46,"babel-runtime/helpers/typeof":64}],10:[function(_dereq_,module,exports){
+},{"./ParseFile":14,"./ParseObject":18,"./ParseOp":19,"./ParseRelation":22,"./TaskQueue":32,"./encode":37,"babel-runtime/core-js/json/stringify":45,"babel-runtime/helpers/typeof":63}],10:[function(_dereq_,module,exports){
 'use strict';
-
-var _promise = _dereq_('babel-runtime/core-js/promise');
-
-var _promise2 = _interopRequireDefault(_promise);
 
 var _decode = _dereq_('./decode');
 
@@ -1775,7 +1758,9 @@ var Parse = {
    */
   initialize: function (applicationId, javaScriptKey) {
     if ('browser' === 'browser' && _CoreManager2.default.get('IS_NODE') && !undefined) {
+      /* eslint-disable no-console */
       console.log('It looks like you\'re using the browser version of the SDK in a ' + 'node.js environment. You should require(\'parse/node\') instead.');
+      /* eslint-enable no-console */
     }
     Parse._initialize(applicationId, javaScriptKey);
   },
@@ -1799,7 +1784,7 @@ var Parse = {
 };
 
 /** These legacy setters may eventually be deprecated **/
-/** 
+/**
  * @member Parse.applicationId
  * @type string
  * @static
@@ -1813,7 +1798,7 @@ Object.defineProperty(Parse, 'applicationId', {
   }
 });
 
-/** 
+/**
  * @member Parse.javaScriptKey
  * @type string
  * @static
@@ -1827,7 +1812,7 @@ Object.defineProperty(Parse, 'javaScriptKey', {
   }
 });
 
-/** 
+/**
  * @member Parse.masterKey
  * @type string
  * @static
@@ -1841,7 +1826,7 @@ Object.defineProperty(Parse, 'masterKey', {
   }
 });
 
-/** 
+/**
  * @member Parse.serverURL
  * @type string
  * @static
@@ -1854,7 +1839,7 @@ Object.defineProperty(Parse, 'serverURL', {
     _CoreManager2.default.set('SERVER_URL', value);
   }
 });
-/** 
+/**
  * @member Parse.liveQueryServerURL
  * @type string
  * @static
@@ -1890,7 +1875,6 @@ Parse.Op = {
   AddUnique: ParseOp.AddUniqueOp,
   Relation: ParseOp.RelationOp
 };
-Promise = _promise2.default;
 Parse.Push = _dereq_('./Push');
 Parse.Query = _dereq_('./ParseQuery').default;
 Parse.Relation = _dereq_('./ParseRelation').default;
@@ -1934,7 +1918,7 @@ _CoreManager2.default.setRESTController(_RESTController2.default);
 Parse.Parse = Parse;
 
 module.exports = Parse;
-},{"./Analytics":1,"./Cloud":2,"./CoreManager":3,"./FacebookUtils":5,"./InstallationController":6,"./LiveQueryClient":7,"./ParseACL":11,"./ParseConfig":12,"./ParseError":13,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseInstallation":16,"./ParseLiveQuery":17,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseQuery":21,"./ParseRelation":22,"./ParseRole":23,"./ParseSchema":24,"./ParseSession":25,"./ParseUser":26,"./Push":27,"./RESTController":28,"./Storage":30,"./decode":36,"./encode":37,"babel-runtime/core-js/promise":55}],11:[function(_dereq_,module,exports){
+},{"./Analytics":1,"./Cloud":2,"./CoreManager":3,"./FacebookUtils":5,"./InstallationController":6,"./LiveQueryClient":7,"./ParseACL":11,"./ParseConfig":12,"./ParseError":13,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseInstallation":16,"./ParseLiveQuery":17,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseQuery":21,"./ParseRelation":22,"./ParseRole":23,"./ParseSchema":24,"./ParseSession":25,"./ParseUser":26,"./Push":27,"./RESTController":28,"./Storage":30,"./decode":36,"./encode":37}],11:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1989,7 +1973,7 @@ var PUBLIC_KEY = '*';
  *   permission for only that user.
  * If the argument is any other JSON object, that object will be interpretted
  *   as a serialized ACL created with toJSON().
- * 
+ *
  * <p>An ACL, or Access Control List can be added to any
  * <code>Parse.Object</code> to restrict access to only a subset of users
  * of your application.</p>
@@ -2330,7 +2314,7 @@ var ParseACL = function () {
 }();
 
 exports.default = ParseACL;
-},{"./ParseRole":23,"./ParseUser":26,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/typeof":64}],12:[function(_dereq_,module,exports){
+},{"./ParseRole":23,"./ParseUser":26,"babel-runtime/core-js/object/keys":52,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],12:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2365,10 +2349,6 @@ var _decode = _dereq_('./decode');
 
 var _decode2 = _interopRequireDefault(_decode);
 
-var _encode = _dereq_('./encode');
-
-var _encode2 = _interopRequireDefault(_encode);
-
 var _escape2 = _dereq_('./escape');
 
 var _escape3 = _interopRequireDefault(_escape2);
@@ -2390,17 +2370,6 @@ function _interopRequireDefault(obj) {
  * can be set from the Parse dashboard.
  *
  * @alias Parse.Config
- */
-
-/**
- * Copyright (c) 2015-present, Parse, LLC.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * 
  */
 
 var ParseConfig = function () {
@@ -2462,22 +2431,28 @@ var ParseConfig = function () {
     /**
      * Gets a new configuration object from the server.
      * @static
-     * @param {Object} options
      * @return {Promise} A promise that is resolved with a newly-created
      *     configuration object when the get completes.
      */
 
   }, {
     key: 'get',
-    value: function (options) {
-      options = options || {};
-
+    value: function () {
       var controller = _CoreManager2.default.getConfigController();
       return controller.get();
     }
   }]);
   return ParseConfig;
-}();
+}(); /**
+      * Copyright (c) 2015-present, Parse, LLC.
+      * All rights reserved.
+      *
+      * This source code is licensed under the BSD-style license found in the
+      * LICENSE file in the root directory of this source tree. An additional grant
+      * of patent rights can be found in the PATENTS file in the same directory.
+      *
+      * 
+      */
 
 var currentConfig = null;
 
@@ -2552,7 +2527,7 @@ var DefaultController = {
 _CoreManager2.default.setConfigController(DefaultController);
 
 exports.default = ParseConfig;
-},{"./CoreManager":3,"./ParseError":13,"./Storage":30,"./decode":36,"./encode":37,"./escape":39,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/typeof":64}],13:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./Storage":30,"./decode":36,"./escape":38,"babel-runtime/core-js/json/stringify":45,"babel-runtime/core-js/promise":54,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],13:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2581,9 +2556,9 @@ function _interopRequireDefault(obj) {
  */
 
 /**
- * Constructs a new Parse.Error object with the given code and message.
- * @alias Parse.Error
- */
+  * Constructs a new Parse.Error object with the given code and message.
+  * @alias Parse.Error
+  */
 var ParseError = function () {
   /**
    * @param {Number} code An error code constant from <code>Parse.Error</code>.
@@ -3084,7 +3059,7 @@ ParseError.FILE_READ_ERROR = 601;
 ParseError.X_DOMAIN_REQUEST = 602;
 
 exports.default = ParseError;
-},{"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],14:[function(_dereq_,module,exports){
+},{"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],14:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3117,6 +3092,7 @@ var dataUriRegexp = /^data:([a-zA-Z]+\/[-a-zA-Z0-9+.]+)(;charset=[a-zA-Z0-9\-\/]
                                                                                                *
                                                                                                * 
                                                                                                */
+/* global File */
 
 function b64Digit(number) {
   if (number < 26) {
@@ -3375,7 +3351,7 @@ var DefaultController = {
 _CoreManager2.default.setFileController(DefaultController);
 
 exports.default = ParseFile;
-},{"./CoreManager":3,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],15:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],15:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3431,10 +3407,11 @@ function _interopRequireDefault(obj) {
  *   object.save();</pre></p>
  * @alias Parse.GeoPoint
  */
+/* global navigator */
 var ParseGeoPoint = function () {
 
   /**
-   * @param {(Number[]|Object|Number)} options Either a list of coordinate pairs, an object with `latitude`, `longitude`, or the latitude or the point. 
+   * @param {(Number[]|Object|Number)} options Either a list of coordinate pairs, an object with `latitude`, `longitude`, or the latitude or the point.
    * @param {Number} longitude The longitude of the GeoPoint
    */
   function ParseGeoPoint(arg1, arg2) {
@@ -3586,7 +3563,6 @@ var ParseGeoPoint = function () {
     /**
      * Creates a GeoPoint with the user's current location, if available.
      * Calls options.success with a new GeoPoint instance or calls options.error.
-      * @param {Object} options An object with success and error callbacks.
      * @static
      */
 
@@ -3602,7 +3578,7 @@ var ParseGeoPoint = function () {
 }();
 
 exports.default = ParseGeoPoint;
-},{"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/typeof":64}],16:[function(_dereq_,module,exports){
+},{"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],16:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3668,7 +3644,7 @@ var Installation = function (_ParseObject) {
 exports.default = Installation;
 
 _ParseObject3.default.registerSubclass('_Installation', Installation);
-},{"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63,"babel-runtime/helpers/typeof":64}],17:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],17:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3719,36 +3695,36 @@ function close() {
  * We expose three events to help you monitor the status of the WebSocket connection:
  *
  * <p>Open - When we establish the WebSocket connection to the LiveQuery server, you'll get this event.
- * 
+ *
  * <pre>
  * Parse.LiveQuery.on('open', () => {
- * 
+ *
  * });</pre></p>
  *
  * <p>Close - When we lose the WebSocket connection to the LiveQuery server, you'll get this event.
- * 
+ *
  * <pre>
  * Parse.LiveQuery.on('close', () => {
- * 
+ *
  * });</pre></p>
  *
  * <p>Error - When some network error or LiveQuery server error happens, you'll get this event.
- * 
+ *
  * <pre>
  * Parse.LiveQuery.on('error', (error) => {
- * 
+ *
  * });</pre></p>
- * 
+ *
  * @class Parse.LiveQuery
  * @static
- * 
+ *
  */
 var LiveQuery = new _EventEmitter2.default();
 
 /**
  * After open is called, the LiveQuery will try to send a connect request
  * to the LiveQuery server.
- * 
+ *
 
  */
 LiveQuery.open = open;
@@ -3759,7 +3735,7 @@ LiveQuery.open = open;
  * cancel the auto reconnect, and unsubscribe all subscriptions based on it.
  * If you call query.subscribe() after this, we'll create a new WebSocket
  * connection to the LiveQuery server.
- * 
+ *
 
  */
 
@@ -3904,7 +3880,7 @@ var DefaultLiveQueryController = {
 };
 
 _CoreManager2.default.setLiveQueryController(DefaultLiveQueryController);
-},{"./CoreManager":3,"./EventEmitter":4,"./LiveQueryClient":7,"babel-runtime/core-js/promise":55}],18:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./EventEmitter":4,"./LiveQueryClient":7,"babel-runtime/core-js/promise":54}],18:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3962,10 +3938,6 @@ var _decode2 = _interopRequireDefault(_decode);
 var _encode = _dereq_('./encode');
 
 var _encode2 = _interopRequireDefault(_encode);
-
-var _equals = _dereq_('./equals');
-
-var _equals2 = _interopRequireDefault(_equals);
 
 var _escape2 = _dereq_('./escape');
 
@@ -4033,6 +4005,9 @@ function _interopRequireDefault(obj) {
 
 // Mapping of class names to constructors, so we can populate objects from the
 // server with appropriate subclasses of ParseObject
+var classMap = {};
+
+// Global counter for generating unique local Ids
 /**
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
@@ -4044,9 +4019,6 @@ function _interopRequireDefault(obj) {
  * 
  */
 
-var classMap = {};
-
-// Global counter for generating unique local Ids
 var localCount = 0;
 // Global counter for generating unique Ids for non-single-instance objects
 var objectCount = 0;
@@ -4371,8 +4343,6 @@ var ParseObject = function () {
   }, {
     key: '_handleSaveError',
     value: function () {
-      this._getPendingOps();
-
       var stateController = _CoreManager2.default.getObjectStateController();
       stateController.mergeFirstPendingState(this._getStateIdentifier());
     }
@@ -4394,19 +4364,19 @@ var ParseObject = function () {
     key: 'toJSON',
     value: function (seen) {
       var seenEntry = this.id ? this.className + ':' + this.id : this;
-      var seen = seen || [seenEntry];
+      seen = seen || [seenEntry];
       var json = {};
       var attrs = this.attributes;
-      for (var attr in attrs) {
-        if ((attr === 'createdAt' || attr === 'updatedAt') && attrs[attr].toJSON) {
-          json[attr] = attrs[attr].toJSON();
+      for (var _attr in attrs) {
+        if ((_attr === 'createdAt' || _attr === 'updatedAt') && attrs[_attr].toJSON) {
+          json[_attr] = attrs[_attr].toJSON();
         } else {
-          json[attr] = (0, _encode2.default)(attrs[attr], false, false, seen);
+          json[_attr] = (0, _encode2.default)(attrs[_attr], false, false, seen);
         }
       }
       var pending = this._getPendingOps();
-      for (var attr in pending[0]) {
-        json[attr] = pending[0][attr].toJSON();
+      for (var _attr2 in pending[0]) {
+        json[_attr2] = pending[0][_attr2].toJSON();
       }
 
       if (this.id) {
@@ -4482,8 +4452,8 @@ var ParseObject = function () {
         }
       }
       var dirtyObjects = this._getDirtyObjectAttributes();
-      for (var attr in dirtyObjects) {
-        keys[attr] = true;
+      for (var _attr3 in dirtyObjects) {
+        keys[_attr3] = true;
       }
       return (0, _keys2.default)(keys);
     }
@@ -4549,7 +4519,6 @@ var ParseObject = function () {
       if (val == null) {
         return '';
       }
-
       if (typeof val !== 'string') {
         if (typeof val.toString !== 'function') {
           return '';
@@ -4676,9 +4645,9 @@ var ParseObject = function () {
       var pendingOps = this._getPendingOps();
       var last = pendingOps.length - 1;
       var stateController = _CoreManager2.default.getObjectStateController();
-      for (var attr in newOps) {
-        var nextOp = newOps[attr].mergeWith(pendingOps[last][attr]);
-        stateController.setPendingOp(this._getStateIdentifier(), attr, nextOp);
+      for (var _attr4 in newOps) {
+        var nextOp = newOps[_attr4].mergeWith(pendingOps[last][_attr4]);
+        stateController.setPendingOp(this._getStateIdentifier(), _attr4, nextOp);
       }
 
       return this;
@@ -5020,6 +4989,8 @@ var ParseObject = function () {
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
+     *   <li>include: The name(s) of the key(s) to include. Can be a string, an array of strings,
+     *       or an array of array of strings.
      * </ul>
      * @return {Promise} A promise that is fulfilled when the fetch
      *     completes.
@@ -5036,8 +5007,49 @@ var ParseObject = function () {
       if (options.hasOwnProperty('sessionToken')) {
         fetchOptions.sessionToken = options.sessionToken;
       }
+      if (options.hasOwnProperty('include')) {
+        fetchOptions.include = [];
+        if (Array.isArray(options.include)) {
+          options.include.forEach(function (key) {
+            if (Array.isArray(key)) {
+              fetchOptions.include = fetchOptions.include.concat(key);
+            } else {
+              fetchOptions.include.push(key);
+            }
+          });
+        } else {
+          fetchOptions.include.push(options.include);
+        }
+      }
       var controller = _CoreManager2.default.getObjectController();
       return controller.fetch(this, true, fetchOptions);
+    }
+
+    /**
+     * Fetch the model from the server. If the server's representation of the
+     * model differs from its current attributes, they will be overriden.
+     *
+     * Includes nested Parse.Objects for the provided key. You can use dot
+     * notation to specify which fields in the included object are also fetched.
+     *
+     * @param {String|Array<string|Array<string>>} keys The name(s) of the key(s) to include.
+     * @param {Object} options
+     * Valid options are:<ul>
+     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     * </ul>
+     * @return {Promise} A promise that is fulfilled when the fetch
+     *     completes.
+     */
+
+  }, {
+    key: 'fetchWithInclude',
+    value: function (keys, options) {
+      options = options || {};
+      options.include = keys;
+      return this.fetch(options);
     }
 
     /**
@@ -5134,8 +5146,6 @@ var ParseObject = function () {
 
     /**
      * Destroy this model on the server if it was already persisted.
-     * If `wait: true` is passed, waits for the server to respond
-     * before removal.
      *
      * @param {Object} options
      * Valid options are:<ul>
@@ -5222,13 +5232,21 @@ var ParseObject = function () {
      *
      * @param {Array} list A list of <code>Parse.Object</code>.
      * @param {Object} options
+     * Valid options are:<ul>
+     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     *   <li>include: The name(s) of the key(s) to include. Can be a string, an array of strings,
+     *       or an array of array of strings.
+     * </ul>
      * @static
      */
 
   }, {
     key: 'fetchAll',
-    value: function (list, options) {
-      var options = options || {};
+    value: function (list) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       var queryOptions = {};
       if (options.hasOwnProperty('useMasterKey')) {
@@ -5237,7 +5255,58 @@ var ParseObject = function () {
       if (options.hasOwnProperty('sessionToken')) {
         queryOptions.sessionToken = options.sessionToken;
       }
+      if (options.hasOwnProperty('include')) {
+        queryOptions.include = [];
+        if (Array.isArray(options.include)) {
+          options.include.forEach(function (key) {
+            if (Array.isArray(key)) {
+              queryOptions.include = queryOptions.include.concat(key);
+            } else {
+              queryOptions.include.push(key);
+            }
+          });
+        } else {
+          queryOptions.include.push(options.include);
+        }
+      }
       return _CoreManager2.default.getObjectController().fetch(list, true, queryOptions);
+    }
+
+    /**
+     * Fetches the given list of Parse.Object.
+     *
+     * Includes nested Parse.Objects for the provided key. You can use dot
+     * notation to specify which fields in the included object are also fetched.
+     *
+     * If any error is encountered, stops and calls the error handler.
+     *
+     * <pre>
+     *   Parse.Object.fetchAllWithInclude([object1, object2, ...], [pointer1, pointer2, ...])
+     *    .then((list) => {
+     *      // All the objects were fetched.
+     *    }, (error) => {
+     *      // An error occurred while fetching one of the objects.
+     *    });
+     * </pre>
+     *
+     * @param {Array} list A list of <code>Parse.Object</code>.
+     * @param {String|Array<string|Array<string>>} keys The name(s) of the key(s) to include.
+     * @param {Object} options
+     * Valid options are:<ul>
+     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *     be used for this request.
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     * </ul>
+     * @static
+     */
+
+  }, {
+    key: 'fetchAllWithInclude',
+    value: function (list, keys, options) {
+      options = options || {};
+      options.include = keys;
+      return ParseObject.fetchAll(list, options);
     }
 
     /**
@@ -5261,7 +5330,7 @@ var ParseObject = function () {
   }, {
     key: 'fetchAllIfNeeded',
     value: function (list, options) {
-      var options = options || {};
+      options = options || {};
 
       var queryOptions = {};
       if (options.hasOwnProperty('useMasterKey')) {
@@ -5294,7 +5363,7 @@ var ParseObject = function () {
      * </ul>
      *
      * <pre>
-     *   Parse.Object.destroyAll([object1, object2, ...]) 
+     *   Parse.Object.destroyAll([object1, object2, ...])
      *    .then((list) => {
      *      // All the objects were deleted.
      *    }, (error) => {
@@ -5328,8 +5397,8 @@ var ParseObject = function () {
 
   }, {
     key: 'destroyAll',
-    value: function (list, options) {
-      var options = options || {};
+    value: function (list) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       var destroyOptions = {};
       if (options.hasOwnProperty('useMasterKey')) {
@@ -5367,8 +5436,8 @@ var ParseObject = function () {
 
   }, {
     key: 'saveAll',
-    value: function (list, options) {
-      var options = options || {};
+    value: function (list) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       var saveOptions = {};
       if (options.hasOwnProperty('useMasterKey')) {
@@ -5574,10 +5643,10 @@ var ParseObject = function () {
       }
 
       if (classProps) {
-        for (var prop in classProps) {
-          if (prop !== 'className') {
-            (0, _defineProperty2.default)(ParseObjectSubclass, prop, {
-              value: classProps[prop],
+        for (var _prop in classProps) {
+          if (_prop !== 'className') {
+            (0, _defineProperty2.default)(ParseObjectSubclass, _prop, {
+              value: classProps[_prop],
               enumerable: false,
               writable: true,
               configurable: true
@@ -5666,6 +5735,9 @@ var DefaultController = {
       }
       var query = new _ParseQuery2.default(className);
       query.containedIn('objectId', ids);
+      if (options && options.include) {
+        query.include(options.include);
+      }
       query._limit = ids.length;
       return query.find(options).then(function (objects) {
         var idMap = {};
@@ -5682,12 +5754,12 @@ var DefaultController = {
         }
         if (!singleInstance) {
           // If single instance objects are disabled, we need to replace the
-          for (var i = 0; i < results.length; i++) {
-            var obj = results[i];
-            if (obj && obj.id && idMap[obj.id]) {
-              var id = obj.id;
-              obj._finishFetch(idMap[id].toJSON());
-              results[i] = idMap[id];
+          for (var _i = 0; _i < results.length; _i++) {
+            var _obj = results[_i];
+            if (_obj && _obj.id && idMap[_obj.id]) {
+              var id = _obj.id;
+              _obj._finishFetch(idMap[id].toJSON());
+              results[_i] = idMap[id];
             }
           }
         }
@@ -5695,7 +5767,11 @@ var DefaultController = {
       });
     } else {
       var RESTController = _CoreManager2.default.getRESTController();
-      return RESTController.request('GET', 'classes/' + target.className + '/' + target._getId(), {}, options).then(function (response) {
+      var params = {};
+      if (options && options.include) {
+        params.include = options.include.join();
+      }
+      return RESTController.request('GET', 'classes/' + target.className + '/' + target._getId(), params, options).then(function (response) {
         if (target instanceof ParseObject) {
           target._clearPendingOps();
           target._clearServerData();
@@ -5898,7 +5974,7 @@ var DefaultController = {
 _CoreManager2.default.setObjectController(DefaultController);
 
 exports.default = ParseObject;
-},{"./CoreManager":3,"./ParseACL":11,"./ParseError":13,"./ParseFile":14,"./ParseOp":19,"./ParseQuery":21,"./ParseRelation":22,"./SingleInstanceStateController":29,"./UniqueInstanceStateController":33,"./canBeSerialized":35,"./decode":36,"./encode":37,"./equals":38,"./escape":39,"./parseDate":41,"./promiseUtils":42,"./unique":43,"./unsavedChildren":44,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/object/create":48,"babel-runtime/core-js/object/define-property":49,"babel-runtime/core-js/object/freeze":50,"babel-runtime/core-js/object/keys":53,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/typeof":64}],19:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseACL":11,"./ParseError":13,"./ParseFile":14,"./ParseOp":19,"./ParseQuery":21,"./ParseRelation":22,"./SingleInstanceStateController":29,"./UniqueInstanceStateController":33,"./canBeSerialized":35,"./decode":36,"./encode":37,"./escape":38,"./parseDate":40,"./promiseUtils":41,"./unique":42,"./unsavedChildren":43,"babel-runtime/core-js/json/stringify":45,"babel-runtime/core-js/object/create":47,"babel-runtime/core-js/object/define-property":48,"babel-runtime/core-js/object/freeze":49,"babel-runtime/core-js/object/keys":52,"babel-runtime/core-js/promise":54,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],19:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5983,28 +6059,34 @@ function opFromJSON(json) {
     case 'Remove':
       return new RemoveOp((0, _decode2.default)(json.objects));
     case 'AddRelation':
-      var toAdd = (0, _decode2.default)(json.objects);
-      if (!Array.isArray(toAdd)) {
-        return new RelationOp([], []);
-      }
-      return new RelationOp(toAdd, []);
-    case 'RemoveRelation':
-      var toRemove = (0, _decode2.default)(json.objects);
-      if (!Array.isArray(toRemove)) {
-        return new RelationOp([], []);
-      }
-      return new RelationOp([], toRemove);
-    case 'Batch':
-      var toAdd = [];
-      var toRemove = [];
-      for (var i = 0; i < json.ops.length; i++) {
-        if (json.ops[i].__op === 'AddRelation') {
-          toAdd = toAdd.concat((0, _decode2.default)(json.ops[i].objects));
-        } else if (json.ops[i].__op === 'RemoveRelation') {
-          toRemove = toRemove.concat((0, _decode2.default)(json.ops[i].objects));
+      {
+        var toAdd = (0, _decode2.default)(json.objects);
+        if (!Array.isArray(toAdd)) {
+          return new RelationOp([], []);
         }
+        return new RelationOp(toAdd, []);
       }
-      return new RelationOp(toAdd, toRemove);
+    case 'RemoveRelation':
+      {
+        var toRemove = (0, _decode2.default)(json.objects);
+        if (!Array.isArray(toRemove)) {
+          return new RelationOp([], []);
+        }
+        return new RelationOp([], toRemove);
+      }
+    case 'Batch':
+      {
+        var _toAdd = [];
+        var _toRemove = [];
+        for (var i = 0; i < json.ops.length; i++) {
+          if (json.ops[i].__op === 'AddRelation') {
+            _toAdd = _toAdd.concat((0, _decode2.default)(json.ops[i].objects));
+          } else if (json.ops[i].__op === 'RemoveRelation') {
+            _toRemove = _toRemove.concat((0, _decode2.default)(json.ops[i].objects));
+          }
+        }
+        return new RelationOp(_toAdd, _toRemove);
+      }
   }
   return null;
 }
@@ -6018,10 +6100,12 @@ var Op = exports.Op = function () {
     key: 'applyTo',
 
     // Empty parent class
-    value: function () {}
+    value: function () {} /* eslint-disable-line no-unused-vars */
+
   }, {
     key: 'mergeWith',
-    value: function () {}
+    value: function () {} /* eslint-disable-line no-unused-vars */
+
   }, {
     key: 'toJSON',
     value: function () {}
@@ -6270,7 +6354,7 @@ var RemoveOp = exports.RemoveOp = function (_Op6) {
         return [];
       }
       if (Array.isArray(value)) {
-        var i = value.indexOf(this._value);
+        // var i = value.indexOf(this._value);
         var removed = value.concat([]);
         for (var i = 0; i < this._value.length; i++) {
           var index = removed.indexOf(this._value[i]);
@@ -6478,7 +6562,7 @@ var RelationOp = exports.RelationOp = function (_Op7) {
   }]);
   return RelationOp;
 }(Op);
-},{"./ParseObject":18,"./ParseRelation":22,"./arrayContainsObject":34,"./decode":36,"./encode":37,"./unique":43,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63}],20:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"./ParseRelation":22,"./arrayContainsObject":34,"./decode":36,"./encode":37,"./unique":42,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62}],20:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6670,7 +6754,7 @@ var ParsePolygon = function () {
       */
 
 exports.default = ParsePolygon;
-},{"./ParseGeoPoint":15,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],21:[function(_dereq_,module,exports){
+},{"./ParseGeoPoint":15,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],21:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6715,10 +6799,6 @@ var _ParseGeoPoint = _dereq_('./ParseGeoPoint');
 
 var _ParseGeoPoint2 = _interopRequireDefault(_ParseGeoPoint);
 
-var _ParsePolygon = _dereq_('./ParsePolygon');
-
-var _ParsePolygon2 = _interopRequireDefault(_ParsePolygon);
-
 var _ParseObject = _dereq_('./ParseObject');
 
 var _ParseObject2 = _interopRequireDefault(_ParseObject);
@@ -6733,14 +6813,6 @@ function _interopRequireDefault(obj) {
  * the text separately.
  * @private
  */
-function quote(s) {
-  return '\\Q' + s.replace('\\E', '\\E\\\\E\\Q') + '\\E';
-}
-
-/**
- * Extracts the class name from queries. If not all queries have the same
- * class name an error will be thrown.
- */
 /*
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
@@ -6752,6 +6824,14 @@ function quote(s) {
  * 
  */
 
+function quote(s) {
+  return '\\Q' + s.replace('\\E', '\\E\\\\E\\Q') + '\\E';
+}
+
+/**
+ * Extracts the class name from queries. If not all queries have the same
+ * class name an error will be thrown.
+ */
 function _getClassNameFromQueries(queries) {
   var className = null;
   queries.forEach(function (q) {
@@ -6807,23 +6887,6 @@ function handleSelectResult(data, select) {
   });
 
   if ((0, _keys2.default)(serverDataMask).length > 0) {
-    var copyMissingDataWithMask = function copyMissingDataWithMask(src, dest, mask, copyThisLevel) {
-      //copy missing elements at this level
-      if (copyThisLevel) {
-        for (var key in src) {
-          if (src.hasOwnProperty(key) && !dest.hasOwnProperty(key)) {
-            dest[key] = src[key];
-          }
-        }
-      }
-      for (var key in mask) {
-        if (dest[key] !== undefined && dest[key] !== null && src !== undefined && src !== null) {
-          //traverse into objects as needed
-          copyMissingDataWithMask(src[key], dest[key], mask[key], true);
-        }
-      }
-    };
-
     // When selecting from sub-objects, we don't want to blow away the missing
     // information that we may have retrieved before. We've already added any
     // missing selected keys to sub-objects, but we still need to add in the
@@ -6832,6 +6895,23 @@ function handleSelectResult(data, select) {
     var serverData = _CoreManager2.default.getObjectStateController().getServerData({ id: data.objectId, className: data.className });
 
     copyMissingDataWithMask(serverData, data, serverDataMask, false);
+  }
+}
+
+function copyMissingDataWithMask(src, dest, mask, copyThisLevel) {
+  //copy missing elements at this level
+  if (copyThisLevel) {
+    for (var _key in src) {
+      if (src.hasOwnProperty(_key) && !dest.hasOwnProperty(_key)) {
+        dest[_key] = src[_key];
+      }
+    }
+  }
+  for (var _key2 in mask) {
+    if (dest[_key2] !== undefined && dest[_key2] !== null && src !== undefined && src !== null) {
+      //traverse into objects as needed
+      copyMissingDataWithMask(src[_key2], dest[_key2], mask[_key2], true);
+    }
   }
 }
 
@@ -6848,7 +6928,7 @@ function handleSelectResult(data, select) {
  * var query = new Parse.Query(myclass);
  * query.find().then((results) => {
  *   // results is an array of parse.object.
- * }).catch((error) =>  {
+ * }).catch((error) =>  {
  *  // error is an instance of parse.error.
  * });</pre></p>
  *
@@ -6861,7 +6941,7 @@ function handleSelectResult(data, select) {
  * var query = new Parse.Query(myclass);
  * query.get(myid).then((object) => {
  *     // object is an instance of parse.object.
- * }).catch((error) =>  {
+ * }).catch((error) =>  {
  *  // error is an instance of parse.error.
  * });</pre></p>
  *
@@ -6936,7 +7016,6 @@ var ParseQuery = function () {
 
     /**
      * Adds constraint that all of the passed in queries match.
-     * @method _andQuery
      * @param {Array} queries
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -6949,6 +7028,23 @@ var ParseQuery = function () {
       });
 
       this._where.$and = queryJSON;
+      return this;
+    }
+
+    /**
+     * Adds constraint that none of the passed in queries match.
+     * @param {Array} queries
+     * @return {Parse.Query} Returns the query, so you can chain this call.
+     */
+
+  }, {
+    key: '_norQuery',
+    value: function (queries) {
+      var queryJSON = queries.map(function (q) {
+        return q.toJSON().where;
+      });
+
+      this._where.$nor = queryJSON;
       return this;
     }
 
@@ -7059,22 +7155,24 @@ var ParseQuery = function () {
         this._order = json.order.split(",");
       }
 
-      for (var _key in json) {
-        if (json.hasOwnProperty(_key)) {
-          if (["where", "include", "keys", "limit", "skip", "order"].indexOf(_key) === -1) {
-            this._extraOptions[_key] = json[_key];
+      for (var _key3 in json) {
+        if (json.hasOwnProperty(_key3)) {
+          if (["where", "include", "keys", "limit", "skip", "order"].indexOf(_key3) === -1) {
+            this._extraOptions[_key3] = json[_key3];
           }
         }
-      }return this;
+      }
+
+      return this;
     }
 
     /**
-     * Static method to restore Parse.Query by json representation
-     * Internally calling Parse.Query.withJSON
-     * @param {String} className
-     * @param {QueryJSON} json from Parse.Query.toJSON() method
-     * @returns {Parse.Query} new created query
-     */
+       * Static method to restore Parse.Query by json representation
+       * Internally calling Parse.Query.withJSON
+       * @param {String} className
+       * @param {QueryJSON} json from Parse.Query.toJSON() method
+       * @returns {Parse.Query} new created query
+       */
 
   }, {
     key: 'get',
@@ -7179,7 +7277,7 @@ var ParseQuery = function () {
      * Either options.success or options.error is called when the count
      * completes.
      *
-     * @param {Object} options 
+     * @param {Object} options
      * Valid options are:<ul>
      *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
@@ -7219,7 +7317,7 @@ var ParseQuery = function () {
      * Executes a distinct query and returns unique values
      *
      * @param {String} key A field to find distinct values
-     * @param {Object} options 
+     * @param {Object} options
      * Valid options are:<ul>
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
@@ -7251,16 +7349,16 @@ var ParseQuery = function () {
     }
 
     /**
-    * Executes an aggregate query and returns aggregate results
-    *
-    * @param {Mixed} pipeline Array or Object of stages to process query
-    * @param {Object} options Valid options are:<ul>
-    *   <li>sessionToken: A valid session token, used for making a request on
-    *       behalf of a specific user.
-    * </ul>
-    *
-    * @return {Promise} A promise that is resolved with the query completes.
-    */
+     * Executes an aggregate query and returns aggregate results
+     *
+     * @param {Mixed} pipeline Array or Object of stages to process query
+     * @param {Object} options Valid options are:<ul>
+     *   <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     * </ul>
+     *
+     * @return {Promise} A promise that is resolved with the query completes.
+     */
 
   }, {
     key: 'aggregate',
@@ -7274,21 +7372,12 @@ var ParseQuery = function () {
         aggregateOptions.sessionToken = options.sessionToken;
       }
       var controller = _CoreManager2.default.getQueryController();
-      var stages = {};
 
-      if (Array.isArray(pipeline)) {
-        pipeline.forEach(function (stage) {
-          for (var op in stage) {
-            stages[op] = stage[op];
-          }
-        });
-      } else if (pipeline && (typeof pipeline === 'undefined' ? 'undefined' : (0, _typeof3.default)(pipeline)) === 'object') {
-        stages = pipeline;
-      } else {
+      if (!Array.isArray(pipeline) && (typeof pipeline === 'undefined' ? 'undefined' : (0, _typeof3.default)(pipeline)) !== 'object') {
         throw new Error('Invalid pipeline must be Array or Object');
       }
 
-      return controller.aggregate(this.className, stages, aggregateOptions).then(function (results) {
+      return controller.aggregate(this.className, { pipeline: pipeline }, aggregateOptions).then(function (results) {
         return results.results;
       });
     }
@@ -7565,6 +7654,20 @@ var ParseQuery = function () {
 
     /**
      * Adds a constraint to the query that requires a particular key's value to
+     * be contained by the provided list of values. Get objects where all array elements match.
+     * @param {String} key The key to check.
+     * @param {Array} values The values that will match.
+     * @return {Parse.Query} Returns the query, so you can chain this call.
+     */
+
+  }, {
+    key: 'containedBy',
+    value: function (key, value) {
+      return this._addCondition(key, '$containedBy', value);
+    }
+
+    /**
+     * Adds a constraint to the query that requires a particular key's value to
      * contain each one of the provided list of values.
      * @param {String} key The key to check.  This key's value must be an array.
      * @param {Array} values The values that will match.
@@ -7806,7 +7909,6 @@ var ParseQuery = function () {
             break;
           default:
             throw new Error('Unknown option: ' + option);
-            break;
         }
       }
 
@@ -8017,8 +8119,8 @@ var ParseQuery = function () {
     value: function () {
       this._order = [];
 
-      for (var _len = arguments.length, keys = Array(_len), _key2 = 0; _key2 < _len; _key2++) {
-        keys[_key2] = arguments[_key2];
+      for (var _len = arguments.length, keys = Array(_len), _key4 = 0; _key4 < _len; _key4++) {
+        keys[_key4] = arguments[_key4];
       }
 
       return this.addAscending.apply(this, keys);
@@ -8042,8 +8144,8 @@ var ParseQuery = function () {
         this._order = [];
       }
 
-      for (var _len2 = arguments.length, keys = Array(_len2), _key3 = 0; _key3 < _len2; _key3++) {
-        keys[_key3] = arguments[_key3];
+      for (var _len2 = arguments.length, keys = Array(_len2), _key5 = 0; _key5 < _len2; _key5++) {
+        keys[_key5] = arguments[_key5];
       }
 
       keys.forEach(function (key) {
@@ -8069,8 +8171,8 @@ var ParseQuery = function () {
     value: function () {
       this._order = [];
 
-      for (var _len3 = arguments.length, keys = Array(_len3), _key4 = 0; _key4 < _len3; _key4++) {
-        keys[_key4] = arguments[_key4];
+      for (var _len3 = arguments.length, keys = Array(_len3), _key6 = 0; _key6 < _len3; _key6++) {
+        keys[_key6] = arguments[_key6];
       }
 
       return this.addDescending.apply(this, keys);
@@ -8094,8 +8196,8 @@ var ParseQuery = function () {
         this._order = [];
       }
 
-      for (var _len4 = arguments.length, keys = Array(_len4), _key5 = 0; _key5 < _len4; _key5++) {
-        keys[_key5] = arguments[_key5];
+      for (var _len4 = arguments.length, keys = Array(_len4), _key7 = 0; _key7 < _len4; _key7++) {
+        keys[_key7] = arguments[_key7];
       }
 
       keys.forEach(function (key) {
@@ -8150,6 +8252,11 @@ var ParseQuery = function () {
     /**
      * Includes nested Parse.Objects for the provided key.  You can use dot
      * notation to specify which fields in the included object are also fetched.
+     *
+     * You can include all nested Parse.Objects by passing in '*'.
+     * Requires Parse Server 3.0.0+
+     * <pre>query.include('*');</pre>
+     *
      * @param {...String|Array<String>} key The name(s) of the key(s) to include.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -8159,8 +8266,8 @@ var ParseQuery = function () {
     value: function () {
       var _this6 = this;
 
-      for (var _len5 = arguments.length, keys = Array(_len5), _key6 = 0; _key6 < _len5; _key6++) {
-        keys[_key6] = arguments[_key6];
+      for (var _len5 = arguments.length, keys = Array(_len5), _key8 = 0; _key8 < _len5; _key8++) {
+        keys[_key8] = arguments[_key8];
       }
 
       keys.forEach(function (key) {
@@ -8171,6 +8278,20 @@ var ParseQuery = function () {
         }
       });
       return this;
+    }
+
+    /**
+     * Includes all nested Parse.Objects.
+     *
+     * Requires Parse Server 3.0.0+
+     *
+     * @return {Parse.Query} Returns the query, so you can chain this call.
+     */
+
+  }, {
+    key: 'includeAll',
+    value: function () {
+      return this.include('*');
     }
 
     /**
@@ -8190,8 +8311,8 @@ var ParseQuery = function () {
         this._select = [];
       }
 
-      for (var _len6 = arguments.length, keys = Array(_len6), _key7 = 0; _key7 < _len6; _key7++) {
-        keys[_key7] = arguments[_key7];
+      for (var _len6 = arguments.length, keys = Array(_len6), _key9 = 0; _key9 < _len6; _key9++) {
+        keys[_key9] = arguments[_key9];
       }
 
       keys.forEach(function (key) {
@@ -8238,8 +8359,8 @@ var ParseQuery = function () {
   }, {
     key: 'or',
     value: function () {
-      for (var _len7 = arguments.length, queries = Array(_len7), _key8 = 0; _key8 < _len7; _key8++) {
-        queries[_key8] = arguments[_key8];
+      for (var _len7 = arguments.length, queries = Array(_len7), _key10 = 0; _key10 < _len7; _key10++) {
+        queries[_key10] = arguments[_key10];
       }
 
       var className = _getClassNameFromQueries(queries);
@@ -8263,13 +8384,38 @@ var ParseQuery = function () {
   }, {
     key: 'and',
     value: function () {
-      for (var _len8 = arguments.length, queries = Array(_len8), _key9 = 0; _key9 < _len8; _key9++) {
-        queries[_key9] = arguments[_key9];
+      for (var _len8 = arguments.length, queries = Array(_len8), _key11 = 0; _key11 < _len8; _key11++) {
+        queries[_key11] = arguments[_key11];
       }
 
       var className = _getClassNameFromQueries(queries);
       var query = new ParseQuery(className);
       query._andQuery(queries);
+      return query;
+    }
+
+    /**
+     * Constructs a Parse.Query that is the NOR of the passed in queries.  For
+     * example:
+     * <pre>const compoundQuery = Parse.Query.nor(query1, query2, query3);</pre>
+     *
+     * will create a compoundQuery that is a nor of the query1, query2, and
+     * query3.
+     * @param {...Parse.Query} var_args The list of queries to NOR.
+     * @static
+     * @return {Parse.Query} The query that is the NOR of the passed in queries.
+     */
+
+  }, {
+    key: 'nor',
+    value: function () {
+      for (var _len9 = arguments.length, queries = Array(_len9), _key12 = 0; _key12 < _len9; _key12++) {
+        queries[_key12] = arguments[_key12];
+      }
+
+      var className = _getClassNameFromQueries(queries);
+      var query = new ParseQuery(className);
+      query._norQuery(queries);
       return query;
     }
   }]);
@@ -8292,7 +8438,7 @@ var DefaultController = {
 _CoreManager2.default.setQueryController(DefaultController);
 
 exports.default = ParseQuery;
-},{"./CoreManager":3,"./ParseError":13,"./ParseGeoPoint":15,"./ParseObject":18,"./ParsePolygon":20,"./encode":37,"./promiseUtils":42,"babel-runtime/core-js/object/keys":53,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/typeof":64}],22:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./ParseGeoPoint":15,"./ParseObject":18,"./encode":37,"./promiseUtils":41,"babel-runtime/core-js/object/keys":52,"babel-runtime/core-js/promise":54,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/typeof":63}],22:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -8473,7 +8619,7 @@ var ParseRelation = function () {
       */
 
 exports.default = ParseRelation;
-},{"./ParseObject":18,"./ParseOp":19,"./ParseQuery":21,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],23:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"./ParseOp":19,"./ParseQuery":21,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],23:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -8668,7 +8814,7 @@ var ParseRole = function (_ParseObject) {
 _ParseObject3.default.registerSubclass('_Role', ParseRole);
 
 exports.default = ParseRole;
-},{"./ParseACL":11,"./ParseError":13,"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/get":61,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63}],24:[function(_dereq_,module,exports){
+},{"./ParseACL":11,"./ParseError":13,"./ParseObject":18,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/get":60,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62}],24:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -8884,15 +9030,6 @@ var ParseSchema = function () {
     /**
      * Removes all objects from a Schema (class) in Parse.
      * EXERCISE CAUTION, running this will delete all objects for this schema and cannot be reversed
-     *
-     * @param {Object} options
-     * Valid options are:<ul>
-     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
-     *     be used for this request.
-     *   <li>sessionToken: A valid session token, used for making a request on
-     *       behalf of a specific user.
-     * </ul>
-     *
      * @return {Promise} A promise that is resolved with the result when
      * the query completes.
      */
@@ -9154,12 +9291,12 @@ var ParseSchema = function () {
     }
 
     /**
-    * Deleting an Index to Update on a Schema
-    *
-    * @param {String} name Name of the field that will be created on Parse
-    * @param {String} targetClass Name of the target Pointer Class
-    * @return {Parse.Schema} Returns the schema, so you can chain this call.
-    */
+     * Deleting an Index to Update on a Schema
+     *
+     * @param {String} name Name of the field that will be created on Parse
+     * @param {String} targetClass Name of the target Pointer Class
+     * @return {Parse.Schema} Returns the schema, so you can chain this call.
+     */
 
   }, {
     key: 'deleteIndex',
@@ -9213,7 +9350,7 @@ var DefaultController = {
 _CoreManager2.default.setSchemaController(DefaultController);
 
 exports.default = ParseSchema;
-},{"./CoreManager":3,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],25:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],25:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -9290,7 +9427,7 @@ var ParseSession = function (_ParseObject) {
   (0, _inherits3.default)(ParseSession, _ParseObject);
 
   /**
-   * 
+   *
    * @param {Object} attributes The initial set of data to store in the user.
    */
   function ParseSession(attributes) {
@@ -9348,8 +9485,6 @@ var ParseSession = function (_ParseObject) {
         if (!user) {
           return _promise2.default.reject('There is no current user.');
         }
-        user.getSessionToken();
-
         sessionOptions.sessionToken = user.getSessionToken();
         return controller.getSession(sessionOptions);
       });
@@ -9396,7 +9531,7 @@ var DefaultController = {
 _CoreManager2.default.setSessionController(DefaultController);
 
 exports.default = ParseSession;
-},{"./CoreManager":3,"./ParseObject":18,"./ParseUser":26,"./isRevocableSession":40,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63,"babel-runtime/helpers/typeof":64}],26:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseObject":18,"./ParseUser":26,"./isRevocableSession":39,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/core-js/promise":54,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],26:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -9664,8 +9799,6 @@ var ParseUser = function (_ParseObject) {
 
       if (typeof provider === 'string') {
         provider = authProviders[provider];
-      } else {
-        provider.getAuthType();
       }
       return this._linkWith(provider, { authData: null }).then(function () {
         _this3._synchronizeAuthData(provider);
@@ -9987,6 +10120,28 @@ var ParseUser = function (_ParseObject) {
         return _this6;
       });
     }
+
+    /**
+     * Wrap the default fetchWithInclude behavior with functionality to save to local
+     * storage if this is current user.
+     */
+
+  }, {
+    key: 'fetchWithInclude',
+    value: function () {
+      var _this7 = this;
+
+      for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+        args[_key4] = arguments[_key4];
+      }
+
+      return (0, _get3.default)(ParseUser.prototype.__proto__ || (0, _getPrototypeOf2.default)(ParseUser.prototype), 'fetchWithInclude', this).apply(this, args).then(function () {
+        if (_this7.isCurrent()) {
+          return _CoreManager2.default.getUserController().updateUserOnDisk(_this7);
+        }
+        return _this7;
+      });
+    }
   }], [{
     key: 'readOnlyAttributes',
     value: function () {
@@ -10018,10 +10173,10 @@ var ParseUser = function (_ParseObject) {
       }
 
       if (classProps) {
-        for (var prop in classProps) {
-          if (prop !== 'className') {
-            (0, _defineProperty2.default)(ParseUser, prop, {
-              value: classProps[prop],
+        for (var _prop in classProps) {
+          if (_prop !== 'className') {
+            (0, _defineProperty2.default)(ParseUser, _prop, {
+              value: classProps[_prop],
               enumerable: false,
               writable: true,
               configurable: true
@@ -10510,7 +10665,7 @@ var DefaultController = {
 _CoreManager2.default.setUserController(DefaultController);
 
 exports.default = ParseUser;
-},{"./CoreManager":3,"./ParseError":13,"./ParseObject":18,"./ParseSession":25,"./Storage":30,"./isRevocableSession":40,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/object/define-property":49,"babel-runtime/core-js/object/get-prototype-of":52,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60,"babel-runtime/helpers/get":61,"babel-runtime/helpers/inherits":62,"babel-runtime/helpers/possibleConstructorReturn":63,"babel-runtime/helpers/typeof":64}],27:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"./ParseObject":18,"./ParseSession":25,"./Storage":30,"./isRevocableSession":39,"babel-runtime/core-js/json/stringify":45,"babel-runtime/core-js/object/define-property":48,"babel-runtime/core-js/object/get-prototype-of":51,"babel-runtime/core-js/promise":54,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59,"babel-runtime/helpers/get":60,"babel-runtime/helpers/inherits":61,"babel-runtime/helpers/possibleConstructorReturn":62,"babel-runtime/helpers/typeof":63}],27:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -10543,28 +10698,28 @@ function _interopRequireDefault(obj) {
  */
 
 /**
- * Sends a push notification.
- * @method send
- * @name Parse.Push.send
- * @param {Object} data -  The data of the push notification.  Valid fields
- * are:
- *   <ol>
- *     <li>channels - An Array of channels to push to.</li>
- *     <li>push_time - A Date object for when to send the push.</li>
- *     <li>expiration_time -  A Date object for when to expire
- *         the push.</li>
- *     <li>expiration_interval - The seconds from now to expire the push.</li>
- *     <li>where - A Parse.Query over Parse.Installation that is used to match
- *         a set of installations to push to.</li>
- *     <li>data - The data to send as part of the push</li>
- *   <ol>
- * @param {Object} options An object that has an optional success function,
- * that takes no arguments and will be called on a successful push, and
- * an error function that takes a Parse.Error and will be called if the push
- * failed.
- * @return {Promise} A promise that is fulfilled when the push request
- *     completes.
- */
+  * Sends a push notification.
+  * @method send
+  * @name Parse.Push.send
+  * @param {Object} data -  The data of the push notification.  Valid fields
+  * are:
+  *   <ol>
+  *     <li>channels - An Array of channels to push to.</li>
+  *     <li>push_time - A Date object for when to send the push.</li>
+  *     <li>expiration_time -  A Date object for when to expire
+  *         the push.</li>
+  *     <li>expiration_interval - The seconds from now to expire the push.</li>
+  *     <li>where - A Parse.Query over Parse.Installation that is used to match
+  *         a set of installations to push to.</li>
+  *     <li>data - The data to send as part of the push</li>
+  *   <ol>
+  * @param {Object} options An object that has an optional success function,
+  * that takes no arguments and will be called on a successful push, and
+  * an error function that takes a Parse.Error and will be called if the push
+  * failed.
+  * @return {Promise} A promise that is fulfilled when the push request
+  *     completes.
+  */
 /**
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
@@ -10611,7 +10766,7 @@ var DefaultController = {
 };
 
 _CoreManager2.default.setPushController(DefaultController);
-},{"./CoreManager":3,"./ParseQuery":21,"babel-runtime/helpers/typeof":64}],28:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseQuery":21,"babel-runtime/helpers/typeof":63}],28:[function(_dereq_,module,exports){
 (function (process){
 'use strict';
 
@@ -10635,25 +10790,22 @@ var _ParseError = _dereq_('./ParseError');
 
 var _ParseError2 = _interopRequireDefault(_ParseError);
 
-var _Storage = _dereq_('./Storage');
-
-var _Storage2 = _interopRequireDefault(_Storage);
-
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
 
-var XHR = null; /**
-                 * Copyright (c) 2015-present, Parse, LLC.
-                 * All rights reserved.
-                 *
-                 * This source code is licensed under the BSD-style license found in the
-                 * LICENSE file in the root directory of this source tree. An additional grant
-                 * of patent rights can be found in the PATENTS file in the same directory.
-                 *
-                 * 
-                 */
-
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ */
+/* global XMLHttpRequest, XDomainRequest */
+var XHR = null;
 if (typeof XMLHttpRequest !== 'undefined') {
   XHR = XMLHttpRequest;
 }
@@ -10876,7 +11028,7 @@ var RESTController = {
 
 module.exports = RESTController;
 }).call(this,_dereq_('_process'))
-},{"./CoreManager":3,"./ParseError":13,"./Storage":30,"_process":65,"babel-runtime/core-js/json/stringify":46,"babel-runtime/core-js/promise":55,"babel-runtime/helpers/typeof":64}],29:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./ParseError":13,"_process":64,"babel-runtime/core-js/json/stringify":45,"babel-runtime/core-js/promise":54,"babel-runtime/helpers/typeof":63}],29:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11131,7 +11283,7 @@ var Storage = {
 module.exports = Storage;
 
 _CoreManager2.default.setStorageController(_dereq_('./StorageController.browser'));
-},{"./CoreManager":3,"./StorageController.browser":31,"babel-runtime/core-js/promise":55}],31:[function(_dereq_,module,exports){
+},{"./CoreManager":3,"./StorageController.browser":31,"babel-runtime/core-js/promise":54}],31:[function(_dereq_,module,exports){
 "use strict";
 
 /**
@@ -11144,6 +11296,7 @@ _CoreManager2.default.setStorageController(_dereq_('./StorageController.browser'
  *
  * 
  */
+/* global localStorage */
 
 var StorageController = {
   async: 0,
@@ -11252,7 +11405,7 @@ var TaskQueue = function () {
       */
 
 module.exports = TaskQueue;
-},{"babel-runtime/core-js/promise":55,"babel-runtime/helpers/classCallCheck":59,"babel-runtime/helpers/createClass":60}],33:[function(_dereq_,module,exports){
+},{"babel-runtime/core-js/promise":54,"babel-runtime/helpers/classCallCheck":58,"babel-runtime/helpers/createClass":59}],33:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11442,7 +11595,7 @@ function duplicateState(source, dest) {
 function clearAllState() {
   objectState = new _weakMap2.default();
 }
-},{"./ObjectStateMutations":9,"./TaskQueue":32,"babel-runtime/core-js/weak-map":58}],34:[function(_dereq_,module,exports){
+},{"./ObjectStateMutations":9,"./TaskQueue":32,"babel-runtime/core-js/weak-map":57}],34:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11561,7 +11714,7 @@ function canBeSerializedHelper(value) {
   }
   return true;
 }
-},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":22,"babel-runtime/helpers/typeof":64}],36:[function(_dereq_,module,exports){
+},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":22,"babel-runtime/helpers/typeof":63}],36:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11604,6 +11757,7 @@ function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
 
+// eslint-disable-line no-unused-vars
 function decode(value) {
   if (value === null || (typeof value === 'undefined' ? 'undefined' : (0, _typeof3.default)(value)) !== 'object') {
     return value;
@@ -11660,7 +11814,7 @@ function decode(value) {
    *
    * 
    */
-},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":22,"babel-runtime/helpers/typeof":64}],37:[function(_dereq_,module,exports){
+},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":22,"babel-runtime/helpers/typeof":63}],37:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11767,92 +11921,7 @@ function encode(value, disallowObjects, forcePointers, seen) {
 
   return value;
 }
-},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":22,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/typeof":64}],38:[function(_dereq_,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _keys = _dereq_('babel-runtime/core-js/object/keys');
-
-var _keys2 = _interopRequireDefault(_keys);
-
-var _typeof2 = _dereq_('babel-runtime/helpers/typeof');
-
-var _typeof3 = _interopRequireDefault(_typeof2);
-
-exports.default = equals;
-
-var _ParseACL = _dereq_('./ParseACL');
-
-var _ParseACL2 = _interopRequireDefault(_ParseACL);
-
-var _ParseFile = _dereq_('./ParseFile');
-
-var _ParseFile2 = _interopRequireDefault(_ParseFile);
-
-var _ParseGeoPoint = _dereq_('./ParseGeoPoint');
-
-var _ParseGeoPoint2 = _interopRequireDefault(_ParseGeoPoint);
-
-var _ParseObject = _dereq_('./ParseObject');
-
-var _ParseObject2 = _interopRequireDefault(_ParseObject);
-
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj };
-}
-
-/**
- * Copyright (c) 2015-present, Parse, LLC.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- */
-
-function equals(a, b) {
-  if ((typeof a === 'undefined' ? 'undefined' : (0, _typeof3.default)(a)) !== (typeof b === 'undefined' ? 'undefined' : (0, _typeof3.default)(b))) {
-    return false;
-  }
-
-  if (!a || (typeof a === 'undefined' ? 'undefined' : (0, _typeof3.default)(a)) !== 'object') {
-    // a is a primitive
-    return a === b;
-  }
-
-  if (Array.isArray(a) || Array.isArray(b)) {
-    if (!Array.isArray(a) || !Array.isArray(b)) {
-      return false;
-    }
-    if (a.length !== b.length) {
-      return false;
-    }
-    for (var i = a.length; i--;) {
-      if (!equals(a[i], b[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  if (a instanceof _ParseACL2.default || a instanceof _ParseFile2.default || a instanceof _ParseGeoPoint2.default || a instanceof _ParseObject2.default) {
-    return a.equals(b);
-  }
-
-  if ((0, _keys2.default)(a).length !== (0, _keys2.default)(b).length) {
-    return false;
-  }
-  for (var k in a) {
-    if (!equals(a[k], b[k])) {
-      return false;
-    }
-  }
-  return true;
-}
-},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"babel-runtime/core-js/object/keys":53,"babel-runtime/helpers/typeof":64}],39:[function(_dereq_,module,exports){
+},{"./ParseACL":11,"./ParseFile":14,"./ParseGeoPoint":15,"./ParseObject":18,"./ParseOp":19,"./ParsePolygon":20,"./ParseRelation":22,"babel-runtime/core-js/object/keys":52,"babel-runtime/helpers/typeof":63}],38:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11884,7 +11953,7 @@ function escape(str) {
     return encoded[char];
   });
 }
-},{}],40:[function(_dereq_,module,exports){
+},{}],39:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11905,7 +11974,7 @@ exports.default = isRevocableSession;
 function isRevocableSession(token) {
   return token.indexOf('r:') > -1;
 }
-},{}],41:[function(_dereq_,module,exports){
+},{}],40:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -11940,7 +12009,7 @@ function parseDate(iso8601) {
 
   return new Date(Date.UTC(year, month, day, hour, minute, second, milli));
 }
-},{}],42:[function(_dereq_,module,exports){
+},{}],41:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12035,7 +12104,7 @@ function continueWhile(test, emitter) {
   }
   return _promise2.default.resolve();
 }
-},{"babel-runtime/core-js/promise":55}],43:[function(_dereq_,module,exports){
+},{"babel-runtime/core-js/promise":54}],42:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12081,7 +12150,7 @@ function unique(arr) {
   });
   return uniques;
 }
-},{"./ParseObject":18,"./arrayContainsObject":34}],44:[function(_dereq_,module,exports){
+},{"./ParseObject":18,"./arrayContainsObject":34}],43:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12184,35 +12253,35 @@ function traverse(obj, encountered, shouldThrow, allowDeepUnsaved) {
     }
   }
 }
-},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":22,"babel-runtime/helpers/typeof":64}],45:[function(_dereq_,module,exports){
+},{"./ParseFile":14,"./ParseObject":18,"./ParseRelation":22,"babel-runtime/helpers/typeof":63}],44:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/get-iterator"), __esModule: true };
-},{"core-js/library/fn/get-iterator":66}],46:[function(_dereq_,module,exports){
+},{"core-js/library/fn/get-iterator":65}],45:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/json/stringify"), __esModule: true };
-},{"core-js/library/fn/json/stringify":67}],47:[function(_dereq_,module,exports){
+},{"core-js/library/fn/json/stringify":66}],46:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/map"), __esModule: true };
-},{"core-js/library/fn/map":68}],48:[function(_dereq_,module,exports){
+},{"core-js/library/fn/map":67}],47:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/create"), __esModule: true };
-},{"core-js/library/fn/object/create":69}],49:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/create":68}],48:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/define-property"), __esModule: true };
-},{"core-js/library/fn/object/define-property":70}],50:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/define-property":69}],49:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/freeze"), __esModule: true };
-},{"core-js/library/fn/object/freeze":71}],51:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/freeze":70}],50:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/get-own-property-descriptor"), __esModule: true };
-},{"core-js/library/fn/object/get-own-property-descriptor":72}],52:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/get-own-property-descriptor":71}],51:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/get-prototype-of"), __esModule: true };
-},{"core-js/library/fn/object/get-prototype-of":73}],53:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/get-prototype-of":72}],52:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/keys"), __esModule: true };
-},{"core-js/library/fn/object/keys":74}],54:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/keys":73}],53:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/object/set-prototype-of"), __esModule: true };
-},{"core-js/library/fn/object/set-prototype-of":75}],55:[function(_dereq_,module,exports){
+},{"core-js/library/fn/object/set-prototype-of":74}],54:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/promise"), __esModule: true };
-},{"core-js/library/fn/promise":76}],56:[function(_dereq_,module,exports){
+},{"core-js/library/fn/promise":75}],55:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/symbol"), __esModule: true };
-},{"core-js/library/fn/symbol":77}],57:[function(_dereq_,module,exports){
+},{"core-js/library/fn/symbol":76}],56:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/symbol/iterator"), __esModule: true };
-},{"core-js/library/fn/symbol/iterator":78}],58:[function(_dereq_,module,exports){
+},{"core-js/library/fn/symbol/iterator":77}],57:[function(_dereq_,module,exports){
 module.exports = { "default": _dereq_("core-js/library/fn/weak-map"), __esModule: true };
-},{"core-js/library/fn/weak-map":79}],59:[function(_dereq_,module,exports){
+},{"core-js/library/fn/weak-map":78}],58:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12222,7 +12291,7 @@ exports.default = function (instance, Constructor) {
     throw new TypeError("Cannot call a class as a function");
   }
 };
-},{}],60:[function(_dereq_,module,exports){
+},{}],59:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12250,7 +12319,7 @@ exports.default = function () {
     return Constructor;
   };
 }();
-},{"../core-js/object/define-property":49}],61:[function(_dereq_,module,exports){
+},{"../core-js/object/define-property":48}],60:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12289,7 +12358,7 @@ exports.default = function get(object, property, receiver) {
     return getter.call(receiver);
   }
 };
-},{"../core-js/object/get-own-property-descriptor":51,"../core-js/object/get-prototype-of":52}],62:[function(_dereq_,module,exports){
+},{"../core-js/object/get-own-property-descriptor":50,"../core-js/object/get-prototype-of":51}],61:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12323,7 +12392,7 @@ exports.default = function (subClass, superClass) {
   });
   if (superClass) _setPrototypeOf2.default ? (0, _setPrototypeOf2.default)(subClass, superClass) : subClass.__proto__ = superClass;
 };
-},{"../core-js/object/create":48,"../core-js/object/set-prototype-of":54,"../helpers/typeof":64}],63:[function(_dereq_,module,exports){
+},{"../core-js/object/create":47,"../core-js/object/set-prototype-of":53,"../helpers/typeof":63}],62:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12341,7 +12410,7 @@ exports.default = function (self, call) {
 
   return call && ((typeof call === "undefined" ? "undefined" : (0, _typeof3.default)(call)) === "object" || typeof call === "function") ? call : self;
 };
-},{"../helpers/typeof":64}],64:[function(_dereq_,module,exports){
+},{"../helpers/typeof":63}],63:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -12363,96 +12432,96 @@ exports.default = typeof _symbol2.default === "function" && _typeof(_iterator2.d
 } : function (obj) {
   return obj && typeof _symbol2.default === "function" && obj.constructor === _symbol2.default && obj !== _symbol2.default.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof(obj);
 };
-},{"../core-js/symbol":56,"../core-js/symbol/iterator":57}],65:[function(_dereq_,module,exports){
+},{"../core-js/symbol":55,"../core-js/symbol/iterator":56}],64:[function(_dereq_,module,exports){
 
-},{}],66:[function(_dereq_,module,exports){
+},{}],65:[function(_dereq_,module,exports){
 _dereq_('../modules/web.dom.iterable');
 _dereq_('../modules/es6.string.iterator');
 module.exports = _dereq_('../modules/core.get-iterator');
-},{"../modules/core.get-iterator":160,"../modules/es6.string.iterator":172,"../modules/web.dom.iterable":178}],67:[function(_dereq_,module,exports){
+},{"../modules/core.get-iterator":159,"../modules/es6.string.iterator":171,"../modules/web.dom.iterable":177}],66:[function(_dereq_,module,exports){
 var core  = _dereq_('../../modules/_core')
   , $JSON = core.JSON || (core.JSON = {stringify: JSON.stringify});
 module.exports = function stringify(it){ // eslint-disable-line no-unused-vars
   return $JSON.stringify.apply($JSON, arguments);
 };
-},{"../../modules/_core":95}],68:[function(_dereq_,module,exports){
+},{"../../modules/_core":94}],67:[function(_dereq_,module,exports){
 _dereq_('../modules/es6.object.to-string');
 _dereq_('../modules/es6.string.iterator');
 _dereq_('../modules/web.dom.iterable');
 _dereq_('../modules/es6.map');
 _dereq_('../modules/es7.map.to-json');
 module.exports = _dereq_('../modules/_core').Map;
-},{"../modules/_core":95,"../modules/es6.map":162,"../modules/es6.object.to-string":170,"../modules/es6.string.iterator":172,"../modules/es7.map.to-json":175,"../modules/web.dom.iterable":178}],69:[function(_dereq_,module,exports){
+},{"../modules/_core":94,"../modules/es6.map":161,"../modules/es6.object.to-string":169,"../modules/es6.string.iterator":171,"../modules/es7.map.to-json":174,"../modules/web.dom.iterable":177}],68:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.create');
 var $Object = _dereq_('../../modules/_core').Object;
 module.exports = function create(P, D){
   return $Object.create(P, D);
 };
-},{"../../modules/_core":95,"../../modules/es6.object.create":163}],70:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.create":162}],69:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.define-property');
 var $Object = _dereq_('../../modules/_core').Object;
 module.exports = function defineProperty(it, key, desc){
   return $Object.defineProperty(it, key, desc);
 };
-},{"../../modules/_core":95,"../../modules/es6.object.define-property":164}],71:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.define-property":163}],70:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.freeze');
 module.exports = _dereq_('../../modules/_core').Object.freeze;
-},{"../../modules/_core":95,"../../modules/es6.object.freeze":165}],72:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.freeze":164}],71:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.get-own-property-descriptor');
 var $Object = _dereq_('../../modules/_core').Object;
 module.exports = function getOwnPropertyDescriptor(it, key){
   return $Object.getOwnPropertyDescriptor(it, key);
 };
-},{"../../modules/_core":95,"../../modules/es6.object.get-own-property-descriptor":166}],73:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.get-own-property-descriptor":165}],72:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.get-prototype-of');
 module.exports = _dereq_('../../modules/_core').Object.getPrototypeOf;
-},{"../../modules/_core":95,"../../modules/es6.object.get-prototype-of":167}],74:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.get-prototype-of":166}],73:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.keys');
 module.exports = _dereq_('../../modules/_core').Object.keys;
-},{"../../modules/_core":95,"../../modules/es6.object.keys":168}],75:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.keys":167}],74:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.object.set-prototype-of');
 module.exports = _dereq_('../../modules/_core').Object.setPrototypeOf;
-},{"../../modules/_core":95,"../../modules/es6.object.set-prototype-of":169}],76:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.set-prototype-of":168}],75:[function(_dereq_,module,exports){
 _dereq_('../modules/es6.object.to-string');
 _dereq_('../modules/es6.string.iterator');
 _dereq_('../modules/web.dom.iterable');
 _dereq_('../modules/es6.promise');
 module.exports = _dereq_('../modules/_core').Promise;
-},{"../modules/_core":95,"../modules/es6.object.to-string":170,"../modules/es6.promise":171,"../modules/es6.string.iterator":172,"../modules/web.dom.iterable":178}],77:[function(_dereq_,module,exports){
+},{"../modules/_core":94,"../modules/es6.object.to-string":169,"../modules/es6.promise":170,"../modules/es6.string.iterator":171,"../modules/web.dom.iterable":177}],76:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.symbol');
 _dereq_('../../modules/es6.object.to-string');
 _dereq_('../../modules/es7.symbol.async-iterator');
 _dereq_('../../modules/es7.symbol.observable');
 module.exports = _dereq_('../../modules/_core').Symbol;
-},{"../../modules/_core":95,"../../modules/es6.object.to-string":170,"../../modules/es6.symbol":173,"../../modules/es7.symbol.async-iterator":176,"../../modules/es7.symbol.observable":177}],78:[function(_dereq_,module,exports){
+},{"../../modules/_core":94,"../../modules/es6.object.to-string":169,"../../modules/es6.symbol":172,"../../modules/es7.symbol.async-iterator":175,"../../modules/es7.symbol.observable":176}],77:[function(_dereq_,module,exports){
 _dereq_('../../modules/es6.string.iterator');
 _dereq_('../../modules/web.dom.iterable');
 module.exports = _dereq_('../../modules/_wks-ext').f('iterator');
-},{"../../modules/_wks-ext":157,"../../modules/es6.string.iterator":172,"../../modules/web.dom.iterable":178}],79:[function(_dereq_,module,exports){
+},{"../../modules/_wks-ext":156,"../../modules/es6.string.iterator":171,"../../modules/web.dom.iterable":177}],78:[function(_dereq_,module,exports){
 _dereq_('../modules/es6.object.to-string');
 _dereq_('../modules/web.dom.iterable');
 _dereq_('../modules/es6.weak-map');
 module.exports = _dereq_('../modules/_core').WeakMap;
-},{"../modules/_core":95,"../modules/es6.object.to-string":170,"../modules/es6.weak-map":174,"../modules/web.dom.iterable":178}],80:[function(_dereq_,module,exports){
+},{"../modules/_core":94,"../modules/es6.object.to-string":169,"../modules/es6.weak-map":173,"../modules/web.dom.iterable":177}],79:[function(_dereq_,module,exports){
 module.exports = function(it){
   if(typeof it != 'function')throw TypeError(it + ' is not a function!');
   return it;
 };
-},{}],81:[function(_dereq_,module,exports){
+},{}],80:[function(_dereq_,module,exports){
 module.exports = function(){ /* empty */ };
-},{}],82:[function(_dereq_,module,exports){
+},{}],81:[function(_dereq_,module,exports){
 module.exports = function(it, Constructor, name, forbiddenField){
   if(!(it instanceof Constructor) || (forbiddenField !== undefined && forbiddenField in it)){
     throw TypeError(name + ': incorrect invocation!');
   } return it;
 };
-},{}],83:[function(_dereq_,module,exports){
+},{}],82:[function(_dereq_,module,exports){
 var isObject = _dereq_('./_is-object');
 module.exports = function(it){
   if(!isObject(it))throw TypeError(it + ' is not an object!');
   return it;
 };
-},{"./_is-object":114}],84:[function(_dereq_,module,exports){
+},{"./_is-object":113}],83:[function(_dereq_,module,exports){
 var forOf = _dereq_('./_for-of');
 
 module.exports = function(iter, ITERATOR){
@@ -12461,7 +12530,7 @@ module.exports = function(iter, ITERATOR){
   return result;
 };
 
-},{"./_for-of":104}],85:[function(_dereq_,module,exports){
+},{"./_for-of":103}],84:[function(_dereq_,module,exports){
 // false -> Array#indexOf
 // true  -> Array#includes
 var toIObject = _dereq_('./_to-iobject')
@@ -12483,7 +12552,7 @@ module.exports = function(IS_INCLUDES){
     } return !IS_INCLUDES && -1;
   };
 };
-},{"./_to-index":149,"./_to-iobject":151,"./_to-length":152}],86:[function(_dereq_,module,exports){
+},{"./_to-index":148,"./_to-iobject":150,"./_to-length":151}],85:[function(_dereq_,module,exports){
 // 0 -> Array#forEach
 // 1 -> Array#map
 // 2 -> Array#filter
@@ -12528,7 +12597,7 @@ module.exports = function(TYPE, $create){
     return IS_FIND_INDEX ? -1 : IS_SOME || IS_EVERY ? IS_EVERY : result;
   };
 };
-},{"./_array-species-create":88,"./_ctx":96,"./_iobject":111,"./_to-length":152,"./_to-object":153}],87:[function(_dereq_,module,exports){
+},{"./_array-species-create":87,"./_ctx":95,"./_iobject":110,"./_to-length":151,"./_to-object":152}],86:[function(_dereq_,module,exports){
 var isObject = _dereq_('./_is-object')
   , isArray  = _dereq_('./_is-array')
   , SPECIES  = _dereq_('./_wks')('species');
@@ -12545,14 +12614,14 @@ module.exports = function(original){
     }
   } return C === undefined ? Array : C;
 };
-},{"./_is-array":113,"./_is-object":114,"./_wks":158}],88:[function(_dereq_,module,exports){
+},{"./_is-array":112,"./_is-object":113,"./_wks":157}],87:[function(_dereq_,module,exports){
 // 9.4.2.3 ArraySpeciesCreate(originalArray, length)
 var speciesConstructor = _dereq_('./_array-species-constructor');
 
 module.exports = function(original, length){
   return new (speciesConstructor(original))(length);
 };
-},{"./_array-species-constructor":87}],89:[function(_dereq_,module,exports){
+},{"./_array-species-constructor":86}],88:[function(_dereq_,module,exports){
 // getting tag from 19.1.3.6 Object.prototype.toString()
 var cof = _dereq_('./_cof')
   , TAG = _dereq_('./_wks')('toStringTag')
@@ -12576,13 +12645,13 @@ module.exports = function(it){
     // ES3 arguments fallback
     : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
 };
-},{"./_cof":90,"./_wks":158}],90:[function(_dereq_,module,exports){
+},{"./_cof":89,"./_wks":157}],89:[function(_dereq_,module,exports){
 var toString = {}.toString;
 
 module.exports = function(it){
   return toString.call(it).slice(8, -1);
 };
-},{}],91:[function(_dereq_,module,exports){
+},{}],90:[function(_dereq_,module,exports){
 'use strict';
 var dP          = _dereq_('./_object-dp').f
   , create      = _dereq_('./_object-create')
@@ -12725,7 +12794,7 @@ module.exports = {
     setSpecies(NAME);
   }
 };
-},{"./_an-instance":82,"./_ctx":96,"./_defined":97,"./_descriptors":98,"./_for-of":104,"./_iter-define":117,"./_iter-step":119,"./_meta":123,"./_object-create":126,"./_object-dp":127,"./_redefine-all":139,"./_set-species":142}],92:[function(_dereq_,module,exports){
+},{"./_an-instance":81,"./_ctx":95,"./_defined":96,"./_descriptors":97,"./_for-of":103,"./_iter-define":116,"./_iter-step":118,"./_meta":122,"./_object-create":125,"./_object-dp":126,"./_redefine-all":138,"./_set-species":141}],91:[function(_dereq_,module,exports){
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var classof = _dereq_('./_classof')
   , from    = _dereq_('./_array-from-iterable');
@@ -12735,7 +12804,7 @@ module.exports = function(NAME){
     return from(this);
   };
 };
-},{"./_array-from-iterable":84,"./_classof":89}],93:[function(_dereq_,module,exports){
+},{"./_array-from-iterable":83,"./_classof":88}],92:[function(_dereq_,module,exports){
 'use strict';
 var redefineAll       = _dereq_('./_redefine-all')
   , getWeak           = _dereq_('./_meta').getWeak
@@ -12819,7 +12888,7 @@ module.exports = {
   },
   ufstore: uncaughtFrozenStore
 };
-},{"./_an-instance":82,"./_an-object":83,"./_array-methods":86,"./_for-of":104,"./_has":106,"./_is-object":114,"./_meta":123,"./_redefine-all":139}],94:[function(_dereq_,module,exports){
+},{"./_an-instance":81,"./_an-object":82,"./_array-methods":85,"./_for-of":103,"./_has":105,"./_is-object":113,"./_meta":122,"./_redefine-all":138}],93:[function(_dereq_,module,exports){
 'use strict';
 var global         = _dereq_('./_global')
   , $export        = _dereq_('./_export')
@@ -12879,10 +12948,10 @@ module.exports = function(NAME, wrapper, methods, common, IS_MAP, IS_WEAK){
 
   return C;
 };
-},{"./_an-instance":82,"./_array-methods":86,"./_descriptors":98,"./_export":102,"./_fails":103,"./_for-of":104,"./_global":105,"./_hide":107,"./_is-object":114,"./_meta":123,"./_object-dp":127,"./_redefine-all":139,"./_set-to-string-tag":143}],95:[function(_dereq_,module,exports){
+},{"./_an-instance":81,"./_array-methods":85,"./_descriptors":97,"./_export":101,"./_fails":102,"./_for-of":103,"./_global":104,"./_hide":106,"./_is-object":113,"./_meta":122,"./_object-dp":126,"./_redefine-all":138,"./_set-to-string-tag":142}],94:[function(_dereq_,module,exports){
 var core = module.exports = {version: '2.4.0'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
-},{}],96:[function(_dereq_,module,exports){
+},{}],95:[function(_dereq_,module,exports){
 // optional / simple context binding
 var aFunction = _dereq_('./_a-function');
 module.exports = function(fn, that, length){
@@ -12903,18 +12972,18 @@ module.exports = function(fn, that, length){
     return fn.apply(that, arguments);
   };
 };
-},{"./_a-function":80}],97:[function(_dereq_,module,exports){
+},{"./_a-function":79}],96:[function(_dereq_,module,exports){
 // 7.2.1 RequireObjectCoercible(argument)
 module.exports = function(it){
   if(it == undefined)throw TypeError("Can't call method on  " + it);
   return it;
 };
-},{}],98:[function(_dereq_,module,exports){
+},{}],97:[function(_dereq_,module,exports){
 // Thank's IE8 for his funny defineProperty
 module.exports = !_dereq_('./_fails')(function(){
   return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
 });
-},{"./_fails":103}],99:[function(_dereq_,module,exports){
+},{"./_fails":102}],98:[function(_dereq_,module,exports){
 var isObject = _dereq_('./_is-object')
   , document = _dereq_('./_global').document
   // in old IE typeof document.createElement is 'object'
@@ -12922,12 +12991,12 @@ var isObject = _dereq_('./_is-object')
 module.exports = function(it){
   return is ? document.createElement(it) : {};
 };
-},{"./_global":105,"./_is-object":114}],100:[function(_dereq_,module,exports){
+},{"./_global":104,"./_is-object":113}],99:[function(_dereq_,module,exports){
 // IE 8- don't enum bug keys
 module.exports = (
   'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
 ).split(',');
-},{}],101:[function(_dereq_,module,exports){
+},{}],100:[function(_dereq_,module,exports){
 // all enumerable object keys, includes symbols
 var getKeys = _dereq_('./_object-keys')
   , gOPS    = _dereq_('./_object-gops')
@@ -12943,7 +13012,7 @@ module.exports = function(it){
     while(symbols.length > i)if(isEnum.call(it, key = symbols[i++]))result.push(key);
   } return result;
 };
-},{"./_object-gops":132,"./_object-keys":135,"./_object-pie":136}],102:[function(_dereq_,module,exports){
+},{"./_object-gops":131,"./_object-keys":134,"./_object-pie":135}],101:[function(_dereq_,module,exports){
 var global    = _dereq_('./_global')
   , core      = _dereq_('./_core')
   , ctx       = _dereq_('./_ctx')
@@ -13005,7 +13074,7 @@ $export.W = 32;  // wrap
 $export.U = 64;  // safe
 $export.R = 128; // real proto method for `library` 
 module.exports = $export;
-},{"./_core":95,"./_ctx":96,"./_global":105,"./_hide":107}],103:[function(_dereq_,module,exports){
+},{"./_core":94,"./_ctx":95,"./_global":104,"./_hide":106}],102:[function(_dereq_,module,exports){
 module.exports = function(exec){
   try {
     return !!exec();
@@ -13013,7 +13082,7 @@ module.exports = function(exec){
     return true;
   }
 };
-},{}],104:[function(_dereq_,module,exports){
+},{}],103:[function(_dereq_,module,exports){
 var ctx         = _dereq_('./_ctx')
   , call        = _dereq_('./_iter-call')
   , isArrayIter = _dereq_('./_is-array-iter')
@@ -13039,17 +13108,17 @@ var exports = module.exports = function(iterable, entries, fn, that, ITERATOR){
 };
 exports.BREAK  = BREAK;
 exports.RETURN = RETURN;
-},{"./_an-object":83,"./_ctx":96,"./_is-array-iter":112,"./_iter-call":115,"./_to-length":152,"./core.get-iterator-method":159}],105:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_ctx":95,"./_is-array-iter":111,"./_iter-call":114,"./_to-length":151,"./core.get-iterator-method":158}],104:[function(_dereq_,module,exports){
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
   ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
 if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
-},{}],106:[function(_dereq_,module,exports){
+},{}],105:[function(_dereq_,module,exports){
 var hasOwnProperty = {}.hasOwnProperty;
 module.exports = function(it, key){
   return hasOwnProperty.call(it, key);
 };
-},{}],107:[function(_dereq_,module,exports){
+},{}],106:[function(_dereq_,module,exports){
 var dP         = _dereq_('./_object-dp')
   , createDesc = _dereq_('./_property-desc');
 module.exports = _dereq_('./_descriptors') ? function(object, key, value){
@@ -13058,13 +13127,13 @@ module.exports = _dereq_('./_descriptors') ? function(object, key, value){
   object[key] = value;
   return object;
 };
-},{"./_descriptors":98,"./_object-dp":127,"./_property-desc":138}],108:[function(_dereq_,module,exports){
+},{"./_descriptors":97,"./_object-dp":126,"./_property-desc":137}],107:[function(_dereq_,module,exports){
 module.exports = _dereq_('./_global').document && document.documentElement;
-},{"./_global":105}],109:[function(_dereq_,module,exports){
+},{"./_global":104}],108:[function(_dereq_,module,exports){
 module.exports = !_dereq_('./_descriptors') && !_dereq_('./_fails')(function(){
   return Object.defineProperty(_dereq_('./_dom-create')('div'), 'a', {get: function(){ return 7; }}).a != 7;
 });
-},{"./_descriptors":98,"./_dom-create":99,"./_fails":103}],110:[function(_dereq_,module,exports){
+},{"./_descriptors":97,"./_dom-create":98,"./_fails":102}],109:[function(_dereq_,module,exports){
 // fast apply, http://jsperf.lnkit.com/fast-apply/5
 module.exports = function(fn, args, that){
   var un = that === undefined;
@@ -13081,13 +13150,13 @@ module.exports = function(fn, args, that){
                       : fn.call(that, args[0], args[1], args[2], args[3]);
   } return              fn.apply(that, args);
 };
-},{}],111:[function(_dereq_,module,exports){
+},{}],110:[function(_dereq_,module,exports){
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
 var cof = _dereq_('./_cof');
 module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
   return cof(it) == 'String' ? it.split('') : Object(it);
 };
-},{"./_cof":90}],112:[function(_dereq_,module,exports){
+},{"./_cof":89}],111:[function(_dereq_,module,exports){
 // check on default Array iterator
 var Iterators  = _dereq_('./_iterators')
   , ITERATOR   = _dereq_('./_wks')('iterator')
@@ -13096,17 +13165,17 @@ var Iterators  = _dereq_('./_iterators')
 module.exports = function(it){
   return it !== undefined && (Iterators.Array === it || ArrayProto[ITERATOR] === it);
 };
-},{"./_iterators":120,"./_wks":158}],113:[function(_dereq_,module,exports){
+},{"./_iterators":119,"./_wks":157}],112:[function(_dereq_,module,exports){
 // 7.2.2 IsArray(argument)
 var cof = _dereq_('./_cof');
 module.exports = Array.isArray || function isArray(arg){
   return cof(arg) == 'Array';
 };
-},{"./_cof":90}],114:[function(_dereq_,module,exports){
+},{"./_cof":89}],113:[function(_dereq_,module,exports){
 module.exports = function(it){
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
-},{}],115:[function(_dereq_,module,exports){
+},{}],114:[function(_dereq_,module,exports){
 // call something on iterator step with safe closing on error
 var anObject = _dereq_('./_an-object');
 module.exports = function(iterator, fn, value, entries){
@@ -13119,7 +13188,7 @@ module.exports = function(iterator, fn, value, entries){
     throw e;
   }
 };
-},{"./_an-object":83}],116:[function(_dereq_,module,exports){
+},{"./_an-object":82}],115:[function(_dereq_,module,exports){
 'use strict';
 var create         = _dereq_('./_object-create')
   , descriptor     = _dereq_('./_property-desc')
@@ -13133,7 +13202,7 @@ module.exports = function(Constructor, NAME, next){
   Constructor.prototype = create(IteratorPrototype, {next: descriptor(1, next)});
   setToStringTag(Constructor, NAME + ' Iterator');
 };
-},{"./_hide":107,"./_object-create":126,"./_property-desc":138,"./_set-to-string-tag":143,"./_wks":158}],117:[function(_dereq_,module,exports){
+},{"./_hide":106,"./_object-create":125,"./_property-desc":137,"./_set-to-string-tag":142,"./_wks":157}],116:[function(_dereq_,module,exports){
 'use strict';
 var LIBRARY        = _dereq_('./_library')
   , $export        = _dereq_('./_export')
@@ -13204,7 +13273,7 @@ module.exports = function(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED
   }
   return methods;
 };
-},{"./_export":102,"./_has":106,"./_hide":107,"./_iter-create":116,"./_iterators":120,"./_library":122,"./_object-gpo":133,"./_redefine":140,"./_set-to-string-tag":143,"./_wks":158}],118:[function(_dereq_,module,exports){
+},{"./_export":101,"./_has":105,"./_hide":106,"./_iter-create":115,"./_iterators":119,"./_library":121,"./_object-gpo":132,"./_redefine":139,"./_set-to-string-tag":142,"./_wks":157}],117:[function(_dereq_,module,exports){
 var ITERATOR     = _dereq_('./_wks')('iterator')
   , SAFE_CLOSING = false;
 
@@ -13226,13 +13295,13 @@ module.exports = function(exec, skipClosing){
   } catch(e){ /* empty */ }
   return safe;
 };
-},{"./_wks":158}],119:[function(_dereq_,module,exports){
+},{"./_wks":157}],118:[function(_dereq_,module,exports){
 module.exports = function(done, value){
   return {value: value, done: !!done};
 };
-},{}],120:[function(_dereq_,module,exports){
+},{}],119:[function(_dereq_,module,exports){
 module.exports = {};
-},{}],121:[function(_dereq_,module,exports){
+},{}],120:[function(_dereq_,module,exports){
 var getKeys   = _dereq_('./_object-keys')
   , toIObject = _dereq_('./_to-iobject');
 module.exports = function(object, el){
@@ -13243,9 +13312,9 @@ module.exports = function(object, el){
     , key;
   while(length > index)if(O[key = keys[index++]] === el)return key;
 };
-},{"./_object-keys":135,"./_to-iobject":151}],122:[function(_dereq_,module,exports){
+},{"./_object-keys":134,"./_to-iobject":150}],121:[function(_dereq_,module,exports){
 module.exports = true;
-},{}],123:[function(_dereq_,module,exports){
+},{}],122:[function(_dereq_,module,exports){
 var META     = _dereq_('./_uid')('meta')
   , isObject = _dereq_('./_is-object')
   , has      = _dereq_('./_has')
@@ -13299,7 +13368,7 @@ var meta = module.exports = {
   getWeak:  getWeak,
   onFreeze: onFreeze
 };
-},{"./_fails":103,"./_has":106,"./_is-object":114,"./_object-dp":127,"./_uid":155}],124:[function(_dereq_,module,exports){
+},{"./_fails":102,"./_has":105,"./_is-object":113,"./_object-dp":126,"./_uid":154}],123:[function(_dereq_,module,exports){
 var global    = _dereq_('./_global')
   , macrotask = _dereq_('./_task').set
   , Observer  = global.MutationObserver || global.WebKitMutationObserver
@@ -13368,7 +13437,7 @@ module.exports = function(){
     } last = task;
   };
 };
-},{"./_cof":90,"./_global":105,"./_task":148}],125:[function(_dereq_,module,exports){
+},{"./_cof":89,"./_global":104,"./_task":147}],124:[function(_dereq_,module,exports){
 'use strict';
 // 19.1.2.1 Object.assign(target, source, ...)
 var getKeys  = _dereq_('./_object-keys')
@@ -13402,7 +13471,7 @@ module.exports = !$assign || _dereq_('./_fails')(function(){
     while(length > j)if(isEnum.call(S, key = keys[j++]))T[key] = S[key];
   } return T;
 } : $assign;
-},{"./_fails":103,"./_iobject":111,"./_object-gops":132,"./_object-keys":135,"./_object-pie":136,"./_to-object":153}],126:[function(_dereq_,module,exports){
+},{"./_fails":102,"./_iobject":110,"./_object-gops":131,"./_object-keys":134,"./_object-pie":135,"./_to-object":152}],125:[function(_dereq_,module,exports){
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject    = _dereq_('./_an-object')
   , dPs         = _dereq_('./_object-dps')
@@ -13445,7 +13514,7 @@ module.exports = Object.create || function create(O, Properties){
   return Properties === undefined ? result : dPs(result, Properties);
 };
 
-},{"./_an-object":83,"./_dom-create":99,"./_enum-bug-keys":100,"./_html":108,"./_object-dps":128,"./_shared-key":144}],127:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_dom-create":98,"./_enum-bug-keys":99,"./_html":107,"./_object-dps":127,"./_shared-key":143}],126:[function(_dereq_,module,exports){
 var anObject       = _dereq_('./_an-object')
   , IE8_DOM_DEFINE = _dereq_('./_ie8-dom-define')
   , toPrimitive    = _dereq_('./_to-primitive')
@@ -13462,7 +13531,7 @@ exports.f = _dereq_('./_descriptors') ? Object.defineProperty : function defineP
   if('value' in Attributes)O[P] = Attributes.value;
   return O;
 };
-},{"./_an-object":83,"./_descriptors":98,"./_ie8-dom-define":109,"./_to-primitive":154}],128:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_descriptors":97,"./_ie8-dom-define":108,"./_to-primitive":153}],127:[function(_dereq_,module,exports){
 var dP       = _dereq_('./_object-dp')
   , anObject = _dereq_('./_an-object')
   , getKeys  = _dereq_('./_object-keys');
@@ -13476,7 +13545,7 @@ module.exports = _dereq_('./_descriptors') ? Object.defineProperties : function 
   while(length > i)dP.f(O, P = keys[i++], Properties[P]);
   return O;
 };
-},{"./_an-object":83,"./_descriptors":98,"./_object-dp":127,"./_object-keys":135}],129:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_descriptors":97,"./_object-dp":126,"./_object-keys":134}],128:[function(_dereq_,module,exports){
 var pIE            = _dereq_('./_object-pie')
   , createDesc     = _dereq_('./_property-desc')
   , toIObject      = _dereq_('./_to-iobject')
@@ -13493,7 +13562,7 @@ exports.f = _dereq_('./_descriptors') ? gOPD : function getOwnPropertyDescriptor
   } catch(e){ /* empty */ }
   if(has(O, P))return createDesc(!pIE.f.call(O, P), O[P]);
 };
-},{"./_descriptors":98,"./_has":106,"./_ie8-dom-define":109,"./_object-pie":136,"./_property-desc":138,"./_to-iobject":151,"./_to-primitive":154}],130:[function(_dereq_,module,exports){
+},{"./_descriptors":97,"./_has":105,"./_ie8-dom-define":108,"./_object-pie":135,"./_property-desc":137,"./_to-iobject":150,"./_to-primitive":153}],129:[function(_dereq_,module,exports){
 // fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
 var toIObject = _dereq_('./_to-iobject')
   , gOPN      = _dereq_('./_object-gopn').f
@@ -13514,7 +13583,7 @@ module.exports.f = function getOwnPropertyNames(it){
   return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
 };
 
-},{"./_object-gopn":131,"./_to-iobject":151}],131:[function(_dereq_,module,exports){
+},{"./_object-gopn":130,"./_to-iobject":150}],130:[function(_dereq_,module,exports){
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
 var $keys      = _dereq_('./_object-keys-internal')
   , hiddenKeys = _dereq_('./_enum-bug-keys').concat('length', 'prototype');
@@ -13522,9 +13591,9 @@ var $keys      = _dereq_('./_object-keys-internal')
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O){
   return $keys(O, hiddenKeys);
 };
-},{"./_enum-bug-keys":100,"./_object-keys-internal":134}],132:[function(_dereq_,module,exports){
+},{"./_enum-bug-keys":99,"./_object-keys-internal":133}],131:[function(_dereq_,module,exports){
 exports.f = Object.getOwnPropertySymbols;
-},{}],133:[function(_dereq_,module,exports){
+},{}],132:[function(_dereq_,module,exports){
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has         = _dereq_('./_has')
   , toObject    = _dereq_('./_to-object')
@@ -13538,7 +13607,7 @@ module.exports = Object.getPrototypeOf || function(O){
     return O.constructor.prototype;
   } return O instanceof Object ? ObjectProto : null;
 };
-},{"./_has":106,"./_shared-key":144,"./_to-object":153}],134:[function(_dereq_,module,exports){
+},{"./_has":105,"./_shared-key":143,"./_to-object":152}],133:[function(_dereq_,module,exports){
 var has          = _dereq_('./_has')
   , toIObject    = _dereq_('./_to-iobject')
   , arrayIndexOf = _dereq_('./_array-includes')(false)
@@ -13556,7 +13625,7 @@ module.exports = function(object, names){
   }
   return result;
 };
-},{"./_array-includes":85,"./_has":106,"./_shared-key":144,"./_to-iobject":151}],135:[function(_dereq_,module,exports){
+},{"./_array-includes":84,"./_has":105,"./_shared-key":143,"./_to-iobject":150}],134:[function(_dereq_,module,exports){
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys       = _dereq_('./_object-keys-internal')
   , enumBugKeys = _dereq_('./_enum-bug-keys');
@@ -13564,9 +13633,9 @@ var $keys       = _dereq_('./_object-keys-internal')
 module.exports = Object.keys || function keys(O){
   return $keys(O, enumBugKeys);
 };
-},{"./_enum-bug-keys":100,"./_object-keys-internal":134}],136:[function(_dereq_,module,exports){
+},{"./_enum-bug-keys":99,"./_object-keys-internal":133}],135:[function(_dereq_,module,exports){
 exports.f = {}.propertyIsEnumerable;
-},{}],137:[function(_dereq_,module,exports){
+},{}],136:[function(_dereq_,module,exports){
 // most Object methods by ES6 should accept primitives
 var $export = _dereq_('./_export')
   , core    = _dereq_('./_core')
@@ -13577,7 +13646,7 @@ module.exports = function(KEY, exec){
   exp[KEY] = exec(fn);
   $export($export.S + $export.F * fails(function(){ fn(1); }), 'Object', exp);
 };
-},{"./_core":95,"./_export":102,"./_fails":103}],138:[function(_dereq_,module,exports){
+},{"./_core":94,"./_export":101,"./_fails":102}],137:[function(_dereq_,module,exports){
 module.exports = function(bitmap, value){
   return {
     enumerable  : !(bitmap & 1),
@@ -13586,7 +13655,7 @@ module.exports = function(bitmap, value){
     value       : value
   };
 };
-},{}],139:[function(_dereq_,module,exports){
+},{}],138:[function(_dereq_,module,exports){
 var hide = _dereq_('./_hide');
 module.exports = function(target, src, safe){
   for(var key in src){
@@ -13594,9 +13663,9 @@ module.exports = function(target, src, safe){
     else hide(target, key, src[key]);
   } return target;
 };
-},{"./_hide":107}],140:[function(_dereq_,module,exports){
+},{"./_hide":106}],139:[function(_dereq_,module,exports){
 module.exports = _dereq_('./_hide');
-},{"./_hide":107}],141:[function(_dereq_,module,exports){
+},{"./_hide":106}],140:[function(_dereq_,module,exports){
 // Works with __proto__ only. Old v8 can't work with null proto objects.
 /* eslint-disable no-proto */
 var isObject = _dereq_('./_is-object')
@@ -13622,7 +13691,7 @@ module.exports = {
     }({}, false) : undefined),
   check: check
 };
-},{"./_an-object":83,"./_ctx":96,"./_is-object":114,"./_object-gopd":129}],142:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_ctx":95,"./_is-object":113,"./_object-gopd":128}],141:[function(_dereq_,module,exports){
 'use strict';
 var global      = _dereq_('./_global')
   , core        = _dereq_('./_core')
@@ -13637,7 +13706,7 @@ module.exports = function(KEY){
     get: function(){ return this; }
   });
 };
-},{"./_core":95,"./_descriptors":98,"./_global":105,"./_object-dp":127,"./_wks":158}],143:[function(_dereq_,module,exports){
+},{"./_core":94,"./_descriptors":97,"./_global":104,"./_object-dp":126,"./_wks":157}],142:[function(_dereq_,module,exports){
 var def = _dereq_('./_object-dp').f
   , has = _dereq_('./_has')
   , TAG = _dereq_('./_wks')('toStringTag');
@@ -13645,20 +13714,20 @@ var def = _dereq_('./_object-dp').f
 module.exports = function(it, tag, stat){
   if(it && !has(it = stat ? it : it.prototype, TAG))def(it, TAG, {configurable: true, value: tag});
 };
-},{"./_has":106,"./_object-dp":127,"./_wks":158}],144:[function(_dereq_,module,exports){
+},{"./_has":105,"./_object-dp":126,"./_wks":157}],143:[function(_dereq_,module,exports){
 var shared = _dereq_('./_shared')('keys')
   , uid    = _dereq_('./_uid');
 module.exports = function(key){
   return shared[key] || (shared[key] = uid(key));
 };
-},{"./_shared":145,"./_uid":155}],145:[function(_dereq_,module,exports){
+},{"./_shared":144,"./_uid":154}],144:[function(_dereq_,module,exports){
 var global = _dereq_('./_global')
   , SHARED = '__core-js_shared__'
   , store  = global[SHARED] || (global[SHARED] = {});
 module.exports = function(key){
   return store[key] || (store[key] = {});
 };
-},{"./_global":105}],146:[function(_dereq_,module,exports){
+},{"./_global":104}],145:[function(_dereq_,module,exports){
 // 7.3.20 SpeciesConstructor(O, defaultConstructor)
 var anObject  = _dereq_('./_an-object')
   , aFunction = _dereq_('./_a-function')
@@ -13667,7 +13736,7 @@ module.exports = function(O, D){
   var C = anObject(O).constructor, S;
   return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? D : aFunction(S);
 };
-},{"./_a-function":80,"./_an-object":83,"./_wks":158}],147:[function(_dereq_,module,exports){
+},{"./_a-function":79,"./_an-object":82,"./_wks":157}],146:[function(_dereq_,module,exports){
 var toInteger = _dereq_('./_to-integer')
   , defined   = _dereq_('./_defined');
 // true  -> String#at
@@ -13685,7 +13754,7 @@ module.exports = function(TO_STRING){
       : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
   };
 };
-},{"./_defined":97,"./_to-integer":150}],148:[function(_dereq_,module,exports){
+},{"./_defined":96,"./_to-integer":149}],147:[function(_dereq_,module,exports){
 var ctx                = _dereq_('./_ctx')
   , invoke             = _dereq_('./_invoke')
   , html               = _dereq_('./_html')
@@ -13761,7 +13830,7 @@ module.exports = {
   set:   setTask,
   clear: clearTask
 };
-},{"./_cof":90,"./_ctx":96,"./_dom-create":99,"./_global":105,"./_html":108,"./_invoke":110}],149:[function(_dereq_,module,exports){
+},{"./_cof":89,"./_ctx":95,"./_dom-create":98,"./_global":104,"./_html":107,"./_invoke":109}],148:[function(_dereq_,module,exports){
 var toInteger = _dereq_('./_to-integer')
   , max       = Math.max
   , min       = Math.min;
@@ -13769,34 +13838,34 @@ module.exports = function(index, length){
   index = toInteger(index);
   return index < 0 ? max(index + length, 0) : min(index, length);
 };
-},{"./_to-integer":150}],150:[function(_dereq_,module,exports){
+},{"./_to-integer":149}],149:[function(_dereq_,module,exports){
 // 7.1.4 ToInteger
 var ceil  = Math.ceil
   , floor = Math.floor;
 module.exports = function(it){
   return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
 };
-},{}],151:[function(_dereq_,module,exports){
+},{}],150:[function(_dereq_,module,exports){
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = _dereq_('./_iobject')
   , defined = _dereq_('./_defined');
 module.exports = function(it){
   return IObject(defined(it));
 };
-},{"./_defined":97,"./_iobject":111}],152:[function(_dereq_,module,exports){
+},{"./_defined":96,"./_iobject":110}],151:[function(_dereq_,module,exports){
 // 7.1.15 ToLength
 var toInteger = _dereq_('./_to-integer')
   , min       = Math.min;
 module.exports = function(it){
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
 };
-},{"./_to-integer":150}],153:[function(_dereq_,module,exports){
+},{"./_to-integer":149}],152:[function(_dereq_,module,exports){
 // 7.1.13 ToObject(argument)
 var defined = _dereq_('./_defined');
 module.exports = function(it){
   return Object(defined(it));
 };
-},{"./_defined":97}],154:[function(_dereq_,module,exports){
+},{"./_defined":96}],153:[function(_dereq_,module,exports){
 // 7.1.1 ToPrimitive(input [, PreferredType])
 var isObject = _dereq_('./_is-object');
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
@@ -13809,13 +13878,13 @@ module.exports = function(it, S){
   if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
   throw TypeError("Can't convert object to primitive value");
 };
-},{"./_is-object":114}],155:[function(_dereq_,module,exports){
+},{"./_is-object":113}],154:[function(_dereq_,module,exports){
 var id = 0
   , px = Math.random();
 module.exports = function(key){
   return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
 };
-},{}],156:[function(_dereq_,module,exports){
+},{}],155:[function(_dereq_,module,exports){
 var global         = _dereq_('./_global')
   , core           = _dereq_('./_core')
   , LIBRARY        = _dereq_('./_library')
@@ -13825,9 +13894,9 @@ module.exports = function(name){
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
   if(name.charAt(0) != '_' && !(name in $Symbol))defineProperty($Symbol, name, {value: wksExt.f(name)});
 };
-},{"./_core":95,"./_global":105,"./_library":122,"./_object-dp":127,"./_wks-ext":157}],157:[function(_dereq_,module,exports){
+},{"./_core":94,"./_global":104,"./_library":121,"./_object-dp":126,"./_wks-ext":156}],156:[function(_dereq_,module,exports){
 exports.f = _dereq_('./_wks');
-},{"./_wks":158}],158:[function(_dereq_,module,exports){
+},{"./_wks":157}],157:[function(_dereq_,module,exports){
 var store      = _dereq_('./_shared')('wks')
   , uid        = _dereq_('./_uid')
   , Symbol     = _dereq_('./_global').Symbol
@@ -13839,7 +13908,7 @@ var $exports = module.exports = function(name){
 };
 
 $exports.store = store;
-},{"./_global":105,"./_shared":145,"./_uid":155}],159:[function(_dereq_,module,exports){
+},{"./_global":104,"./_shared":144,"./_uid":154}],158:[function(_dereq_,module,exports){
 var classof   = _dereq_('./_classof')
   , ITERATOR  = _dereq_('./_wks')('iterator')
   , Iterators = _dereq_('./_iterators');
@@ -13848,7 +13917,7 @@ module.exports = _dereq_('./_core').getIteratorMethod = function(it){
     || it['@@iterator']
     || Iterators[classof(it)];
 };
-},{"./_classof":89,"./_core":95,"./_iterators":120,"./_wks":158}],160:[function(_dereq_,module,exports){
+},{"./_classof":88,"./_core":94,"./_iterators":119,"./_wks":157}],159:[function(_dereq_,module,exports){
 var anObject = _dereq_('./_an-object')
   , get      = _dereq_('./core.get-iterator-method');
 module.exports = _dereq_('./_core').getIterator = function(it){
@@ -13856,7 +13925,7 @@ module.exports = _dereq_('./_core').getIterator = function(it){
   if(typeof iterFn != 'function')throw TypeError(it + ' is not iterable!');
   return anObject(iterFn.call(it));
 };
-},{"./_an-object":83,"./_core":95,"./core.get-iterator-method":159}],161:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_core":94,"./core.get-iterator-method":158}],160:[function(_dereq_,module,exports){
 'use strict';
 var addToUnscopables = _dereq_('./_add-to-unscopables')
   , step             = _dereq_('./_iter-step')
@@ -13891,7 +13960,7 @@ Iterators.Arguments = Iterators.Array;
 addToUnscopables('keys');
 addToUnscopables('values');
 addToUnscopables('entries');
-},{"./_add-to-unscopables":81,"./_iter-define":117,"./_iter-step":119,"./_iterators":120,"./_to-iobject":151}],162:[function(_dereq_,module,exports){
+},{"./_add-to-unscopables":80,"./_iter-define":116,"./_iter-step":118,"./_iterators":119,"./_to-iobject":150}],161:[function(_dereq_,module,exports){
 'use strict';
 var strong = _dereq_('./_collection-strong');
 
@@ -13909,15 +13978,15 @@ module.exports = _dereq_('./_collection')('Map', function(get){
     return strong.def(this, key === 0 ? 0 : key, value);
   }
 }, strong, true);
-},{"./_collection":94,"./_collection-strong":91}],163:[function(_dereq_,module,exports){
+},{"./_collection":93,"./_collection-strong":90}],162:[function(_dereq_,module,exports){
 var $export = _dereq_('./_export')
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 $export($export.S, 'Object', {create: _dereq_('./_object-create')});
-},{"./_export":102,"./_object-create":126}],164:[function(_dereq_,module,exports){
+},{"./_export":101,"./_object-create":125}],163:[function(_dereq_,module,exports){
 var $export = _dereq_('./_export');
 // 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
 $export($export.S + $export.F * !_dereq_('./_descriptors'), 'Object', {defineProperty: _dereq_('./_object-dp').f});
-},{"./_descriptors":98,"./_export":102,"./_object-dp":127}],165:[function(_dereq_,module,exports){
+},{"./_descriptors":97,"./_export":101,"./_object-dp":126}],164:[function(_dereq_,module,exports){
 // 19.1.2.5 Object.freeze(O)
 var isObject = _dereq_('./_is-object')
   , meta     = _dereq_('./_meta').onFreeze;
@@ -13927,7 +13996,7 @@ _dereq_('./_object-sap')('freeze', function($freeze){
     return $freeze && isObject(it) ? $freeze(meta(it)) : it;
   };
 });
-},{"./_is-object":114,"./_meta":123,"./_object-sap":137}],166:[function(_dereq_,module,exports){
+},{"./_is-object":113,"./_meta":122,"./_object-sap":136}],165:[function(_dereq_,module,exports){
 // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
 var toIObject                 = _dereq_('./_to-iobject')
   , $getOwnPropertyDescriptor = _dereq_('./_object-gopd').f;
@@ -13937,7 +14006,7 @@ _dereq_('./_object-sap')('getOwnPropertyDescriptor', function(){
     return $getOwnPropertyDescriptor(toIObject(it), key);
   };
 });
-},{"./_object-gopd":129,"./_object-sap":137,"./_to-iobject":151}],167:[function(_dereq_,module,exports){
+},{"./_object-gopd":128,"./_object-sap":136,"./_to-iobject":150}],166:[function(_dereq_,module,exports){
 // 19.1.2.9 Object.getPrototypeOf(O)
 var toObject        = _dereq_('./_to-object')
   , $getPrototypeOf = _dereq_('./_object-gpo');
@@ -13947,7 +14016,7 @@ _dereq_('./_object-sap')('getPrototypeOf', function(){
     return $getPrototypeOf(toObject(it));
   };
 });
-},{"./_object-gpo":133,"./_object-sap":137,"./_to-object":153}],168:[function(_dereq_,module,exports){
+},{"./_object-gpo":132,"./_object-sap":136,"./_to-object":152}],167:[function(_dereq_,module,exports){
 // 19.1.2.14 Object.keys(O)
 var toObject = _dereq_('./_to-object')
   , $keys    = _dereq_('./_object-keys');
@@ -13957,13 +14026,13 @@ _dereq_('./_object-sap')('keys', function(){
     return $keys(toObject(it));
   };
 });
-},{"./_object-keys":135,"./_object-sap":137,"./_to-object":153}],169:[function(_dereq_,module,exports){
+},{"./_object-keys":134,"./_object-sap":136,"./_to-object":152}],168:[function(_dereq_,module,exports){
 // 19.1.3.19 Object.setPrototypeOf(O, proto)
 var $export = _dereq_('./_export');
 $export($export.S, 'Object', {setPrototypeOf: _dereq_('./_set-proto').set});
-},{"./_export":102,"./_set-proto":141}],170:[function(_dereq_,module,exports){
-arguments[4][65][0].apply(exports,arguments)
-},{"dup":65}],171:[function(_dereq_,module,exports){
+},{"./_export":101,"./_set-proto":140}],169:[function(_dereq_,module,exports){
+arguments[4][64][0].apply(exports,arguments)
+},{"dup":64}],170:[function(_dereq_,module,exports){
 'use strict';
 var LIBRARY            = _dereq_('./_library')
   , global             = _dereq_('./_global')
@@ -14263,7 +14332,7 @@ $export($export.S + $export.F * !(USE_NATIVE && _dereq_('./_iter-detect')(functi
     return capability.promise;
   }
 });
-},{"./_a-function":80,"./_an-instance":82,"./_classof":89,"./_core":95,"./_ctx":96,"./_export":102,"./_for-of":104,"./_global":105,"./_is-object":114,"./_iter-detect":118,"./_library":122,"./_microtask":124,"./_redefine-all":139,"./_set-species":142,"./_set-to-string-tag":143,"./_species-constructor":146,"./_task":148,"./_wks":158}],172:[function(_dereq_,module,exports){
+},{"./_a-function":79,"./_an-instance":81,"./_classof":88,"./_core":94,"./_ctx":95,"./_export":101,"./_for-of":103,"./_global":104,"./_is-object":113,"./_iter-detect":117,"./_library":121,"./_microtask":123,"./_redefine-all":138,"./_set-species":141,"./_set-to-string-tag":142,"./_species-constructor":145,"./_task":147,"./_wks":157}],171:[function(_dereq_,module,exports){
 'use strict';
 var $at  = _dereq_('./_string-at')(true);
 
@@ -14281,7 +14350,7 @@ _dereq_('./_iter-define')(String, 'String', function(iterated){
   this._i += point.length;
   return {value: point, done: false};
 });
-},{"./_iter-define":117,"./_string-at":147}],173:[function(_dereq_,module,exports){
+},{"./_iter-define":116,"./_string-at":146}],172:[function(_dereq_,module,exports){
 'use strict';
 // ECMAScript 6 symbols shim
 var global         = _dereq_('./_global')
@@ -14517,7 +14586,7 @@ setToStringTag($Symbol, 'Symbol');
 setToStringTag(Math, 'Math', true);
 // 24.3.3 JSON[@@toStringTag]
 setToStringTag(global.JSON, 'JSON', true);
-},{"./_an-object":83,"./_descriptors":98,"./_enum-keys":101,"./_export":102,"./_fails":103,"./_global":105,"./_has":106,"./_hide":107,"./_is-array":113,"./_keyof":121,"./_library":122,"./_meta":123,"./_object-create":126,"./_object-dp":127,"./_object-gopd":129,"./_object-gopn":131,"./_object-gopn-ext":130,"./_object-gops":132,"./_object-keys":135,"./_object-pie":136,"./_property-desc":138,"./_redefine":140,"./_set-to-string-tag":143,"./_shared":145,"./_to-iobject":151,"./_to-primitive":154,"./_uid":155,"./_wks":158,"./_wks-define":156,"./_wks-ext":157}],174:[function(_dereq_,module,exports){
+},{"./_an-object":82,"./_descriptors":97,"./_enum-keys":100,"./_export":101,"./_fails":102,"./_global":104,"./_has":105,"./_hide":106,"./_is-array":112,"./_keyof":120,"./_library":121,"./_meta":122,"./_object-create":125,"./_object-dp":126,"./_object-gopd":128,"./_object-gopn":130,"./_object-gopn-ext":129,"./_object-gops":131,"./_object-keys":134,"./_object-pie":135,"./_property-desc":137,"./_redefine":139,"./_set-to-string-tag":142,"./_shared":144,"./_to-iobject":150,"./_to-primitive":153,"./_uid":154,"./_wks":157,"./_wks-define":155,"./_wks-ext":156}],173:[function(_dereq_,module,exports){
 'use strict';
 var each         = _dereq_('./_array-methods')(0)
   , redefine     = _dereq_('./_redefine')
@@ -14574,16 +14643,16 @@ if(new $WeakMap().set((Object.freeze || Object)(tmp), 7).get(tmp) != 7){
     });
   });
 }
-},{"./_array-methods":86,"./_collection":94,"./_collection-weak":93,"./_is-object":114,"./_meta":123,"./_object-assign":125,"./_redefine":140}],175:[function(_dereq_,module,exports){
+},{"./_array-methods":85,"./_collection":93,"./_collection-weak":92,"./_is-object":113,"./_meta":122,"./_object-assign":124,"./_redefine":139}],174:[function(_dereq_,module,exports){
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var $export  = _dereq_('./_export');
 
 $export($export.P + $export.R, 'Map', {toJSON: _dereq_('./_collection-to-json')('Map')});
-},{"./_collection-to-json":92,"./_export":102}],176:[function(_dereq_,module,exports){
+},{"./_collection-to-json":91,"./_export":101}],175:[function(_dereq_,module,exports){
 _dereq_('./_wks-define')('asyncIterator');
-},{"./_wks-define":156}],177:[function(_dereq_,module,exports){
+},{"./_wks-define":155}],176:[function(_dereq_,module,exports){
 _dereq_('./_wks-define')('observable');
-},{"./_wks-define":156}],178:[function(_dereq_,module,exports){
+},{"./_wks-define":155}],177:[function(_dereq_,module,exports){
 _dereq_('./es6.array.iterator');
 var global        = _dereq_('./_global')
   , hide          = _dereq_('./_hide')
@@ -14597,7 +14666,7 @@ for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList'
   if(proto && !proto[TO_STRING_TAG])hide(proto, TO_STRING_TAG, NAME);
   Iterators[NAME] = Iterators.Array;
 }
-},{"./_global":105,"./_hide":107,"./_iterators":120,"./_wks":158,"./es6.array.iterator":161}],179:[function(_dereq_,module,exports){
+},{"./_global":104,"./_hide":106,"./_iterators":119,"./_wks":157,"./es6.array.iterator":160}],178:[function(_dereq_,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
