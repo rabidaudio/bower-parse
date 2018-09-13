@@ -3,7 +3,7 @@ VERSION="$1"
 MESSAGE="$2"
 if [ -z "$VERSION" ]; then
 	echo "Please supply a version, e.g."
-	echo "    ./update.sh v1.8.0"
+	echo "    ./update.sh 1.8.0"
 	exit 1
 fi
 git submodule update --remote
