@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.2.1
+ * Parse JavaScript SDK v2.3.0
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -103,7 +103,139 @@ var DefaultController = {
 };
 
 _CoreManager.default.setAnalyticsController(DefaultController);
-},{"./CoreManager":3,"@babel/runtime/helpers/interopRequireDefault":58}],2:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"@babel/runtime/helpers/interopRequireDefault":61}],2:[function(_dereq_,module,exports){
+"use strict";
+
+var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _ParseUser = _interopRequireDefault(_dereq_("./ParseUser"));
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * @flow-weak
+ */
+
+
+var uuidv4 = _dereq_('uuid/v4');
+
+var registered = false;
+/**
+ * Provides utility functions for working with Anonymously logged-in users. <br />
+ * Anonymous users have some unique characteristics:
+ * <ul>
+ *  <li>Anonymous users don't need a user name or password.</li>
+ *  <ul>
+ *    <li>Once logged out, an anonymous user cannot be recovered.</li>
+ *  </ul>
+ *  <li>signUp converts an anonymous user to a standard user with the given username and password.</li>
+ *  <ul>
+ *    <li>Data associated with the anonymous user is retained.</li>
+ *  </ul>
+ *  <li>logIn switches users without converting the anonymous user.</li>
+ *  <ul>
+ *    <li>Data associated with the anonymous user will be lost.</li>
+ *  </ul>
+ *  <li>Service logIn (e.g. Facebook, Twitter) will attempt to convert
+ *  the anonymous user into a standard user by linking it to the service.</li>
+ *  <ul>
+ *    <li>If a user already exists that is linked to the service, it will instead switch to the existing user.</li>
+ *  </ul>
+ *  <li>Service linking (e.g. Facebook, Twitter) will convert the anonymous user
+ *  into a standard user by linking it to the service.</li>
+ * </ul>
+ * @class Parse.AnonymousUtils
+ * @static
+ */
+
+var AnonymousUtils = {
+  /**
+   * Gets whether the user has their account linked to anonymous user.
+   *
+   * @method isLinked
+   * @name Parse.AnonymousUtils.isLinked
+   * @param {Parse.User} user User to check for.
+   *     The user must be logged in on this device.
+   * @return {Boolean} <code>true</code> if the user has their account
+   *     linked to an anonymous user.
+   * @static
+   */
+  isLinked: function (user
+  /*: ParseUser*/
+  ) {
+    var provider = this._getAuthProvider();
+
+    return user._isLinked(provider.getAuthType());
+  },
+
+  /**
+   * Logs in a user Anonymously.
+   *
+   * @method logIn
+   * @name Parse.AnonymousUtils.logIn
+   * @returns {Promise}
+   * @static
+   */
+  logIn: function () {
+    var provider = this._getAuthProvider();
+
+    return _ParseUser.default._logInWith(provider.getAuthType(), provider.getAuthData());
+  },
+
+  /**
+   * Links Anonymous User to an existing PFUser.
+   *
+   * @method link
+   * @name Parse.AnonymousUtils.link
+   * @param {Parse.User} user User to link. This must be the current user.
+   * @returns {Promise}
+   * @static
+   */
+  link: function (user
+  /*: ParseUser*/
+  ) {
+    var provider = this._getAuthProvider();
+
+    return user._linkWith(provider.getAuthType(), provider.getAuthData());
+  },
+  _getAuthProvider: function () {
+    var provider = {
+      restoreAuthentication: function () {
+        return true;
+      },
+      getAuthType: function () {
+        return 'anonymous';
+      },
+      getAuthData: function () {
+        return {
+          authData: {
+            id: uuidv4()
+          }
+        };
+      }
+    };
+
+    if (!registered) {
+      _ParseUser.default._registerAuthenticationProvider(provider);
+
+      registered = true;
+    }
+
+    return provider;
+  }
+};
+var _default = AnonymousUtils;
+exports.default = _default;
+},{"./ParseUser":31,"@babel/runtime/helpers/interopRequireDefault":61,"uuid/v4":81}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -285,7 +417,7 @@ var DefaultController = {
 };
 
 _CoreManager.default.setCloudController(DefaultController);
-},{"./CoreManager":3,"./ParseError":16,"./ParseQuery":24,"./decode":39,"./encode":40,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],3:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseError":18,"./ParseQuery":26,"./decode":41,"./encode":42,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],4:[function(_dereq_,module,exports){
 (function (process){
 /*:: import type { AttributeMap, ObjectCache, OpsMap, State } from './ObjectStateMutations';*/
 
@@ -477,8 +609,10 @@ var config
   IS_NODE: typeof process !== 'undefined' && !!process.versions && !!process.versions.node && !process.versions.electron,
   REQUEST_ATTEMPT_LIMIT: 5,
   SERVER_URL: 'https://api.parse.com/1',
+  SERVER_AUTH_TYPE: null,
+  SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + "2.2.1",
+  VERSION: 'js' + "2.3.0",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -713,7 +847,7 @@ module.exports = {
   setLiveQueryController: function (controller
   /*: any*/
   ) {
-    requireMethods('LiveQueryController', ['subscribe', 'unsubscribe', 'open', 'close'], controller);
+    requireMethods('LiveQueryController', ['setDefaultLiveQueryClient', 'getDefaultLiveQueryClient', '_clearCachedDefaultClient'], controller);
     config['LiveQueryController'] = controller;
   },
   getLiveQueryController: function ()
@@ -734,7 +868,7 @@ module.exports = {
   }
 };
 }).call(this,_dereq_('_process'))
-},{"_process":70}],4:[function(_dereq_,module,exports){
+},{"_process":76}],5:[function(_dereq_,module,exports){
 "use strict";
 /**
  * Copyright (c) 2015-present, Parse, LLC.
@@ -749,7 +883,7 @@ module.exports = {
 
 module.exports = _dereq_('events').EventEmitter;
 var EventEmitter;
-},{"events":71}],5:[function(_dereq_,module,exports){
+},{"events":77}],6:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -758,8 +892,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
-var _parseDate = _interopRequireDefault(_dereq_("./parseDate"));
 
 var _ParseUser = _interopRequireDefault(_dereq_("./ParseUser"));
 /**
@@ -807,22 +939,14 @@ var provider = {
   },
   restoreAuthentication: function (authData) {
     if (authData) {
-      var expiration = (0, _parseDate.default)(authData.expiration_date);
-      var expiresIn = expiration ? (expiration.getTime() - new Date().getTime()) / 1000 : 0;
-      var authResponse = {
-        userID: authData.id,
-        accessToken: authData.access_token,
-        expiresIn: expiresIn
-      };
       var newOptions = {};
 
       if (initOptions) {
         for (var key in initOptions) {
           newOptions[key] = initOptions[key];
         }
-      }
+      } // Suppress checks for login status from the browser.
 
-      newOptions.authResponse = authResponse; // Suppress checks for login status from the browser.
 
       newOptions.status = false; // If the user doesn't match the one known by the FB SDK, log out.
       // Most of the time, the users will match -- it's only in cases where
@@ -831,7 +955,7 @@ var provider = {
 
       var existingResponse = FB.getAuthResponse();
 
-      if (existingResponse && existingResponse.userID !== authResponse.userID) {
+      if (existingResponse && existingResponse.userID !== authData.id) {
         FB.logout();
       }
 
@@ -1014,7 +1138,7 @@ var FacebookUtils = {
 };
 var _default = FacebookUtils;
 exports.default = _default;
-},{"./ParseUser":29,"./parseDate":44,"@babel/runtime/helpers/interopRequireDefault":58}],6:[function(_dereq_,module,exports){
+},{"./ParseUser":31,"@babel/runtime/helpers/interopRequireDefault":61}],7:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -1075,7 +1199,7 @@ var InstallationController = {
   }
 };
 module.exports = InstallationController;
-},{"./Storage":33,"@babel/runtime/helpers/interopRequireDefault":58}],7:[function(_dereq_,module,exports){
+},{"./Storage":35,"@babel/runtime/helpers/interopRequireDefault":61}],8:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -1095,9 +1219,9 @@ var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/getPrototypeOf"));
 
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/inherits"));
-
 var _assertThisInitialized2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/assertThisInitialized"));
+
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/inherits"));
 
 var _defineProperty2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/defineProperty"));
 
@@ -1240,18 +1364,18 @@ function (_EventEmitter) {
         sessionToken = _ref.sessionToken;
     (0, _classCallCheck2.default)(this, LiveQueryClient);
     _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(LiveQueryClient).call(this));
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "attempts", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "id", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "requestId", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "applicationId", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "serverURL", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "javascriptKey", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "masterKey", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "sessionToken", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "connectPromise", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "subscriptions", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "socket", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "state", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "attempts", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "id", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "requestId", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "applicationId", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "serverURL", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "javascriptKey", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "masterKey", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "sessionToken", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "connectPromise", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "subscriptions", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "socket", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "state", void 0);
 
     if (!serverURL || serverURL.indexOf('ws') !== 0) {
       throw new Error('You need to set a proper Parse LiveQuery server url before using LiveQueryClient');
@@ -1332,10 +1456,7 @@ function (_EventEmitter) {
       this.requestId += 1;
       this.connectPromise.then(function () {
         _this2.socket.send(JSON.stringify(subscribeRequest));
-      }); // adding listener so process does not crash
-      // best practice is for developer to register their own listener
-
-      subscription.on('error', function () {});
+      });
       return subscription;
     }
     /**
@@ -1698,7 +1819,7 @@ function (_EventEmitter) {
 
 var _default = LiveQueryClient;
 exports.default = _default;
-},{"./CoreManager":3,"./EventEmitter":4,"./LiveQuerySubscription":8,"./ParseObject":21,"./promiseUtils":45,"@babel/runtime/helpers/assertThisInitialized":49,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/getPrototypeOf":56,"@babel/runtime/helpers/inherits":57,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/possibleConstructorReturn":63,"@babel/runtime/helpers/typeof":67}],8:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./EventEmitter":5,"./LiveQuerySubscription":9,"./ParseObject":23,"./promiseUtils":47,"@babel/runtime/helpers/assertThisInitialized":52,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/getPrototypeOf":59,"@babel/runtime/helpers/inherits":60,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/possibleConstructorReturn":68,"@babel/runtime/helpers/typeof":73}],9:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -1829,17 +1950,23 @@ function (_EventEmitter) {
     _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(Subscription).call(this));
     _this.id = id;
     _this.query = query;
-    _this.sessionToken = sessionToken;
+    _this.sessionToken = sessionToken; // adding listener so process does not crash
+    // best practice is for developer to register their own listener
+
+    _this.on('error', function () {});
+
     return _this;
   }
   /**
-   * closes the subscription
+   * Close the subscription
    */
 
 
   (0, _createClass2.default)(Subscription, [{
     key: "unsubscribe",
-    value: function () {
+    value: function ()
+    /*: Promise*/
+    {
       var _this2 = this;
 
       return _CoreManager.default.getLiveQueryController().getDefaultLiveQueryClient().then(function (liveQueryClient) {
@@ -1854,7 +1981,7 @@ function (_EventEmitter) {
 
 var _default = Subscription;
 exports.default = _default;
-},{"./CoreManager":3,"./EventEmitter":4,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/getPrototypeOf":56,"@babel/runtime/helpers/inherits":57,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/possibleConstructorReturn":63}],9:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./EventEmitter":5,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/getPrototypeOf":59,"@babel/runtime/helpers/inherits":60,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/possibleConstructorReturn":68}],10:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -1863,9 +1990,15 @@ var _regenerator = _interopRequireDefault(_dereq_("@babel/runtime/regenerator"))
 
 var _toConsumableArray2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/toConsumableArray"));
 
+var _slicedToArray2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/slicedToArray"));
+
 var _asyncToGenerator2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/asyncToGenerator"));
 
 var _CoreManager = _interopRequireDefault(_dereq_("./CoreManager"));
+
+var _ParseQuery = _interopRequireDefault(_dereq_("./ParseQuery"));
+
+var _LocalDatastoreUtils = _dereq_("./LocalDatastoreUtils");
 /**
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
@@ -1877,9 +2010,28 @@ var _CoreManager = _interopRequireDefault(_dereq_("./CoreManager"));
  * @flow
  */
 
+/**
+ * Provides a local datastore which can be used to store and retrieve <code>Parse.Object</code>. <br />
+ * To enable this functionality, call <code>Parse.enableLocalDatastore()</code>.
+ *
+ * Pin object to add to local datastore
+ *
+ * <pre>await object.pin();</pre>
+ * <pre>await object.pinWithName('pinName');</pre>
+ *
+ * Query pinned objects
+ *
+ * <pre>query.fromLocalDatastore();</pre>
+ * <pre>query.fromPin();</pre>
+ * <pre>query.fromPinWithName();</pre>
+ *
+ * <pre>const localObjects = await query.find();</pre>
+ *
+ * @class Parse.LocalDatastore
+ * @static
+ */
 
-var DEFAULT_PIN = '_default';
-var PIN_PREFIX = 'parsePin_';
+
 var LocalDatastore = {
   fromPinWithName: function (name
   /*: string*/
@@ -1917,6 +2069,14 @@ var LocalDatastore = {
 
     return controller.getAllContents();
   },
+  // Use for testing
+  _getRawStorage: function ()
+  /*: Promise*/
+  {
+    var controller = _CoreManager.default.getLocalDatastoreController();
+
+    return controller.getRawStorage();
+  },
   _clear: function ()
   /*: Promise*/
   {
@@ -1926,82 +2086,108 @@ var LocalDatastore = {
   },
   // Pin the object and children recursively
   // Saves the object and children key to Pin Name
-  _handlePinWithName: function () {
-    var _handlePinWithName2 = (0, _asyncToGenerator2.default)(
+  _handlePinAllWithName: function () {
+    var _handlePinAllWithName2 = (0, _asyncToGenerator2.default)(
     /*#__PURE__*/
     _regenerator.default.mark(function _callee(name
     /*: string*/
-    , object
-    /*: ParseObject*/
+    , objects
+    /*: Array<ParseObject>*/
     ) {
-      var pinName, objects, objectKey, pinned, objectIds, toPin;
+      var pinName, toPinPromises, objectKeys, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, parent, children, parentKey, objectKey, fromPinPromise, _ref, _ref2, pinned, toPin;
+
       return _regenerator.default.wrap(function (_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
               pinName = this.getPinName(name);
-              objects = this._getChildren(object);
-              objects[this.getKeyForObject(object)] = object._toFullJSON();
-              _context.t0 = _regenerator.default.keys(objects);
+              toPinPromises = [];
+              objectKeys = [];
+              _iteratorNormalCompletion = true;
+              _didIteratorError = false;
+              _iteratorError = undefined;
+              _context.prev = 6;
 
-            case 4:
-              if ((_context.t1 = _context.t0()).done) {
-                _context.next = 10;
-                break;
+              for (_iterator = objects[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                parent = _step.value;
+                children = this._getChildren(parent);
+                parentKey = this.getKeyForObject(parent);
+                children[parentKey] = parent._toFullJSON();
+
+                for (objectKey in children) {
+                  objectKeys.push(objectKey);
+                  toPinPromises.push(this.pinWithName(objectKey, [children[objectKey]]));
+                }
               }
 
-              objectKey = _context.t1.value;
-              _context.next = 8;
-              return this.pinWithName(objectKey, objects[objectKey]);
-
-            case 8:
-              _context.next = 4;
+              _context.next = 14;
               break;
 
             case 10:
-              _context.next = 12;
-              return this.fromPinWithName(pinName);
+              _context.prev = 10;
+              _context.t0 = _context["catch"](6);
+              _didIteratorError = true;
+              _iteratorError = _context.t0;
 
-            case 12:
-              _context.t2 = _context.sent;
+            case 14:
+              _context.prev = 14;
+              _context.prev = 15;
 
-              if (_context.t2) {
-                _context.next = 15;
+              if (!_iteratorNormalCompletion && _iterator.return != null) {
+                _iterator.return();
+              }
+
+            case 17:
+              _context.prev = 17;
+
+              if (!_didIteratorError) {
+                _context.next = 20;
                 break;
               }
 
-              _context.t2 = [];
-
-            case 15:
-              pinned = _context.t2;
-              objectIds = Object.keys(objects);
-              toPin = (0, _toConsumableArray2.default)(new Set([].concat((0, _toConsumableArray2.default)(pinned), (0, _toConsumableArray2.default)(objectIds))));
-              _context.next = 20;
-              return this.pinWithName(pinName, toPin);
+              throw _iteratorError;
 
             case 20:
+              return _context.finish(17);
+
+            case 21:
+              return _context.finish(14);
+
+            case 22:
+              fromPinPromise = this.fromPinWithName(pinName);
+              _context.next = 25;
+              return Promise.all([fromPinPromise, toPinPromises]);
+
+            case 25:
+              _ref = _context.sent;
+              _ref2 = (0, _slicedToArray2.default)(_ref, 1);
+              pinned = _ref2[0];
+              toPin = (0, _toConsumableArray2.default)(new Set([].concat((0, _toConsumableArray2.default)(pinned || []), objectKeys)));
+              return _context.abrupt("return", this.pinWithName(pinName, toPin));
+
+            case 30:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, this);
+      }, _callee, this, [[6, 10, 14, 22], [15,, 17, 21]]);
     }));
 
     return function () {
-      return _handlePinWithName2.apply(this, arguments);
+      return _handlePinAllWithName2.apply(this, arguments);
     };
   }(),
   // Removes object and children keys from pin name
   // Keeps the object and children pinned
-  _handleUnPinWithName: function () {
-    var _handleUnPinWithName2 = (0, _asyncToGenerator2.default)(
+  _handleUnPinAllWithName: function () {
+    var _handleUnPinAllWithName2 = (0, _asyncToGenerator2.default)(
     /*#__PURE__*/
     _regenerator.default.mark(function _callee2(name
     /*: string*/
-    , object
-    /*: ParseObject*/
+    , objects
+    /*: Array<ParseObject>*/
     ) {
-      var localDatastore, pinName, objects, objectIds, pinned, _i, objectKey, hasReference, key, pinnedObjects;
+      var localDatastore, pinName, promises, objectKeys, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _objectKeys, parent, children, parentKey, pinned, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, objectKey, hasReference, key, pinnedObjects;
 
       return _regenerator.default.wrap(function (_context2) {
         while (1) {
@@ -2013,98 +2199,169 @@ var LocalDatastore = {
             case 2:
               localDatastore = _context2.sent;
               pinName = this.getPinName(name);
-              objects = this._getChildren(object);
-              objectIds = Object.keys(objects);
-              objectIds.push(this.getKeyForObject(object));
-              pinned = localDatastore[pinName] || [];
-              pinned = pinned.filter(function (item) {
-                return !objectIds.includes(item);
-              });
+              promises = [];
+              objectKeys = [];
+              _iteratorNormalCompletion2 = true;
+              _didIteratorError2 = false;
+              _iteratorError2 = undefined;
+              _context2.prev = 9;
 
-              if (!(pinned.length == 0)) {
-                _context2.next = 15;
-                break;
+              for (_iterator2 = objects[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                parent = _step2.value;
+                children = this._getChildren(parent);
+                parentKey = this.getKeyForObject(parent);
+
+                (_objectKeys = objectKeys).push.apply(_objectKeys, [parentKey].concat((0, _toConsumableArray2.default)(Object.keys(children))));
               }
 
-              _context2.next = 12;
-              return this.unPinWithName(pinName);
-
-            case 12:
-              delete localDatastore[pinName];
-              _context2.next = 18;
+              _context2.next = 17;
               break;
 
-            case 15:
-              _context2.next = 17;
-              return this.pinWithName(pinName, pinned);
+            case 13:
+              _context2.prev = 13;
+              _context2.t0 = _context2["catch"](9);
+              _didIteratorError2 = true;
+              _iteratorError2 = _context2.t0;
 
             case 17:
-              localDatastore[pinName] = pinned;
+              _context2.prev = 17;
+              _context2.prev = 18;
 
-            case 18:
-              _i = 0;
+              if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                _iterator2.return();
+              }
 
-            case 19:
-              if (!(_i < objectIds.length)) {
-                _context2.next = 38;
+            case 20:
+              _context2.prev = 20;
+
+              if (!_didIteratorError2) {
+                _context2.next = 23;
                 break;
               }
 
-              objectKey = objectIds[_i];
-              hasReference = false;
-              _context2.t0 = _regenerator.default.keys(localDatastore);
+              throw _iteratorError2;
 
             case 23:
-              if ((_context2.t1 = _context2.t0()).done) {
-                _context2.next = 32;
+              return _context2.finish(20);
+
+            case 24:
+              return _context2.finish(17);
+
+            case 25:
+              objectKeys = (0, _toConsumableArray2.default)(new Set(objectKeys));
+              pinned = localDatastore[pinName] || [];
+              pinned = pinned.filter(function (item) {
+                return !objectKeys.includes(item);
+              });
+
+              if (pinned.length == 0) {
+                promises.push(this.unPinWithName(pinName));
+                delete localDatastore[pinName];
+              } else {
+                promises.push(this.pinWithName(pinName, pinned));
+                localDatastore[pinName] = pinned;
+              }
+
+              _iteratorNormalCompletion3 = true;
+              _didIteratorError3 = false;
+              _iteratorError3 = undefined;
+              _context2.prev = 32;
+              _iterator3 = objectKeys[Symbol.iterator]();
+
+            case 34:
+              if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                _context2.next = 51;
                 break;
               }
 
-              key = _context2.t1.value;
+              objectKey = _step3.value;
+              hasReference = false;
+              _context2.t1 = _regenerator.default.keys(localDatastore);
 
-              if (!(key === DEFAULT_PIN || key.startsWith(PIN_PREFIX))) {
-                _context2.next = 30;
+            case 38:
+              if ((_context2.t2 = _context2.t1()).done) {
+                _context2.next = 47;
+                break;
+              }
+
+              key = _context2.t2.value;
+
+              if (!(key === _LocalDatastoreUtils.DEFAULT_PIN || key.startsWith(_LocalDatastoreUtils.PIN_PREFIX))) {
+                _context2.next = 45;
                 break;
               }
 
               pinnedObjects = localDatastore[key] || [];
 
               if (!pinnedObjects.includes(objectKey)) {
-                _context2.next = 30;
+                _context2.next = 45;
                 break;
               }
 
               hasReference = true;
-              return _context2.abrupt("break", 32);
+              return _context2.abrupt("break", 47);
 
-            case 30:
-              _context2.next = 23;
+            case 45:
+              _context2.next = 38;
               break;
 
-            case 32:
-              if (hasReference) {
-                _context2.next = 35;
+            case 47:
+              if (!hasReference) {
+                promises.push(this.unPinWithName(objectKey));
+              }
+
+            case 48:
+              _iteratorNormalCompletion3 = true;
+              _context2.next = 34;
+              break;
+
+            case 51:
+              _context2.next = 57;
+              break;
+
+            case 53:
+              _context2.prev = 53;
+              _context2.t3 = _context2["catch"](32);
+              _didIteratorError3 = true;
+              _iteratorError3 = _context2.t3;
+
+            case 57:
+              _context2.prev = 57;
+              _context2.prev = 58;
+
+              if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+                _iterator3.return();
+              }
+
+            case 60:
+              _context2.prev = 60;
+
+              if (!_didIteratorError3) {
+                _context2.next = 63;
                 break;
               }
 
-              _context2.next = 35;
-              return this.unPinWithName(objectKey);
+              throw _iteratorError3;
 
-            case 35:
-              _i++;
-              _context2.next = 19;
-              break;
+            case 63:
+              return _context2.finish(60);
 
-            case 38:
+            case 64:
+              return _context2.finish(57);
+
+            case 65:
+              return _context2.abrupt("return", Promise.all(promises));
+
+            case 66:
             case "end":
               return _context2.stop();
           }
         }
-      }, _callee2, this);
+      }, _callee2, this, [[9, 13, 17, 25], [18,, 20, 24], [32, 53, 57, 65], [58,, 60, 64]]);
     }));
 
     return function () {
-      return _handleUnPinWithName2.apply(this, arguments);
+      return _handleUnPinAllWithName2.apply(this, arguments);
     };
   }(),
   // Retrieve all pointer fields from object recursively
@@ -2156,92 +2413,68 @@ var LocalDatastore = {
   _serializeObjectsFromPinName: function () {
     var _serializeObjectsFromPinName2 = (0, _asyncToGenerator2.default)(
     /*#__PURE__*/
-    _regenerator.default.mark(function _callee4(name
+    _regenerator.default.mark(function _callee3(name
     /*: string*/
     ) {
-      var _this = this;
+      var _this = this,
+          _ref3;
 
-      var localDatastore, allObjects, key, pinName, pinned, objects;
-      return _regenerator.default.wrap(function (_context4) {
+      var localDatastore, allObjects, key, pinName, pinned, promises, objects;
+      return _regenerator.default.wrap(function (_context3) {
         while (1) {
-          switch (_context4.prev = _context4.next) {
+          switch (_context3.prev = _context3.next) {
             case 0:
-              _context4.next = 2;
+              _context3.next = 2;
               return this._getAllContents();
 
             case 2:
-              localDatastore = _context4.sent;
+              localDatastore = _context3.sent;
               allObjects = [];
 
               for (key in localDatastore) {
-                if (key !== DEFAULT_PIN && !key.startsWith(PIN_PREFIX)) {
-                  allObjects.push(localDatastore[key]);
+                if (key.startsWith(_LocalDatastoreUtils.OBJECT_PREFIX)) {
+                  allObjects.push(localDatastore[key][0]);
                 }
               }
 
               if (name) {
-                _context4.next = 7;
+                _context3.next = 7;
                 break;
               }
 
-              return _context4.abrupt("return", Promise.resolve(allObjects));
+              return _context3.abrupt("return", allObjects);
 
             case 7:
-              _context4.next = 9;
-              return this.getPinName(name);
-
-            case 9:
-              pinName = _context4.sent;
-              _context4.next = 12;
-              return this.fromPinWithName(pinName);
-
-            case 12:
-              pinned = _context4.sent;
+              pinName = this.getPinName(name);
+              pinned = localDatastore[pinName];
 
               if (Array.isArray(pinned)) {
-                _context4.next = 15;
+                _context3.next = 11;
                 break;
               }
 
-              return _context4.abrupt("return", Promise.resolve([]));
+              return _context3.abrupt("return", []);
 
-            case 15:
-              objects = pinned.map(
-              /*#__PURE__*/
-              function () {
-                var _ref = (0, _asyncToGenerator2.default)(
-                /*#__PURE__*/
-                _regenerator.default.mark(function _callee3(objectKey) {
-                  return _regenerator.default.wrap(function (_context3) {
-                    while (1) {
-                      switch (_context3.prev = _context3.next) {
-                        case 0:
-                          _context3.next = 2;
-                          return _this.fromPinWithName(objectKey);
+            case 11:
+              promises = pinned.map(function (objectKey) {
+                return _this.fromPinWithName(objectKey);
+              });
+              _context3.next = 14;
+              return Promise.all(promises);
 
-                        case 2:
-                          return _context3.abrupt("return", _context3.sent);
-
-                        case 3:
-                        case "end":
-                          return _context3.stop();
-                      }
-                    }
-                  }, _callee3, this);
-                }));
-
-                return function () {
-                  return _ref.apply(this, arguments);
-                };
-              }());
-              return _context4.abrupt("return", Promise.all(objects));
+            case 14:
+              objects = _context3.sent;
+              objects = (_ref3 = []).concat.apply(_ref3, (0, _toConsumableArray2.default)(objects));
+              return _context3.abrupt("return", objects.filter(function (object) {
+                return object != null;
+              }));
 
             case 17:
             case "end":
-              return _context4.stop();
+              return _context3.stop();
           }
         }
-      }, _callee4, this);
+      }, _callee3, this);
     }));
 
     return function () {
@@ -2254,40 +2487,39 @@ var LocalDatastore = {
   _serializeObject: function () {
     var _serializeObject2 = (0, _asyncToGenerator2.default)(
     /*#__PURE__*/
-    _regenerator.default.mark(function _callee5(objectKey
+    _regenerator.default.mark(function _callee4(objectKey
     /*: string*/
     , localDatastore
     /*: any*/
     ) {
       var LDS, root, queue, meta, uniqueId, nodeId, subTreeRoot, field, value, key, pointer;
-      return _regenerator.default.wrap(function (_context5) {
+      return _regenerator.default.wrap(function (_context4) {
         while (1) {
-          switch (_context5.prev = _context5.next) {
+          switch (_context4.prev = _context4.next) {
             case 0:
               LDS = localDatastore;
 
               if (LDS) {
-                _context5.next = 5;
+                _context4.next = 5;
                 break;
               }
 
-              _context5.next = 4;
+              _context4.next = 4;
               return this._getAllContents();
 
             case 4:
-              LDS = _context5.sent;
+              LDS = _context4.sent;
 
             case 5:
-              root = LDS[objectKey];
-
-              if (root) {
-                _context5.next = 8;
+              if (!(!LDS[objectKey] || LDS[objectKey].length === 0)) {
+                _context4.next = 7;
                 break;
               }
 
-              return _context5.abrupt("return", null);
+              return _context4.abrupt("return", null);
 
-            case 8:
+            case 7:
+              root = LDS[objectKey][0];
               queue = [];
               meta = {};
               uniqueId = 0;
@@ -2303,9 +2535,9 @@ var LocalDatastore = {
 
                   if (value.__type && value.__type === 'Object') {
                     key = this.getKeyForObject(value);
-                    pointer = LDS[key];
 
-                    if (pointer) {
+                    if (LDS[key] && LDS[key].length > 0) {
+                      pointer = LDS[key][0];
                       uniqueId++;
                       meta[uniqueId] = pointer;
                       subTreeRoot[field] = pointer;
@@ -2315,14 +2547,14 @@ var LocalDatastore = {
                 }
               }
 
-              return _context5.abrupt("return", root);
+              return _context4.abrupt("return", root);
 
             case 15:
             case "end":
-              return _context5.stop();
+              return _context4.stop();
           }
         }
-      }, _callee5, this);
+      }, _callee4, this);
     }));
 
     return function () {
@@ -2334,43 +2566,45 @@ var LocalDatastore = {
   _updateObjectIfPinned: function () {
     var _updateObjectIfPinned2 = (0, _asyncToGenerator2.default)(
     /*#__PURE__*/
-    _regenerator.default.mark(function _callee6(object
+    _regenerator.default.mark(function _callee5(object
     /*: ParseObject*/
     ) {
       var objectKey, pinned;
-      return _regenerator.default.wrap(function (_context6) {
+      return _regenerator.default.wrap(function (_context5) {
         while (1) {
-          switch (_context6.prev = _context6.next) {
+          switch (_context5.prev = _context5.next) {
             case 0:
               if (this.isEnabled) {
-                _context6.next = 2;
+                _context5.next = 2;
                 break;
               }
 
-              return _context6.abrupt("return");
+              return _context5.abrupt("return");
 
             case 2:
               objectKey = this.getKeyForObject(object);
-              _context6.next = 5;
+              _context5.next = 5;
               return this.fromPinWithName(objectKey);
 
             case 5:
-              pinned = _context6.sent;
+              pinned = _context5.sent;
 
-              if (!pinned) {
-                _context6.next = 9;
+              if (!(!pinned || pinned.length === 0)) {
+                _context5.next = 8;
                 break;
               }
 
-              _context6.next = 9;
-              return this.pinWithName(objectKey, object._toFullJSON());
+              return _context5.abrupt("return");
+
+            case 8:
+              return _context5.abrupt("return", this.pinWithName(objectKey, [object._toFullJSON()]));
 
             case 9:
             case "end":
-              return _context6.stop();
+              return _context5.stop();
           }
         }
-      }, _callee6, this);
+      }, _callee5, this);
     }));
 
     return function () {
@@ -2383,10 +2617,83 @@ var LocalDatastore = {
   _destroyObjectIfPinned: function () {
     var _destroyObjectIfPinned2 = (0, _asyncToGenerator2.default)(
     /*#__PURE__*/
-    _regenerator.default.mark(function _callee7(object
+    _regenerator.default.mark(function _callee6(object
     /*: ParseObject*/
     ) {
-      var localDatastore, objectKey, pin, key, pinned;
+      var localDatastore, objectKey, pin, promises, key, pinned;
+      return _regenerator.default.wrap(function (_context6) {
+        while (1) {
+          switch (_context6.prev = _context6.next) {
+            case 0:
+              if (this.isEnabled) {
+                _context6.next = 2;
+                break;
+              }
+
+              return _context6.abrupt("return");
+
+            case 2:
+              _context6.next = 4;
+              return this._getAllContents();
+
+            case 4:
+              localDatastore = _context6.sent;
+              objectKey = this.getKeyForObject(object);
+              pin = localDatastore[objectKey];
+
+              if (pin) {
+                _context6.next = 9;
+                break;
+              }
+
+              return _context6.abrupt("return");
+
+            case 9:
+              promises = [this.unPinWithName(objectKey)];
+              delete localDatastore[objectKey];
+
+              for (key in localDatastore) {
+                if (key === _LocalDatastoreUtils.DEFAULT_PIN || key.startsWith(_LocalDatastoreUtils.PIN_PREFIX)) {
+                  pinned = localDatastore[key] || [];
+
+                  if (pinned.includes(objectKey)) {
+                    pinned = pinned.filter(function (item) {
+                      return item !== objectKey;
+                    });
+
+                    if (pinned.length == 0) {
+                      promises.push(this.unPinWithName(key));
+                      delete localDatastore[key];
+                    } else {
+                      promises.push(this.pinWithName(key, pinned));
+                      localDatastore[key] = pinned;
+                    }
+                  }
+                }
+              }
+
+              return _context6.abrupt("return", Promise.all(promises));
+
+            case 13:
+            case "end":
+              return _context6.stop();
+          }
+        }
+      }, _callee6, this);
+    }));
+
+    return function () {
+      return _destroyObjectIfPinned2.apply(this, arguments);
+    };
+  }(),
+  // Update pin and references of the unsaved object
+  _updateLocalIdForObject: function () {
+    var _updateLocalIdForObject2 = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee7(localId, object
+    /*: ParseObject*/
+    ) {
+      var localKey, objectKey, unsaved, promises, localDatastore, key, pinned;
       return _regenerator.default.wrap(function (_context7) {
         while (1) {
           switch (_context7.prev = _context7.next) {
@@ -2399,15 +2706,15 @@ var LocalDatastore = {
               return _context7.abrupt("return");
 
             case 2:
-              _context7.next = 4;
-              return this._getAllContents();
-
-            case 4:
-              localDatastore = _context7.sent;
+              localKey = "".concat(_LocalDatastoreUtils.OBJECT_PREFIX).concat(object.className, "_").concat(localId);
               objectKey = this.getKeyForObject(object);
-              pin = localDatastore[objectKey];
+              _context7.next = 6;
+              return this.fromPinWithName(localKey);
 
-              if (pin) {
+            case 6:
+              unsaved = _context7.sent;
+
+              if (!(!unsaved || unsaved.length === 0)) {
                 _context7.next = 9;
                 break;
               }
@@ -2415,62 +2722,31 @@ var LocalDatastore = {
               return _context7.abrupt("return");
 
             case 9:
-              _context7.next = 11;
-              return this.unPinWithName(objectKey);
+              promises = [this.unPinWithName(localKey), this.pinWithName(objectKey, unsaved)];
+              _context7.next = 12;
+              return this._getAllContents();
 
-            case 11:
-              delete localDatastore[objectKey];
-              _context7.t0 = _regenerator.default.keys(localDatastore);
+            case 12:
+              localDatastore = _context7.sent;
 
-            case 13:
-              if ((_context7.t1 = _context7.t0()).done) {
-                _context7.next = 30;
-                break;
+              for (key in localDatastore) {
+                if (key === _LocalDatastoreUtils.DEFAULT_PIN || key.startsWith(_LocalDatastoreUtils.PIN_PREFIX)) {
+                  pinned = localDatastore[key] || [];
+
+                  if (pinned.includes(localKey)) {
+                    pinned = pinned.filter(function (item) {
+                      return item !== localKey;
+                    });
+                    pinned.push(objectKey);
+                    promises.push(this.pinWithName(key, pinned));
+                    localDatastore[key] = pinned;
+                  }
+                }
               }
 
-              key = _context7.t1.value;
+              return _context7.abrupt("return", Promise.all(promises));
 
-              if (!(key === DEFAULT_PIN || key.startsWith(PIN_PREFIX))) {
-                _context7.next = 28;
-                break;
-              }
-
-              pinned = localDatastore[key] || [];
-
-              if (!pinned.includes(objectKey)) {
-                _context7.next = 28;
-                break;
-              }
-
-              pinned = pinned.filter(function (item) {
-                return item !== objectKey;
-              });
-
-              if (!(pinned.length == 0)) {
-                _context7.next = 25;
-                break;
-              }
-
-              _context7.next = 22;
-              return this.unPinWithName(key);
-
-            case 22:
-              delete localDatastore[key];
-              _context7.next = 28;
-              break;
-
-            case 25:
-              _context7.next = 27;
-              return this.pinWithName(key, pinned);
-
-            case 27:
-              localDatastore[key] = pinned;
-
-            case 28:
-              _context7.next = 13;
-              break;
-
-            case 30:
+            case 15:
             case "end":
               return _context7.stop();
           }
@@ -2479,22 +2755,33 @@ var LocalDatastore = {
     }));
 
     return function () {
-      return _destroyObjectIfPinned2.apply(this, arguments);
+      return _updateLocalIdForObject2.apply(this, arguments);
     };
   }(),
-  // Update pin and references of the unsaved object
-  _updateLocalIdForObject: function () {
-    var _updateLocalIdForObject2 = (0, _asyncToGenerator2.default)(
+
+  /**
+   * Updates Local Datastore from Server
+   *
+   * <pre>
+   * await Parse.LocalDatastore.updateFromServer();
+   * </pre>
+   * @method updateFromServer
+   * @name Parse.LocalDatastore.updateFromServer
+   * @static
+   */
+  updateFromServer: function () {
+    var _updateFromServer = (0, _asyncToGenerator2.default)(
     /*#__PURE__*/
-    _regenerator.default.mark(function _callee8(localId, object
-    /*: ParseObject*/
-    ) {
-      var localKey, objectKey, unsaved, localDatastore, key, pinned;
+    _regenerator.default.mark(function _callee8() {
+      var _this2 = this;
+
+      var localDatastore, keys, key, pointersHash, _arr, _i, _key, _key$split, _key$split2, className, objectId, queryPromises, responses, objects, pinPromises;
+
       return _regenerator.default.wrap(function (_context8) {
         while (1) {
           switch (_context8.prev = _context8.next) {
             case 0:
-              if (this.isEnabled) {
+              if (!(!this.checkIfEnabled() || this.isSyncing)) {
                 _context8.next = 2;
                 break;
               }
@@ -2502,15 +2789,20 @@ var LocalDatastore = {
               return _context8.abrupt("return");
 
             case 2:
-              localKey = "".concat(object.className, "_").concat(localId);
-              objectKey = this.getKeyForObject(object);
-              _context8.next = 6;
-              return this.fromPinWithName(localKey);
+              _context8.next = 4;
+              return this._getAllContents();
 
-            case 6:
-              unsaved = _context8.sent;
+            case 4:
+              localDatastore = _context8.sent;
+              keys = [];
 
-              if (unsaved) {
+              for (key in localDatastore) {
+                if (key.startsWith(_LocalDatastoreUtils.OBJECT_PREFIX)) {
+                  keys.push(key);
+                }
+              }
+
+              if (!(keys.length === 0)) {
                 _context8.next = 9;
                 break;
               }
@@ -2518,65 +2810,71 @@ var LocalDatastore = {
               return _context8.abrupt("return");
 
             case 9:
-              _context8.next = 11;
-              return this.unPinWithName(localKey);
+              this.isSyncing = true;
+              pointersHash = {};
+              _arr = keys;
 
-            case 11:
-              _context8.next = 13;
-              return this.pinWithName(objectKey, unsaved);
+              for (_i = 0; _i < _arr.length; _i++) {
+                _key = _arr[_i]; // Ignore the OBJECT_PREFIX
 
-            case 13:
-              _context8.next = 15;
-              return this._getAllContents();
+                _key$split = _key.split('_'), _key$split2 = (0, _slicedToArray2.default)(_key$split, 4), className = _key$split2[2], objectId = _key$split2[3];
 
-            case 15:
-              localDatastore = _context8.sent;
-              _context8.t0 = _regenerator.default.keys(localDatastore);
+                if (!(className in pointersHash)) {
+                  pointersHash[className] = new Set();
+                }
+
+                pointersHash[className].add(objectId);
+              }
+
+              queryPromises = Object.keys(pointersHash).map(function (className) {
+                var objectIds = Array.from(pointersHash[className]);
+                var query = new _ParseQuery.default(className);
+                query.limit(objectIds.length);
+
+                if (objectIds.length === 1) {
+                  query.equalTo('objectId', objectIds[0]);
+                } else {
+                  query.containedIn('objectId', objectIds);
+                }
+
+                return query.find();
+              });
+              _context8.prev = 14;
+              _context8.next = 17;
+              return Promise.all(queryPromises);
 
             case 17:
-              if ((_context8.t1 = _context8.t0()).done) {
-                _context8.next = 29;
-                break;
-              }
+              responses = _context8.sent;
+              objects = [].concat.apply([], responses);
+              pinPromises = objects.map(function (object) {
+                var objectKey = _this2.getKeyForObject(object);
 
-              key = _context8.t1.value;
-
-              if (!(key === DEFAULT_PIN || key.startsWith(PIN_PREFIX))) {
-                _context8.next = 27;
-                break;
-              }
-
-              pinned = localDatastore[key] || [];
-
-              if (!pinned.includes(localKey)) {
-                _context8.next = 27;
-                break;
-              }
-
-              pinned = pinned.filter(function (item) {
-                return item !== localKey;
+                return _this2.pinWithName(objectKey, object._toFullJSON());
               });
-              pinned.push(objectKey);
-              _context8.next = 26;
-              return this.pinWithName(key, pinned);
+              _context8.next = 22;
+              return Promise.all(pinPromises);
 
-            case 26:
-              localDatastore[key] = pinned;
-
-            case 27:
-              _context8.next = 17;
+            case 22:
+              this.isSyncing = false;
+              _context8.next = 29;
               break;
+
+            case 25:
+              _context8.prev = 25;
+              _context8.t0 = _context8["catch"](14);
+              console.error('Error syncing LocalDatastore: ', _context8.t0);
+              this.isSyncing = false;
 
             case 29:
             case "end":
               return _context8.stop();
           }
         }
-      }, _callee8, this);
+      }, _callee8, this, [[14, 25]]);
     }));
 
     return function () {
-      return _updateLocalIdForObject2.apply(this, arguments);
+      return _updateFromServer.apply(this, arguments);
     };
   }(),
   getKeyForObject: function (object
@@ -2584,35 +2882,36 @@ var LocalDatastore = {
   ) {
     var objectId = object.objectId || object._getId();
 
-    return "".concat(object.className, "_").concat(objectId);
+    return "".concat(_LocalDatastoreUtils.OBJECT_PREFIX).concat(object.className, "_").concat(objectId);
   },
   getPinName: function (pinName
   /*: ?string*/
   ) {
-    if (!pinName || pinName === DEFAULT_PIN) {
-      return DEFAULT_PIN;
+    if (!pinName || pinName === _LocalDatastoreUtils.DEFAULT_PIN) {
+      return _LocalDatastoreUtils.DEFAULT_PIN;
     }
 
-    return PIN_PREFIX + pinName;
+    return _LocalDatastoreUtils.PIN_PREFIX + pinName;
   },
   checkIfEnabled: function () {
     if (!this.isEnabled) {
-      console.log('Parse.enableLocalDatastore() must be called first'); // eslint-disable-line no-console
+      console.error('Parse.enableLocalDatastore() must be called first');
     }
 
     return this.isEnabled;
   }
 };
-LocalDatastore.DEFAULT_PIN = DEFAULT_PIN;
-LocalDatastore.PIN_PREFIX = PIN_PREFIX;
 LocalDatastore.isEnabled = false;
+LocalDatastore.isSyncing = false;
 module.exports = LocalDatastore;
 
 _CoreManager.default.setLocalDatastoreController(_dereq_('./LocalDatastoreController.browser'));
 
 _CoreManager.default.setLocalDatastore(LocalDatastore);
-},{"./CoreManager":3,"./LocalDatastoreController.browser":10,"@babel/runtime/helpers/asyncToGenerator":50,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/toConsumableArray":66,"@babel/runtime/regenerator":69}],10:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./LocalDatastoreController.browser":11,"./LocalDatastoreUtils":12,"./ParseQuery":26,"@babel/runtime/helpers/asyncToGenerator":53,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/slicedToArray":70,"@babel/runtime/helpers/toConsumableArray":72,"@babel/runtime/regenerator":75}],11:[function(_dereq_,module,exports){
 "use strict";
+
+var _LocalDatastoreUtils = _dereq_("./LocalDatastoreUtils");
 /**
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
@@ -2626,66 +2925,121 @@ _CoreManager.default.setLocalDatastore(LocalDatastore);
 
 /* global localStorage */
 
+
 var LocalDatastoreController = {
   fromPinWithName: function (name
   /*: string*/
   )
-  /*: Promise*/
+  /*: Array<Object>*/
   {
     var values = localStorage.getItem(name);
 
     if (!values) {
-      return Promise.resolve(null);
+      return [];
     }
 
     var objects = JSON.parse(values);
-    return Promise.resolve(objects);
+    return objects;
   },
   pinWithName: function (name
   /*: string*/
   , value
   /*: any*/
-  )
-  /*: Promise*/
-  {
+  ) {
     try {
       var values = JSON.stringify(value);
       localStorage.setItem(name, values);
     } catch (e) {
       // Quota exceeded, possibly due to Safari Private Browsing mode
-      console.log(e.message); // eslint-disable-line no-console
+      console.log(e.message);
     }
-
-    return Promise.resolve();
   },
   unPinWithName: function (name
   /*: string*/
-  )
-  /*: Promise*/
-  {
-    return Promise.resolve(localStorage.removeItem(name));
+  ) {
+    localStorage.removeItem(name);
   },
   getAllContents: function ()
-  /*: Promise*/
+  /*: Object*/
   {
     var LDS = {};
 
     for (var i = 0; i < localStorage.length; i += 1) {
       var key = localStorage.key(i);
-      var value = localStorage.getItem(key);
-      LDS[key] = JSON.parse(value);
+
+      if ((0, _LocalDatastoreUtils.isLocalDatastoreKey)(key)) {
+        var value = localStorage.getItem(key);
+        LDS[key] = JSON.parse(value);
+      }
     }
 
-    return Promise.resolve(LDS);
+    return LDS;
+  },
+  getRawStorage: function ()
+  /*: Object*/
+  {
+    var storage = {};
+
+    for (var i = 0; i < localStorage.length; i += 1) {
+      var key = localStorage.key(i);
+      var value = localStorage.getItem(key);
+      storage[key] = value;
+    }
+
+    return storage;
   },
   clear: function ()
   /*: Promise*/
   {
-    return Promise.resolve(localStorage.clear());
+    var toRemove = [];
+
+    for (var i = 0; i < localStorage.length; i += 1) {
+      var key = localStorage.key(i);
+
+      if ((0, _LocalDatastoreUtils.isLocalDatastoreKey)(key)) {
+        toRemove.push(key);
+      }
+    }
+
+    var promises = toRemove.map(this.unPinWithName);
+    return Promise.all(promises);
   }
 };
 module.exports = LocalDatastoreController;
-},{}],11:[function(_dereq_,module,exports){
+},{"./LocalDatastoreUtils":12}],12:[function(_dereq_,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.isLocalDatastoreKey = isLocalDatastoreKey;
+exports.OBJECT_PREFIX = exports.PIN_PREFIX = exports.DEFAULT_PIN = void 0;
+/**
+ * Copyright (c) 2015-present, Parse, LLC.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * @flow
+ */
+
+var DEFAULT_PIN = '_default';
+exports.DEFAULT_PIN = DEFAULT_PIN;
+var PIN_PREFIX = 'parsePin_';
+exports.PIN_PREFIX = PIN_PREFIX;
+var OBJECT_PREFIX = 'Parse_LDS_';
+exports.OBJECT_PREFIX = OBJECT_PREFIX;
+
+function isLocalDatastoreKey(key
+/*: string*/
+)
+/*: boolean*/
+{
+  return !!(key && (key === DEFAULT_PIN || key.startsWith(PIN_PREFIX) || key.startsWith(OBJECT_PREFIX)));
+}
+},{}],13:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -2907,7 +3261,7 @@ function commitServerChanges(serverData
     }
   }
 }
-},{"./ParseFile":17,"./ParseObject":21,"./ParseOp":22,"./ParseRelation":25,"./TaskQueue":35,"./encode":40,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],12:[function(_dereq_,module,exports){
+},{"./ParseFile":19,"./ParseObject":23,"./ParseOp":24,"./ParseRelation":27,"./TaskQueue":37,"./encode":42,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],14:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -3396,7 +3750,7 @@ var OfflineQuery = {
   validateQuery: validateQuery
 };
 module.exports = OfflineQuery;
-},{"./ParseError":16,"./ParseGeoPoint":18,"./ParsePolygon":23,"./decode":39,"./equals":41,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],13:[function(_dereq_,module,exports){
+},{"./ParseError":18,"./ParseGeoPoint":20,"./ParsePolygon":25,"./decode":41,"./equals":43,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],15:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireWildcard = _dereq_("@babel/runtime/helpers/interopRequireWildcard");
@@ -3554,6 +3908,34 @@ Object.defineProperty(Parse, 'serverURL', {
   }
 });
 /**
+ * @member Parse.serverAuthToken
+ * @type string
+ * @static
+ */
+
+Object.defineProperty(Parse, 'serverAuthToken', {
+  get: function () {
+    return _CoreManager.default.get('SERVER_AUTH_TOKEN');
+  },
+  set: function (value) {
+    _CoreManager.default.set('SERVER_AUTH_TOKEN', value);
+  }
+});
+/**
+ * @member Parse.serverAuthType
+ * @type string
+ * @static
+ */
+
+Object.defineProperty(Parse, 'serverAuthType', {
+  get: function () {
+    return _CoreManager.default.get('SERVER_AUTH_TYPE');
+  },
+  set: function (value) {
+    _CoreManager.default.set('SERVER_AUTH_TYPE', value);
+  }
+});
+/**
  * @member Parse.liveQueryServerURL
  * @type string
  * @static
@@ -3571,6 +3953,7 @@ Object.defineProperty(Parse, 'liveQueryServerURL', {
 
 Parse.ACL = _dereq_('./ParseACL').default;
 Parse.Analytics = _dereq_('./Analytics');
+Parse.AnonymousUtils = _dereq_('./AnonymousUtils').default;
 Parse.Cloud = _dereq_('./Cloud');
 Parse.CoreManager = _dereq_('./CoreManager');
 Parse.Config = _dereq_('./ParseConfig').default;
@@ -3679,7 +4062,7 @@ _CoreManager.default.setRESTController(_RESTController.default);
 // For legacy requires, of the form `var Parse = require('parse').Parse`
 Parse.Parse = Parse;
 module.exports = Parse;
-},{"./Analytics":1,"./Cloud":2,"./CoreManager":3,"./FacebookUtils":5,"./InstallationController":6,"./LiveQueryClient":7,"./LocalDatastore":9,"./ParseACL":14,"./ParseConfig":15,"./ParseError":16,"./ParseFile":17,"./ParseGeoPoint":18,"./ParseInstallation":19,"./ParseLiveQuery":20,"./ParseObject":21,"./ParseOp":22,"./ParsePolygon":23,"./ParseQuery":24,"./ParseRelation":25,"./ParseRole":26,"./ParseSchema":27,"./ParseSession":28,"./ParseUser":29,"./Push":30,"./RESTController":31,"./Storage":33,"./decode":39,"./encode":40,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/interopRequireWildcard":59}],14:[function(_dereq_,module,exports){
+},{"./Analytics":1,"./AnonymousUtils":2,"./Cloud":3,"./CoreManager":4,"./FacebookUtils":6,"./InstallationController":7,"./LiveQueryClient":8,"./LocalDatastore":10,"./ParseACL":16,"./ParseConfig":17,"./ParseError":18,"./ParseFile":19,"./ParseGeoPoint":20,"./ParseInstallation":21,"./ParseLiveQuery":22,"./ParseObject":23,"./ParseOp":24,"./ParsePolygon":25,"./ParseQuery":26,"./ParseRelation":27,"./ParseRole":28,"./ParseSchema":29,"./ParseSession":30,"./ParseUser":31,"./Push":32,"./RESTController":33,"./Storage":35,"./decode":41,"./encode":42,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/interopRequireWildcard":62}],16:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -4146,7 +4529,7 @@ function () {
 
 var _default = ParseACL;
 exports.default = _default;
-},{"./ParseRole":26,"./ParseUser":29,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],15:[function(_dereq_,module,exports){
+},{"./ParseRole":28,"./ParseUser":31,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],17:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -4406,7 +4789,7 @@ _CoreManager.default.setConfigController(DefaultController);
 
 var _default = ParseConfig;
 exports.default = _default;
-},{"./CoreManager":3,"./ParseError":16,"./Storage":33,"./decode":39,"./encode":40,"./escape":42,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],16:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseError":18,"./Storage":35,"./decode":41,"./encode":42,"./escape":44,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],18:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -4424,9 +4807,9 @@ var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/getPrototypeOf"));
 
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/inherits"));
-
 var _assertThisInitialized2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/assertThisInitialized"));
+
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/inherits"));
 
 var _wrapNativeSuper2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/wrapNativeSuper"));
 /**
@@ -4459,7 +4842,7 @@ function (_Error) {
     (0, _classCallCheck2.default)(this, ParseError);
     _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(ParseError).call(this, message));
     _this.code = code;
-    Object.defineProperty((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), 'message', {
+    Object.defineProperty((0, _assertThisInitialized2.default)(_this), 'message', {
       enumerable: true,
       value: message
     });
@@ -4954,7 +5337,7 @@ ParseError.FILE_READ_ERROR = 601;
 ParseError.X_DOMAIN_REQUEST = 602;
 var _default = ParseError;
 exports.default = _default;
-},{"@babel/runtime/helpers/assertThisInitialized":49,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/getPrototypeOf":56,"@babel/runtime/helpers/inherits":57,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/possibleConstructorReturn":63,"@babel/runtime/helpers/wrapNativeSuper":68}],17:[function(_dereq_,module,exports){
+},{"@babel/runtime/helpers/assertThisInitialized":52,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/getPrototypeOf":59,"@babel/runtime/helpers/inherits":60,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/possibleConstructorReturn":68,"@babel/runtime/helpers/wrapNativeSuper":74}],19:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -4983,6 +5366,28 @@ var _CoreManager = _interopRequireDefault(_dereq_("./CoreManager"));
  */
 
 /* global File */
+
+
+var http = _dereq_('http');
+
+var https = _dereq_('https');
+/*:: type Base64 = { base64: string };*/
+
+/*:: type FileData = Array<number> | Base64 | File;*/
+
+/*:: export type FileSource = {
+  format: 'file';
+  file: File;
+  type: string
+} | {
+  format: 'base64';
+  base64: string;
+  type: string
+} | {
+  format: 'uri';
+  uri: string;
+  type: string
+};*/
 
 
 var dataUriRegexp = /^data:([a-zA-Z]+\/[-a-zA-Z0-9+.]+)(;charset=[a-zA-Z0-9\-\/]*)?;base64,/;
@@ -5032,7 +5437,8 @@ function () {
    * @param data {Array} The data for the file, as either:
    *     1. an Array of byte value Numbers, or
    *     2. an Object like { base64: "..." } with a base64-encoded String.
-   *     3. a File object selected with a file upload control. (3) only works
+   *     3. an Object like { uri: "..." } with a uri String.
+   *     4. a File object selected with a file upload control. (3) only works
    *        in Firefox 3.6+, Safari 6.0.2+, Chrome 7+, and IE 10+.
    *        For example:
    * <pre>
@@ -5077,6 +5483,12 @@ function () {
         this._source = {
           format: 'file',
           file: data,
+          type: specifiedType
+        };
+      } else if (data && typeof data.uri === 'string' && data.uri !== undefined) {
+        this._source = {
+          format: 'uri',
+          uri: data.uri,
           type: specifiedType
         };
       } else if (data && typeof data.base64 === 'string') {
@@ -5169,6 +5581,12 @@ function () {
       if (!this._previousSave) {
         if (this._source.format === 'file') {
           this._previousSave = controller.saveFile(this._name, this._source, options).then(function (res) {
+            _this._name = res.name;
+            _this._url = res.url;
+            return _this;
+          });
+        } else if (this._source.format === 'uri') {
+          this._previousSave = controller.saveUri(this._name, this._source, options).then(function (res) {
             _this._name = res.name;
             _this._url = res.url;
             return _this;
@@ -5306,6 +5724,51 @@ var DefaultController = {
     }
 
     return _CoreManager.default.getRESTController().request('POST', 'files/' + name, data, options);
+  },
+  saveUri: function (name
+  /*: string*/
+  , source
+  /*: FileSource*/
+  , options
+  /*:: ?: FullOptions*/
+  ) {
+    var _this2 = this;
+
+    if (source.format !== 'uri') {
+      throw new Error('saveUri can only be used with Uri-type sources.');
+    }
+
+    return this.download(source.uri).then(function (result) {
+      var newSource = {
+        format: 'base64',
+        base64: result.base64,
+        type: result.contentType
+      };
+      return _this2.saveBase64(name, newSource, options);
+    });
+  },
+  download: function (uri) {
+    return new Promise(function (resolve, reject) {
+      var client = http;
+
+      if (uri.indexOf('https') === 0) {
+        client = https;
+      }
+
+      client.get(uri, function (resp) {
+        resp.setEncoding('base64');
+        var base64 = '';
+        resp.on('data', function (data) {
+          return base64 += data;
+        });
+        resp.on('end', function () {
+          resolve({
+            base64: base64,
+            contentType: resp.headers['content-type']
+          });
+        });
+      }).on('error', reject);
+    });
   }
 };
 
@@ -5313,7 +5776,7 @@ _CoreManager.default.setFileController(DefaultController);
 
 var _default = ParseFile;
 exports.default = _default;
-},{"./CoreManager":3,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/interopRequireDefault":58}],18:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61,"http":undefined,"https":undefined}],20:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -5580,7 +6043,7 @@ function () {
 
 var _default = ParseGeoPoint;
 exports.default = _default;
-},{"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],19:[function(_dereq_,module,exports){
+},{"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],21:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -5641,7 +6104,7 @@ function (_ParseObject) {
 exports.default = Installation;
 
 _ParseObject2.default.registerSubclass('_Installation', Installation);
-},{"./ParseObject":21,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/getPrototypeOf":56,"@babel/runtime/helpers/inherits":57,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/possibleConstructorReturn":63,"@babel/runtime/helpers/typeof":67}],20:[function(_dereq_,module,exports){
+},{"./ParseObject":23,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/getPrototypeOf":59,"@babel/runtime/helpers/inherits":60,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/possibleConstructorReturn":68,"@babel/runtime/helpers/typeof":73}],22:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -5650,6 +6113,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+
+var _regenerator = _interopRequireDefault(_dereq_("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/asyncToGenerator"));
 
 var _EventEmitter = _interopRequireDefault(_dereq_("./EventEmitter"));
 
@@ -5668,16 +6135,10 @@ var _CoreManager = _interopRequireDefault(_dereq_("./CoreManager"));
  */
 
 
-function open() {
-  var LiveQueryController = _CoreManager.default.getLiveQueryController();
-
-  LiveQueryController.open();
-}
-
-function close() {
-  var LiveQueryController = _CoreManager.default.getLiveQueryController();
-
-  LiveQueryController.close();
+function getLiveQueryClient()
+/*: LiveQueryClient*/
+{
+  return _CoreManager.default.getLiveQueryController().getDefaultLiveQueryClient();
 }
 /**
  *
@@ -5714,177 +6175,158 @@ var LiveQuery = new _EventEmitter.default();
 /**
  * After open is called, the LiveQuery will try to send a connect request
  * to the LiveQuery server.
- *
-
  */
 
-LiveQuery.open = open;
+LiveQuery.open =
+/*#__PURE__*/
+(0, _asyncToGenerator2.default)(
+/*#__PURE__*/
+_regenerator.default.mark(function _callee() {
+  var liveQueryClient;
+  return _regenerator.default.wrap(function (_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return getLiveQueryClient();
+
+        case 2:
+          liveQueryClient = _context.sent;
+          return _context.abrupt("return", liveQueryClient.open());
+
+        case 4:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _callee);
+}));
 /**
  * When you're done using LiveQuery, you can call Parse.LiveQuery.close().
  * This function will close the WebSocket connection to the LiveQuery server,
  * cancel the auto reconnect, and unsubscribe all subscriptions based on it.
  * If you call query.subscribe() after this, we'll create a new WebSocket
  * connection to the LiveQuery server.
- *
-
  */
 
-LiveQuery.close = close; // Register a default onError callback to make sure we do not crash on error
+LiveQuery.close =
+/*#__PURE__*/
+(0, _asyncToGenerator2.default)(
+/*#__PURE__*/
+_regenerator.default.mark(function _callee2() {
+  var liveQueryClient;
+  return _regenerator.default.wrap(function (_context2) {
+    while (1) {
+      switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.next = 2;
+          return getLiveQueryClient();
+
+        case 2:
+          liveQueryClient = _context2.sent;
+          return _context2.abrupt("return", liveQueryClient.close());
+
+        case 4:
+        case "end":
+          return _context2.stop();
+      }
+    }
+  }, _callee2);
+})); // Register a default onError callback to make sure we do not crash on error
 
 LiveQuery.on('error', function () {});
 var _default = LiveQuery;
 exports.default = _default;
-
-function getSessionToken() {
-  var controller = _CoreManager.default.getUserController();
-
-  return controller.currentUserAsync().then(function (currentUser) {
-    return currentUser ? currentUser.getSessionToken() : undefined;
-  });
-}
-
-function getLiveQueryClient() {
-  return _CoreManager.default.getLiveQueryController().getDefaultLiveQueryClient();
-}
-
 var defaultLiveQueryClient;
 var DefaultLiveQueryController = {
   setDefaultLiveQueryClient: function (liveQueryClient
-  /*: any*/
+  /*: LiveQueryClient*/
   ) {
     defaultLiveQueryClient = liveQueryClient;
   },
-  getDefaultLiveQueryClient: function ()
-  /*: Promise*/
-  {
-    if (defaultLiveQueryClient) {
-      return Promise.resolve(defaultLiveQueryClient);
-    }
+  getDefaultLiveQueryClient: function () {
+    var _getDefaultLiveQueryClient = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee3() {
+      var currentUser, sessionToken, liveQueryServerURL, serverURL, protocol, host, applicationId, javascriptKey, masterKey;
+      return _regenerator.default.wrap(function (_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              if (!defaultLiveQueryClient) {
+                _context3.next = 2;
+                break;
+              }
 
-    return getSessionToken().then(function (sessionToken) {
-      var liveQueryServerURL = _CoreManager.default.get('LIVEQUERY_SERVER_URL');
+              return _context3.abrupt("return", defaultLiveQueryClient);
 
-      if (liveQueryServerURL && liveQueryServerURL.indexOf('ws') !== 0) {
-        throw new Error('You need to set a proper Parse LiveQuery server url before using LiveQueryClient');
-      } // If we can not find Parse.liveQueryServerURL, we try to extract it from Parse.serverURL
+            case 2:
+              _context3.next = 4;
+              return _CoreManager.default.getUserController().currentUserAsync();
 
+            case 4:
+              currentUser = _context3.sent;
+              sessionToken = currentUser ? currentUser.getSessionToken() : undefined;
+              liveQueryServerURL = _CoreManager.default.get('LIVEQUERY_SERVER_URL');
 
-      if (!liveQueryServerURL) {
-        var tempServerURL = _CoreManager.default.get('SERVER_URL');
+              if (!(liveQueryServerURL && liveQueryServerURL.indexOf('ws') !== 0)) {
+                _context3.next = 9;
+                break;
+              }
 
-        var protocol = 'ws://'; // If Parse is being served over SSL/HTTPS, ensure LiveQuery Server uses 'wss://' prefix
+              throw new Error('You need to set a proper Parse LiveQuery server url before using LiveQueryClient');
 
-        if (tempServerURL.indexOf('https') === 0) {
-          protocol = 'wss://';
+            case 9:
+              // If we can not find Parse.liveQueryServerURL, we try to extract it from Parse.serverURL
+              if (!liveQueryServerURL) {
+                serverURL = _CoreManager.default.get('SERVER_URL');
+                protocol = serverURL.indexOf('https') === 0 ? 'wss://' : 'ws://';
+                host = serverURL.replace(/^https?:\/\//, '');
+                liveQueryServerURL = protocol + host;
+
+                _CoreManager.default.set('LIVEQUERY_SERVER_URL', liveQueryServerURL);
+              }
+
+              applicationId = _CoreManager.default.get('APPLICATION_ID');
+              javascriptKey = _CoreManager.default.get('JAVASCRIPT_KEY');
+              masterKey = _CoreManager.default.get('MASTER_KEY');
+              defaultLiveQueryClient = new _LiveQueryClient.default({
+                applicationId: applicationId,
+                serverURL: liveQueryServerURL,
+                javascriptKey: javascriptKey,
+                masterKey: masterKey,
+                sessionToken: sessionToken
+              });
+              defaultLiveQueryClient.on('error', function (error) {
+                LiveQuery.emit('error', error);
+              });
+              defaultLiveQueryClient.on('open', function () {
+                LiveQuery.emit('open');
+              });
+              defaultLiveQueryClient.on('close', function () {
+                LiveQuery.emit('close');
+              });
+              return _context3.abrupt("return", defaultLiveQueryClient);
+
+            case 18:
+            case "end":
+              return _context3.stop();
+          }
         }
+      }, _callee3);
+    }));
 
-        var host = tempServerURL.replace(/^https?:\/\//, '');
-        liveQueryServerURL = protocol + host;
-
-        _CoreManager.default.set('LIVEQUERY_SERVER_URL', liveQueryServerURL);
-      }
-
-      var applicationId = _CoreManager.default.get('APPLICATION_ID');
-
-      var javascriptKey = _CoreManager.default.get('JAVASCRIPT_KEY');
-
-      var masterKey = _CoreManager.default.get('MASTER_KEY'); // Get currentUser sessionToken if possible
-
-
-      defaultLiveQueryClient = new _LiveQueryClient.default({
-        applicationId: applicationId,
-        serverURL: liveQueryServerURL,
-        javascriptKey: javascriptKey,
-        masterKey: masterKey,
-        sessionToken: sessionToken
-      }); // Register a default onError callback to make sure we do not crash on error
-      // Cannot create these events on a nested way because of EventEmiiter from React Native
-
-      defaultLiveQueryClient.on('error', function (error) {
-        LiveQuery.emit('error', error);
-      });
-      defaultLiveQueryClient.on('open', function () {
-        LiveQuery.emit('open');
-      });
-      defaultLiveQueryClient.on('close', function () {
-        LiveQuery.emit('close');
-      });
-      return defaultLiveQueryClient;
-    });
-  },
-  open: function () {
-    getLiveQueryClient().then(function (liveQueryClient) {
-      return liveQueryClient.open();
-    });
-  },
-  close: function () {
-    getLiveQueryClient().then(function (liveQueryClient) {
-      return liveQueryClient.close();
-    });
-  },
-  subscribe: function (query
-  /*: any*/
-  )
-  /*: EventEmitter*/
-  {
-    var subscriptionWrap = new _EventEmitter.default();
-    getLiveQueryClient().then(function (liveQueryClient) {
-      if (liveQueryClient.shouldOpen()) {
-        liveQueryClient.open();
-      }
-
-      var promiseSessionToken = getSessionToken(); // new event emitter
-
-      return promiseSessionToken.then(function (sessionToken) {
-        var subscription = liveQueryClient.subscribe(query, sessionToken); // enter, leave create, etc
-
-        subscriptionWrap.id = subscription.id;
-        subscriptionWrap.query = subscription.query;
-        subscriptionWrap.sessionToken = subscription.sessionToken;
-        subscriptionWrap.unsubscribe = subscription.unsubscribe; // Cannot create these events on a nested way because of EventEmiiter from React Native
-
-        subscription.on('open', function () {
-          subscriptionWrap.emit('open');
-        });
-        subscription.on('create', function (object) {
-          subscriptionWrap.emit('create', object);
-        });
-        subscription.on('update', function (object) {
-          subscriptionWrap.emit('update', object);
-        });
-        subscription.on('enter', function (object) {
-          subscriptionWrap.emit('enter', object);
-        });
-        subscription.on('leave', function (object) {
-          subscriptionWrap.emit('leave', object);
-        });
-        subscription.on('delete', function (object) {
-          subscriptionWrap.emit('delete', object);
-        });
-        subscription.on('close', function (object) {
-          subscriptionWrap.emit('close', object);
-        });
-        subscription.on('error', function (object) {
-          subscriptionWrap.emit('error', object);
-        });
-      });
-    });
-    return subscriptionWrap;
-  },
-  unsubscribe: function (subscription
-  /*: any*/
-  ) {
-    getLiveQueryClient().then(function (liveQueryClient) {
-      return liveQueryClient.unsubscribe(subscription);
-    });
-  },
+    return function () {
+      return _getDefaultLiveQueryClient.apply(this, arguments);
+    };
+  }(),
   _clearCachedDefaultClient: function () {
     defaultLiveQueryClient = null;
   }
 };
 
 _CoreManager.default.setLiveQueryController(DefaultLiveQueryController);
-},{"./CoreManager":3,"./EventEmitter":4,"./LiveQueryClient":7,"@babel/runtime/helpers/interopRequireDefault":58}],21:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./EventEmitter":5,"./LiveQueryClient":8,"@babel/runtime/helpers/asyncToGenerator":53,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/regenerator":75}],23:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireWildcard = _dereq_("@babel/runtime/helpers/interopRequireWildcard");
@@ -5927,6 +6369,8 @@ var _ParseError = _interopRequireDefault(_dereq_("./ParseError"));
 var _ParseFile = _interopRequireDefault(_dereq_("./ParseFile"));
 
 var _promiseUtils = _dereq_("./promiseUtils");
+
+var _LocalDatastoreUtils = _dereq_("./LocalDatastoreUtils");
 
 var _ParseOp = _dereq_("./ParseOp");
 
@@ -7185,9 +7629,10 @@ function () {
 
       if (keys.length) {
         keysToRevert = [];
+        var _arr = keys;
 
-        for (var _i = 0; _i < keys.length; _i++) {
-          var _key3 = keys[_i];
+        for (var _i = 0; _i < _arr.length; _i++) {
+          var _key3 = _arr[_i];
 
           if (typeof _key3 === "string") {
             keysToRevert.push(_key3);
@@ -7414,6 +7859,11 @@ function () {
 
       if (options.hasOwnProperty('sessionToken') && typeof options.sessionToken === 'string') {
         saveOptions.sessionToken = options.sessionToken;
+      } // Pass sessionToken if saving currentUser
+
+
+      if (typeof this.getSessionToken === 'function' && this.getSessionToken()) {
+        saveOptions.sessionToken = this.getSessionToken();
       }
 
       var controller = _CoreManager.default.getObjectController();
@@ -7474,6 +7924,8 @@ function () {
      *
      * To retrieve object:
      * <code>query.fromLocalDatastore()</code> or <code>query.fromPin()</code>
+     *
+     * @return {Promise} A promise that is fulfilled when the pin completes.
      */
 
   }, {
@@ -7481,9 +7933,7 @@ function () {
     value: function ()
     /*: Promise*/
     {
-      var localDatastore = _CoreManager.default.getLocalDatastore();
-
-      return ParseObject.pinAllWithName(localDatastore.DEFAULT_PIN, [this]);
+      return ParseObject.pinAllWithName(_LocalDatastoreUtils.DEFAULT_PIN, [this]);
     }
     /**
      * Asynchronously removes the object and every object it points to in the local datastore,
@@ -7492,6 +7942,8 @@ function () {
      * <pre>
      * await object.unPin();
      * </pre>
+     *
+     * @return {Promise} A promise that is fulfilled when the unPin completes.
      */
 
   }, {
@@ -7499,9 +7951,7 @@ function () {
     value: function ()
     /*: Promise*/
     {
-      var localDatastore = _CoreManager.default.getLocalDatastore();
-
-      return ParseObject.unPinAllWithName(localDatastore.DEFAULT_PIN, [this]);
+      return ParseObject.unPinAllWithName(_LocalDatastoreUtils.DEFAULT_PIN, [this]);
     }
     /**
      * Asynchronously returns if the object is pinned
@@ -7509,6 +7959,8 @@ function () {
      * <pre>
      * const isPinned = await object.isPinned();
      * </pre>
+     *
+     * @return {Promise<boolean>} A boolean promise that is fulfilled if object is pinned.
      */
 
   }, {
@@ -7524,29 +7976,23 @@ function () {
               case 0:
                 localDatastore = _CoreManager.default.getLocalDatastore();
 
-                if (!localDatastore.checkIfEnabled()) {
-                  _context.next = 8;
+                if (localDatastore.isEnabled) {
+                  _context.next = 3;
                   break;
                 }
 
+                return _context.abrupt("return", Promise.reject('Parse.enableLocalDatastore() must be called first'));
+
+              case 3:
                 objectKey = localDatastore.getKeyForObject(this);
-                _context.next = 5;
+                _context.next = 6;
                 return localDatastore.fromPinWithName(objectKey);
 
-              case 5:
+              case 6:
                 pin = _context.sent;
-
-                if (!pin) {
-                  _context.next = 8;
-                  break;
-                }
-
-                return _context.abrupt("return", Promise.resolve(true));
+                return _context.abrupt("return", pin.length > 0);
 
               case 8:
-                return _context.abrupt("return", Promise.resolve(false));
-
-              case 9:
               case "end":
                 return _context.stop();
             }
@@ -7572,6 +8018,7 @@ function () {
      * <code>query.fromLocalDatastore()</code> or <code>query.fromPinWithName(name)</code>
      *
      * @param {String} name Name of Pin.
+     * @return {Promise} A promise that is fulfilled when the pin completes.
      */
 
   }, {
@@ -7591,6 +8038,7 @@ function () {
      * </pre>
      *
      * @param {String} name Name of Pin.
+     * @return {Promise} A promise that is fulfilled when the unPin completes.
      */
 
   }, {
@@ -7611,6 +8059,8 @@ function () {
      *
      * You can create an unfetched pointer with <code>Parse.Object.createWithoutData()</code>
      * and then call <code>fetchFromLocalDatastore()</code> on it.
+     *
+     * @return {Promise} A promise that is fulfilled when the fetch completes.
      */
 
   }, {
@@ -7626,33 +8076,36 @@ function () {
               case 0:
                 localDatastore = _CoreManager.default.getLocalDatastore();
 
-                if (!localDatastore.checkIfEnabled()) {
-                  _context2.next = 11;
+                if (localDatastore.isEnabled) {
+                  _context2.next = 3;
                   break;
                 }
 
+                throw new Error('Parse.enableLocalDatastore() must be called first');
+
+              case 3:
                 objectKey = localDatastore.getKeyForObject(this);
-                _context2.next = 5;
+                _context2.next = 6;
                 return localDatastore._serializeObject(objectKey);
 
-              case 5:
+              case 6:
                 pinned = _context2.sent;
 
                 if (pinned) {
-                  _context2.next = 8;
+                  _context2.next = 9;
                   break;
                 }
 
                 throw new Error('Cannot fetch an unsaved ParseObject');
 
-              case 8:
+              case 9:
                 result = ParseObject.fromJSON(pinned);
 
                 this._finishFetch(result.toJSON());
 
-                return _context2.abrupt("return", Promise.resolve(this));
+                return _context2.abrupt("return", this);
 
-              case 11:
+              case 12:
               case "end":
                 return _context2.stop();
             }
@@ -8256,6 +8709,7 @@ function () {
      * <code>query.fromLocalDatastore()</code> or <code>query.fromPin()</code>
      *
      * @param {Array} objects A list of <code>Parse.Object</code>.
+     * @return {Promise} A promise that is fulfilled when the pin completes.
      * @static
      */
 
@@ -8268,9 +8722,11 @@ function () {
     {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
-      if (localDatastore.checkIfEnabled()) {
-        return ParseObject.pinAllWithName(localDatastore.DEFAULT_PIN, objects);
+      if (!localDatastore.isEnabled) {
+        return Promise.reject('Parse.enableLocalDatastore() must be called first');
       }
+
+      return ParseObject.pinAllWithName(_LocalDatastoreUtils.DEFAULT_PIN, objects);
     }
     /**
      * Asynchronously stores the objects and every object they point to in the local datastore, recursively.
@@ -8287,99 +8743,27 @@ function () {
      *
      * @param {String} name Name of Pin.
      * @param {Array} objects A list of <code>Parse.Object</code>.
+     * @return {Promise} A promise that is fulfilled when the pin completes.
      * @static
      */
 
   }, {
     key: "pinAllWithName",
-    value: function () {
-      var _pinAllWithName = (0, _asyncToGenerator2.default)(
-      /*#__PURE__*/
-      _regenerator.default.mark(function _callee3(name
-      /*: string*/
-      , objects
-      /*: Array<ParseObject>*/
-      ) {
-        var localDatastore, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, object;
+    value: function (name
+    /*: string*/
+    , objects
+    /*: Array<ParseObject>*/
+    )
+    /*: Promise*/
+    {
+      var localDatastore = _CoreManager.default.getLocalDatastore();
 
-        return _regenerator.default.wrap(function (_context3) {
-          while (1) {
-            switch (_context3.prev = _context3.next) {
-              case 0:
-                localDatastore = _CoreManager.default.getLocalDatastore();
+      if (!localDatastore.isEnabled) {
+        return Promise.reject('Parse.enableLocalDatastore() must be called first');
+      }
 
-                if (!localDatastore.checkIfEnabled()) {
-                  _context3.next = 28;
-                  break;
-                }
-
-                _iteratorNormalCompletion = true;
-                _didIteratorError = false;
-                _iteratorError = undefined;
-                _context3.prev = 5;
-                _iterator = objects[Symbol.iterator]();
-
-              case 7:
-                if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                  _context3.next = 14;
-                  break;
-                }
-
-                object = _step.value;
-                _context3.next = 11;
-                return localDatastore._handlePinWithName(name, object);
-
-              case 11:
-                _iteratorNormalCompletion = true;
-                _context3.next = 7;
-                break;
-
-              case 14:
-                _context3.next = 20;
-                break;
-
-              case 16:
-                _context3.prev = 16;
-                _context3.t0 = _context3["catch"](5);
-                _didIteratorError = true;
-                _iteratorError = _context3.t0;
-
-              case 20:
-                _context3.prev = 20;
-                _context3.prev = 21;
-
-                if (!_iteratorNormalCompletion && _iterator.return != null) {
-                  _iterator.return();
-                }
-
-              case 23:
-                _context3.prev = 23;
-
-                if (!_didIteratorError) {
-                  _context3.next = 26;
-                  break;
-                }
-
-                throw _iteratorError;
-
-              case 26:
-                return _context3.finish(23);
-
-              case 27:
-                return _context3.finish(20);
-
-              case 28:
-              case "end":
-                return _context3.stop();
-            }
-          }
-        }, _callee3, this, [[5, 16, 20, 28], [21,, 23, 27]]);
-      }));
-
-      return function () {
-        return _pinAllWithName.apply(this, arguments);
-      };
-    }()
+      return localDatastore._handlePinAllWithName(name, objects);
+    }
     /**
      * Asynchronously removes the objects and every object they point to in the local datastore,
      * recursively, using a default pin name: _default.
@@ -8389,6 +8773,7 @@ function () {
      * </pre>
      *
      * @param {Array} objects A list of <code>Parse.Object</code>.
+     * @return {Promise} A promise that is fulfilled when the unPin completes.
      * @static
      */
 
@@ -8401,9 +8786,11 @@ function () {
     {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
-      if (localDatastore.checkIfEnabled()) {
-        return ParseObject.unPinAllWithName(localDatastore.DEFAULT_PIN, objects);
+      if (!localDatastore.isEnabled) {
+        return Promise.reject('Parse.enableLocalDatastore() must be called first');
       }
+
+      return ParseObject.unPinAllWithName(_LocalDatastoreUtils.DEFAULT_PIN, objects);
     }
     /**
      * Asynchronously removes the objects and every object they point to in the local datastore, recursively.
@@ -8414,99 +8801,27 @@ function () {
      *
      * @param {String} name Name of Pin.
      * @param {Array} objects A list of <code>Parse.Object</code>.
+     * @return {Promise} A promise that is fulfilled when the unPin completes.
      * @static
      */
 
   }, {
     key: "unPinAllWithName",
-    value: function () {
-      var _unPinAllWithName = (0, _asyncToGenerator2.default)(
-      /*#__PURE__*/
-      _regenerator.default.mark(function _callee4(name
-      /*: string*/
-      , objects
-      /*: Array<ParseObject>*/
-      ) {
-        var localDatastore, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, object;
+    value: function (name
+    /*: string*/
+    , objects
+    /*: Array<ParseObject>*/
+    )
+    /*: Promise*/
+    {
+      var localDatastore = _CoreManager.default.getLocalDatastore();
 
-        return _regenerator.default.wrap(function (_context4) {
-          while (1) {
-            switch (_context4.prev = _context4.next) {
-              case 0:
-                localDatastore = _CoreManager.default.getLocalDatastore();
+      if (!localDatastore.isEnabled) {
+        return Promise.reject('Parse.enableLocalDatastore() must be called first');
+      }
 
-                if (!localDatastore.checkIfEnabled()) {
-                  _context4.next = 28;
-                  break;
-                }
-
-                _iteratorNormalCompletion2 = true;
-                _didIteratorError2 = false;
-                _iteratorError2 = undefined;
-                _context4.prev = 5;
-                _iterator2 = objects[Symbol.iterator]();
-
-              case 7:
-                if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                  _context4.next = 14;
-                  break;
-                }
-
-                object = _step2.value;
-                _context4.next = 11;
-                return localDatastore._handleUnPinWithName(name, object);
-
-              case 11:
-                _iteratorNormalCompletion2 = true;
-                _context4.next = 7;
-                break;
-
-              case 14:
-                _context4.next = 20;
-                break;
-
-              case 16:
-                _context4.prev = 16;
-                _context4.t0 = _context4["catch"](5);
-                _didIteratorError2 = true;
-                _iteratorError2 = _context4.t0;
-
-              case 20:
-                _context4.prev = 20;
-                _context4.prev = 21;
-
-                if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-                  _iterator2.return();
-                }
-
-              case 23:
-                _context4.prev = 23;
-
-                if (!_didIteratorError2) {
-                  _context4.next = 26;
-                  break;
-                }
-
-                throw _iteratorError2;
-
-              case 26:
-                return _context4.finish(23);
-
-              case 27:
-                return _context4.finish(20);
-
-              case 28:
-              case "end":
-                return _context4.stop();
-            }
-          }
-        }, _callee4, this, [[5, 16, 20, 28], [21,, 23, 27]]);
-      }));
-
-      return function () {
-        return _unPinAllWithName.apply(this, arguments);
-      };
-    }()
+      return localDatastore._handleUnPinAllWithName(name, objects);
+    }
     /**
      * Asynchronously removes all objects in the local datastore using a default pin name: _default.
      *
@@ -8514,6 +8829,7 @@ function () {
      * await Parse.Object.unPinAllObjects();
      * </pre>
      *
+     * @return {Promise} A promise that is fulfilled when the unPin completes.
      * @static
      */
 
@@ -8524,9 +8840,11 @@ function () {
     {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
-      if (localDatastore.checkIfEnabled()) {
-        return localDatastore.unPinWithName(localDatastore.DEFAULT_PIN);
+      if (!localDatastore.isEnabled) {
+        return Promise.reject('Parse.enableLocalDatastore() must be called first');
       }
+
+      return localDatastore.unPinWithName(_LocalDatastoreUtils.DEFAULT_PIN);
     }
     /**
      * Asynchronously removes all objects with the specified pin name.
@@ -8537,6 +8855,7 @@ function () {
      * </pre>
      *
      * @param {String} name Name of Pin.
+     * @return {Promise} A promise that is fulfilled when the unPin completes.
      * @static
      */
 
@@ -8549,9 +8868,11 @@ function () {
     {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
-      if (localDatastore.checkIfEnabled()) {
-        return localDatastore.unPinWithName(localDatastore.PIN_PREFIX + name);
+      if (!localDatastore.isEnabled) {
+        return Promise.reject('Parse.enableLocalDatastore() must be called first');
       }
+
+      return localDatastore.unPinWithName(_LocalDatastoreUtils.PIN_PREFIX + name);
     }
   }]);
   return ParseObject;
@@ -8621,12 +8942,12 @@ var DefaultController = {
       function () {
         var _ref = (0, _asyncToGenerator2.default)(
         /*#__PURE__*/
-        _regenerator.default.mark(function _callee5(objects) {
-          var idMap, i, obj, _i2, _obj, id, _i3, object;
+        _regenerator.default.mark(function _callee3(objects) {
+          var idMap, i, obj, _i2, _obj, id, _arr2, _i3, object;
 
-          return _regenerator.default.wrap(function (_context5) {
+          return _regenerator.default.wrap(function (_context3) {
             while (1) {
-              switch (_context5.prev = _context5.next) {
+              switch (_context3.prev = _context3.next) {
                 case 0:
                   idMap = {};
                   objects.forEach(function (o) {
@@ -8636,27 +8957,27 @@ var DefaultController = {
 
                 case 3:
                   if (!(i < objs.length)) {
-                    _context5.next = 11;
+                    _context3.next = 11;
                     break;
                   }
 
                   obj = objs[i];
 
                   if (!(!obj || !obj.id || !idMap[obj.id])) {
-                    _context5.next = 8;
+                    _context3.next = 8;
                     break;
                   }
 
                   if (!forceFetch) {
-                    _context5.next = 8;
+                    _context3.next = 8;
                     break;
                   }
 
-                  return _context5.abrupt("return", Promise.reject(new _ParseError.default(_ParseError.default.OBJECT_NOT_FOUND, 'All objects must exist on the server.')));
+                  return _context3.abrupt("return", Promise.reject(new _ParseError.default(_ParseError.default.OBJECT_NOT_FOUND, 'All objects must exist on the server.')));
 
                 case 8:
                   i++;
-                  _context5.next = 3;
+                  _context3.next = 3;
                   break;
 
                 case 11:
@@ -8675,32 +8996,33 @@ var DefaultController = {
                     }
                   }
 
+                  _arr2 = results;
                   _i3 = 0;
 
-                case 13:
-                  if (!(_i3 < results.length)) {
-                    _context5.next = 20;
+                case 14:
+                  if (!(_i3 < _arr2.length)) {
+                    _context3.next = 21;
                     break;
                   }
 
-                  object = results[_i3];
-                  _context5.next = 17;
+                  object = _arr2[_i3];
+                  _context3.next = 18;
                   return localDatastore._updateObjectIfPinned(object);
 
-                case 17:
+                case 18:
                   _i3++;
-                  _context5.next = 13;
+                  _context3.next = 14;
                   break;
 
-                case 20:
-                  return _context5.abrupt("return", Promise.resolve(results));
-
                 case 21:
+                  return _context3.abrupt("return", Promise.resolve(results));
+
+                case 22:
                 case "end":
-                  return _context5.stop();
+                  return _context3.stop();
               }
             }
-          }, _callee5, this);
+          }, _callee3);
         }));
 
         return function () {
@@ -8721,10 +9043,10 @@ var DefaultController = {
       function () {
         var _ref2 = (0, _asyncToGenerator2.default)(
         /*#__PURE__*/
-        _regenerator.default.mark(function _callee6(response) {
-          return _regenerator.default.wrap(function (_context6) {
+        _regenerator.default.mark(function _callee4(response) {
+          return _regenerator.default.wrap(function (_context4) {
             while (1) {
-              switch (_context6.prev = _context6.next) {
+              switch (_context4.prev = _context4.next) {
                 case 0:
                   if (target instanceof ParseObject) {
                     target._clearPendingOps();
@@ -8734,18 +9056,18 @@ var DefaultController = {
                     target._finishFetch(response);
                   }
 
-                  _context6.next = 3;
+                  _context4.next = 3;
                   return localDatastore._updateObjectIfPinned(target);
 
                 case 3:
-                  return _context6.abrupt("return", target);
+                  return _context4.abrupt("return", target);
 
                 case 4:
                 case "end":
-                  return _context6.stop();
+                  return _context4.stop();
               }
             }
-          }, _callee6, this);
+          }, _callee4);
         }));
 
         return function () {
@@ -8757,31 +9079,31 @@ var DefaultController = {
   destroy: function () {
     var _destroy = (0, _asyncToGenerator2.default)(
     /*#__PURE__*/
-    _regenerator.default.mark(function _callee9(target
+    _regenerator.default.mark(function _callee7(target
     /*: ParseObject | Array<ParseObject>*/
     , options
     /*: RequestOptions*/
     ) {
       var batchSize, localDatastore, RESTController, batches, deleteCompleted, errors;
-      return _regenerator.default.wrap(function (_context9) {
+      return _regenerator.default.wrap(function (_context7) {
         while (1) {
-          switch (_context9.prev = _context9.next) {
+          switch (_context7.prev = _context7.next) {
             case 0:
               batchSize = options && options.batchSize ? options.batchSize : DEFAULT_BATCH_SIZE;
               localDatastore = _CoreManager.default.getLocalDatastore();
               RESTController = _CoreManager.default.getRESTController();
 
               if (!Array.isArray(target)) {
-                _context9.next = 15;
+                _context7.next = 15;
                 break;
               }
 
               if (!(target.length < 1)) {
-                _context9.next = 6;
+                _context7.next = 6;
                 break;
               }
 
-              return _context9.abrupt("return", Promise.resolve([]));
+              return _context7.abrupt("return", Promise.resolve([]));
 
             case 6:
               batches = [[]];
@@ -8825,135 +9147,135 @@ var DefaultController = {
                   });
                 });
               });
-              return _context9.abrupt("return", deleteCompleted.then(
+              return _context7.abrupt("return", deleteCompleted.then(
               /*#__PURE__*/
               (0, _asyncToGenerator2.default)(
               /*#__PURE__*/
-              _regenerator.default.mark(function _callee7() {
-                var aggregate, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, object;
+              _regenerator.default.mark(function _callee5() {
+                var aggregate, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, object;
 
-                return _regenerator.default.wrap(function (_context7) {
+                return _regenerator.default.wrap(function (_context5) {
                   while (1) {
-                    switch (_context7.prev = _context7.next) {
+                    switch (_context5.prev = _context5.next) {
                       case 0:
                         if (!errors.length) {
-                          _context7.next = 4;
+                          _context5.next = 4;
                           break;
                         }
 
                         aggregate = new _ParseError.default(_ParseError.default.AGGREGATE_ERROR);
                         aggregate.errors = errors;
-                        return _context7.abrupt("return", Promise.reject(aggregate));
+                        return _context5.abrupt("return", Promise.reject(aggregate));
 
                       case 4:
-                        _iteratorNormalCompletion3 = true;
-                        _didIteratorError3 = false;
-                        _iteratorError3 = undefined;
-                        _context7.prev = 7;
-                        _iterator3 = target[Symbol.iterator]();
+                        _iteratorNormalCompletion = true;
+                        _didIteratorError = false;
+                        _iteratorError = undefined;
+                        _context5.prev = 7;
+                        _iterator = target[Symbol.iterator]();
 
                       case 9:
-                        if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                          _context7.next = 16;
+                        if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                          _context5.next = 16;
                           break;
                         }
 
-                        object = _step3.value;
-                        _context7.next = 13;
+                        object = _step.value;
+                        _context5.next = 13;
                         return localDatastore._destroyObjectIfPinned(object);
 
                       case 13:
-                        _iteratorNormalCompletion3 = true;
-                        _context7.next = 9;
+                        _iteratorNormalCompletion = true;
+                        _context5.next = 9;
                         break;
 
                       case 16:
-                        _context7.next = 22;
+                        _context5.next = 22;
                         break;
 
                       case 18:
-                        _context7.prev = 18;
-                        _context7.t0 = _context7["catch"](7);
-                        _didIteratorError3 = true;
-                        _iteratorError3 = _context7.t0;
+                        _context5.prev = 18;
+                        _context5.t0 = _context5["catch"](7);
+                        _didIteratorError = true;
+                        _iteratorError = _context5.t0;
 
                       case 22:
-                        _context7.prev = 22;
-                        _context7.prev = 23;
+                        _context5.prev = 22;
+                        _context5.prev = 23;
 
-                        if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-                          _iterator3.return();
+                        if (!_iteratorNormalCompletion && _iterator.return != null) {
+                          _iterator.return();
                         }
 
                       case 25:
-                        _context7.prev = 25;
+                        _context5.prev = 25;
 
-                        if (!_didIteratorError3) {
-                          _context7.next = 28;
+                        if (!_didIteratorError) {
+                          _context5.next = 28;
                           break;
                         }
 
-                        throw _iteratorError3;
+                        throw _iteratorError;
 
                       case 28:
-                        return _context7.finish(25);
+                        return _context5.finish(25);
 
                       case 29:
-                        return _context7.finish(22);
+                        return _context5.finish(22);
 
                       case 30:
-                        return _context7.abrupt("return", Promise.resolve(target));
+                        return _context5.abrupt("return", Promise.resolve(target));
 
                       case 31:
                       case "end":
-                        return _context7.stop();
+                        return _context5.stop();
                     }
                   }
-                }, _callee7, this, [[7, 18, 22, 30], [23,, 25, 29]]);
+                }, _callee5, null, [[7, 18, 22, 30], [23,, 25, 29]]);
               }))));
 
             case 15:
               if (!(target instanceof ParseObject)) {
-                _context9.next = 17;
+                _context7.next = 17;
                 break;
               }
 
-              return _context9.abrupt("return", RESTController.request('DELETE', 'classes/' + target.className + '/' + target._getId(), {}, options).then(
+              return _context7.abrupt("return", RESTController.request('DELETE', 'classes/' + target.className + '/' + target._getId(), {}, options).then(
               /*#__PURE__*/
               (0, _asyncToGenerator2.default)(
               /*#__PURE__*/
-              _regenerator.default.mark(function _callee8() {
-                return _regenerator.default.wrap(function (_context8) {
+              _regenerator.default.mark(function _callee6() {
+                return _regenerator.default.wrap(function (_context6) {
                   while (1) {
-                    switch (_context8.prev = _context8.next) {
+                    switch (_context6.prev = _context6.next) {
                       case 0:
-                        _context8.next = 2;
+                        _context6.next = 2;
                         return localDatastore._destroyObjectIfPinned(target);
 
                       case 2:
-                        return _context8.abrupt("return", Promise.resolve(target));
+                        return _context6.abrupt("return", Promise.resolve(target));
 
                       case 3:
                       case "end":
-                        return _context8.stop();
+                        return _context6.stop();
                     }
                   }
-                }, _callee8, this);
+                }, _callee6);
               }))));
 
             case 17:
-              _context9.next = 19;
+              _context7.next = 19;
               return localDatastore._destroyObjectIfPinned(target);
 
             case 19:
-              return _context9.abrupt("return", Promise.resolve(target));
+              return _context7.abrupt("return", Promise.resolve(target));
 
             case 20:
             case "end":
-              return _context9.stop();
+              return _context7.stop();
           }
         }
-      }, _callee9, this);
+      }, _callee7);
     }));
 
     return function () {
@@ -9084,89 +9406,89 @@ var DefaultController = {
         /*#__PURE__*/
         (0, _asyncToGenerator2.default)(
         /*#__PURE__*/
-        _regenerator.default.mark(function _callee10() {
-          var _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, object;
+        _regenerator.default.mark(function _callee8() {
+          var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, object;
 
-          return _regenerator.default.wrap(function (_context10) {
+          return _regenerator.default.wrap(function (_context8) {
             while (1) {
-              switch (_context10.prev = _context10.next) {
+              switch (_context8.prev = _context8.next) {
                 case 0:
                   if (!objectError) {
-                    _context10.next = 2;
+                    _context8.next = 2;
                     break;
                   }
 
-                  return _context10.abrupt("return", Promise.reject(objectError));
+                  return _context8.abrupt("return", Promise.reject(objectError));
 
                 case 2:
-                  _iteratorNormalCompletion4 = true;
-                  _didIteratorError4 = false;
-                  _iteratorError4 = undefined;
-                  _context10.prev = 5;
-                  _iterator4 = target[Symbol.iterator]();
+                  _iteratorNormalCompletion2 = true;
+                  _didIteratorError2 = false;
+                  _iteratorError2 = undefined;
+                  _context8.prev = 5;
+                  _iterator2 = target[Symbol.iterator]();
 
                 case 7:
-                  if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
-                    _context10.next = 16;
+                  if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                    _context8.next = 16;
                     break;
                   }
 
-                  object = _step4.value;
-                  _context10.next = 11;
+                  object = _step2.value;
+                  _context8.next = 11;
                   return localDatastore._updateLocalIdForObject(mapIdForPin[object.id], object);
 
                 case 11:
-                  _context10.next = 13;
+                  _context8.next = 13;
                   return localDatastore._updateObjectIfPinned(object);
 
                 case 13:
-                  _iteratorNormalCompletion4 = true;
-                  _context10.next = 7;
+                  _iteratorNormalCompletion2 = true;
+                  _context8.next = 7;
                   break;
 
                 case 16:
-                  _context10.next = 22;
+                  _context8.next = 22;
                   break;
 
                 case 18:
-                  _context10.prev = 18;
-                  _context10.t0 = _context10["catch"](5);
-                  _didIteratorError4 = true;
-                  _iteratorError4 = _context10.t0;
+                  _context8.prev = 18;
+                  _context8.t0 = _context8["catch"](5);
+                  _didIteratorError2 = true;
+                  _iteratorError2 = _context8.t0;
 
                 case 22:
-                  _context10.prev = 22;
-                  _context10.prev = 23;
+                  _context8.prev = 22;
+                  _context8.prev = 23;
 
-                  if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
-                    _iterator4.return();
+                  if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                    _iterator2.return();
                   }
 
                 case 25:
-                  _context10.prev = 25;
+                  _context8.prev = 25;
 
-                  if (!_didIteratorError4) {
-                    _context10.next = 28;
+                  if (!_didIteratorError2) {
+                    _context8.next = 28;
                     break;
                   }
 
-                  throw _iteratorError4;
+                  throw _iteratorError2;
 
                 case 28:
-                  return _context10.finish(25);
+                  return _context8.finish(25);
 
                 case 29:
-                  return _context10.finish(22);
+                  return _context8.finish(22);
 
                 case 30:
-                  return _context10.abrupt("return", Promise.resolve(target));
+                  return _context8.abrupt("return", Promise.resolve(target));
 
                 case 31:
                 case "end":
-                  return _context10.stop();
+                  return _context8.stop();
               }
             }
-          }, _callee10, this, [[5, 18, 22, 30], [23,, 25, 29]]);
+          }, _callee8, null, [[5, 18, 22, 30], [23,, 25, 29]]);
         })));
       });
     } else if (target instanceof ParseObject) {
@@ -9191,27 +9513,27 @@ var DefaultController = {
       /*#__PURE__*/
       (0, _asyncToGenerator2.default)(
       /*#__PURE__*/
-      _regenerator.default.mark(function _callee11() {
-        return _regenerator.default.wrap(function (_context11) {
+      _regenerator.default.mark(function _callee9() {
+        return _regenerator.default.wrap(function (_context9) {
           while (1) {
-            switch (_context11.prev = _context11.next) {
+            switch (_context9.prev = _context9.next) {
               case 0:
-                _context11.next = 2;
+                _context9.next = 2;
                 return localDatastore._updateLocalIdForObject(localId, target);
 
               case 2:
-                _context11.next = 4;
+                _context9.next = 4;
                 return localDatastore._updateObjectIfPinned(target);
 
               case 4:
-                return _context11.abrupt("return", target);
+                return _context9.abrupt("return", target);
 
               case 5:
               case "end":
-                return _context11.stop();
+                return _context9.stop();
             }
           }
-        }, _callee11, this);
+        }, _callee9);
       })), function (error) {
         return Promise.reject(error);
       });
@@ -9225,7 +9547,7 @@ _CoreManager.default.setObjectController(DefaultController);
 
 var _default = ParseObject;
 exports.default = _default;
-},{"./CoreManager":3,"./ParseACL":14,"./ParseError":16,"./ParseFile":17,"./ParseOp":22,"./ParseQuery":24,"./ParseRelation":25,"./SingleInstanceStateController":32,"./UniqueInstanceStateController":36,"./canBeSerialized":38,"./decode":39,"./encode":40,"./escape":42,"./parseDate":44,"./promiseUtils":45,"./unique":46,"./unsavedChildren":47,"@babel/runtime/helpers/asyncToGenerator":50,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/interopRequireWildcard":59,"@babel/runtime/helpers/typeof":67,"@babel/runtime/regenerator":69}],22:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./LocalDatastoreUtils":12,"./ParseACL":16,"./ParseError":18,"./ParseFile":19,"./ParseOp":24,"./ParseQuery":26,"./ParseRelation":27,"./SingleInstanceStateController":34,"./UniqueInstanceStateController":38,"./canBeSerialized":40,"./decode":41,"./encode":42,"./escape":44,"./parseDate":46,"./promiseUtils":47,"./unique":48,"./unsavedChildren":49,"@babel/runtime/helpers/asyncToGenerator":53,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/interopRequireWildcard":62,"@babel/runtime/helpers/typeof":73,"@babel/runtime/regenerator":75}],24:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -9240,9 +9562,9 @@ var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/getPrototypeOf"));
 
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/inherits"));
-
 var _assertThisInitialized2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/assertThisInitialized"));
+
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/inherits"));
 
 var _defineProperty2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/defineProperty"));
 
@@ -9389,7 +9711,7 @@ function (_Op) {
 
     (0, _classCallCheck2.default)(this, SetOp);
     _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(SetOp).call(this));
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)), "_value", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "_value", void 0);
     _this._value = value;
     return _this;
   }
@@ -9468,7 +9790,7 @@ function (_Op3) {
 
     (0, _classCallCheck2.default)(this, IncrementOp);
     _this2 = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(IncrementOp).call(this));
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this2)), "_amount", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this2), "_amount", void 0);
 
     if (typeof amount !== 'number') {
       throw new TypeError('Increment Op must be initialized with a numeric amount.');
@@ -9548,7 +9870,7 @@ function (_Op4) {
 
     (0, _classCallCheck2.default)(this, AddOp);
     _this3 = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(AddOp).call(this));
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this3)), "_value", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this3), "_value", void 0);
     _this3._value = Array.isArray(value) ? value : [value];
     return _this3;
   }
@@ -9623,7 +9945,7 @@ function (_Op5) {
 
     (0, _classCallCheck2.default)(this, AddUniqueOp);
     _this4 = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(AddUniqueOp).call(this));
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this4)), "_value", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this4), "_value", void 0);
     _this4._value = (0, _unique.default)(Array.isArray(value) ? value : [value]);
     return _this4;
   }
@@ -9714,7 +10036,7 @@ function (_Op6) {
 
     (0, _classCallCheck2.default)(this, RemoveOp);
     _this5 = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(RemoveOp).call(this));
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this5)), "_value", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this5), "_value", void 0);
     _this5._value = (0, _unique.default)(Array.isArray(value) ? value : [value]);
     return _this5;
   }
@@ -9826,17 +10148,17 @@ function (_Op7) {
 
     (0, _classCallCheck2.default)(this, RelationOp);
     _this6 = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(RelationOp).call(this));
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this6)), "_targetClassName", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this6)), "relationsToAdd", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this6)), "relationsToRemove", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this6), "_targetClassName", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this6), "relationsToAdd", void 0);
+    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this6), "relationsToRemove", void 0);
     _this6._targetClassName = null;
 
     if (Array.isArray(adds)) {
-      _this6.relationsToAdd = (0, _unique.default)(adds.map(_this6._extractId, (0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this6))));
+      _this6.relationsToAdd = (0, _unique.default)(adds.map(_this6._extractId, (0, _assertThisInitialized2.default)(_this6)));
     }
 
     if (Array.isArray(removes)) {
-      _this6.relationsToRemove = (0, _unique.default)(removes.map(_this6._extractId, (0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this6))));
+      _this6.relationsToRemove = (0, _unique.default)(removes.map(_this6._extractId, (0, _assertThisInitialized2.default)(_this6)));
     }
 
     return _this6;
@@ -10016,7 +10338,7 @@ function (_Op7) {
 }(Op);
 
 exports.RelationOp = RelationOp;
-},{"./ParseObject":21,"./ParseRelation":25,"./arrayContainsObject":37,"./decode":39,"./encode":40,"./unique":46,"@babel/runtime/helpers/assertThisInitialized":49,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/getPrototypeOf":56,"@babel/runtime/helpers/inherits":57,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/possibleConstructorReturn":63}],23:[function(_dereq_,module,exports){
+},{"./ParseObject":23,"./ParseRelation":27,"./arrayContainsObject":39,"./decode":41,"./encode":42,"./unique":48,"@babel/runtime/helpers/assertThisInitialized":52,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/getPrototypeOf":59,"@babel/runtime/helpers/inherits":60,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/possibleConstructorReturn":68}],25:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -10234,7 +10556,7 @@ function () {
 
 var _default = ParsePolygon;
 exports.default = _default;
-},{"./ParseGeoPoint":18,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/interopRequireDefault":58}],24:[function(_dereq_,module,exports){
+},{"./ParseGeoPoint":20,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61}],26:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -10269,6 +10591,8 @@ var _ParseGeoPoint = _interopRequireDefault(_dereq_("./ParseGeoPoint"));
 var _ParseObject = _interopRequireDefault(_dereq_("./ParseObject"));
 
 var _OfflineQuery = _interopRequireDefault(_dereq_("./OfflineQuery"));
+
+var _LocalDatastoreUtils = _dereq_("./LocalDatastoreUtils");
 /*
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
@@ -12243,19 +12567,53 @@ function () {
     }
     /**
      * Subscribe this query to get liveQuery updates
-     * @return {LiveQuerySubscription} Returns the liveQuerySubscription, it's an event emitter
+     *
+     * @return {Promise<LiveQuerySubscription>} Returns the liveQuerySubscription, it's an event emitter
      * which can be used to get liveQuery updates.
      */
 
   }, {
     key: "subscribe",
-    value: function ()
-    /*: any*/
-    {
-      var controller = _CoreManager.default.getLiveQueryController();
+    value: function () {
+      var _subscribe = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee2() {
+        var currentUser, sessionToken, liveQueryClient, subscription;
+        return _regenerator.default.wrap(function (_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _context2.next = 2;
+                return _CoreManager.default.getUserController().currentUserAsync();
 
-      return controller.subscribe(this);
-    }
+              case 2:
+                currentUser = _context2.sent;
+                sessionToken = currentUser ? currentUser.getSessionToken() : undefined;
+                _context2.next = 6;
+                return _CoreManager.default.getLiveQueryController().getDefaultLiveQueryClient();
+
+              case 6:
+                liveQueryClient = _context2.sent;
+
+                if (liveQueryClient.shouldOpen()) {
+                  liveQueryClient.open();
+                }
+
+                subscription = liveQueryClient.subscribe(this, sessionToken);
+                return _context2.abrupt("return", subscription);
+
+              case 10:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2, this);
+      }));
+
+      return function () {
+        return _subscribe.apply(this, arguments);
+      };
+    }()
     /**
      * Constructs a Parse.Query that is the OR of the passed in queries.  For
      * example:
@@ -12273,36 +12631,49 @@ function () {
 
     /**
      * Changes the source of this query to all pinned objects.
+     *
+     * @return {Parse.Query} Returns the query, so you can chain this call.
      */
-    value: function () {
-      this.fromPinWithName(null);
+    value: function ()
+    /*: ParseQuery*/
+    {
+      return this.fromPinWithName(null);
     }
     /**
      * Changes the source of this query to the default group of pinned objects.
+     *
+     * @return {Parse.Query} Returns the query, so you can chain this call.
      */
 
   }, {
     key: "fromPin",
-    value: function () {
-      var localDatastore = _CoreManager.default.getLocalDatastore();
-
-      this.fromPinWithName(localDatastore.DEFAULT_PIN);
+    value: function ()
+    /*: ParseQuery*/
+    {
+      return this.fromPinWithName(_LocalDatastoreUtils.DEFAULT_PIN);
     }
     /**
      * Changes the source of this query to a specific group of pinned objects.
+     *
+     * @param {String} name The name of query source.
+     * @return {Parse.Query} Returns the query, so you can chain this call.
      */
 
   }, {
     key: "fromPinWithName",
     value: function (name
     /*: string*/
-    ) {
+    )
+    /*: ParseQuery*/
+    {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
       if (localDatastore.checkIfEnabled()) {
         this._queriesLocalDatastore = true;
         this._localDatastorePinName = name;
       }
+
+      return this;
     }
   }], [{
     key: "fromJSON",
@@ -12428,7 +12799,7 @@ _CoreManager.default.setQueryController(DefaultController);
 
 var _default = ParseQuery;
 exports.default = _default;
-},{"./CoreManager":3,"./OfflineQuery":12,"./ParseError":16,"./ParseGeoPoint":18,"./ParseObject":21,"./encode":40,"./promiseUtils":45,"@babel/runtime/helpers/asyncToGenerator":50,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67,"@babel/runtime/regenerator":69}],25:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./LocalDatastoreUtils":12,"./OfflineQuery":14,"./ParseError":18,"./ParseGeoPoint":20,"./ParseObject":23,"./encode":42,"./promiseUtils":47,"@babel/runtime/helpers/asyncToGenerator":53,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73,"@babel/runtime/regenerator":75}],27:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -12634,7 +13005,7 @@ function () {
 
 var _default = ParseRelation;
 exports.default = _default;
-},{"./ParseObject":21,"./ParseOp":22,"./ParseQuery":24,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/interopRequireDefault":58}],26:[function(_dereq_,module,exports){
+},{"./ParseObject":23,"./ParseOp":24,"./ParseQuery":26,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61}],28:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -12845,7 +13216,7 @@ _ParseObject2.default.registerSubclass('_Role', ParseRole);
 
 var _default = ParseRole;
 exports.default = _default;
-},{"./ParseACL":14,"./ParseError":16,"./ParseObject":21,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/get":55,"@babel/runtime/helpers/getPrototypeOf":56,"@babel/runtime/helpers/inherits":57,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/possibleConstructorReturn":63}],27:[function(_dereq_,module,exports){
+},{"./ParseACL":16,"./ParseError":18,"./ParseObject":23,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/get":58,"@babel/runtime/helpers/getPrototypeOf":59,"@babel/runtime/helpers/inherits":60,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/possibleConstructorReturn":68}],29:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -13469,7 +13840,7 @@ _CoreManager.default.setSchemaController(DefaultController);
 
 var _default = ParseSchema;
 exports.default = _default;
-},{"./CoreManager":3,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/interopRequireDefault":58}],28:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61}],30:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -13651,7 +14022,7 @@ _CoreManager.default.setSessionController(DefaultController);
 
 var _default = ParseSession;
 exports.default = _default;
-},{"./CoreManager":3,"./ParseObject":21,"./ParseUser":29,"./isRevocableSession":43,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/getPrototypeOf":56,"@babel/runtime/helpers/inherits":57,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/possibleConstructorReturn":63,"@babel/runtime/helpers/typeof":67}],29:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseObject":23,"./ParseUser":31,"./isRevocableSession":45,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/getPrototypeOf":59,"@babel/runtime/helpers/inherits":60,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/possibleConstructorReturn":68,"@babel/runtime/helpers/typeof":73}],31:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -13674,6 +14045,8 @@ var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/ge
 var _get2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/get"));
 
 var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/inherits"));
+
+var _AnonymousUtils = _interopRequireDefault(_dereq_("./AnonymousUtils"));
 
 var _CoreManager = _interopRequireDefault(_dereq_("./CoreManager"));
 
@@ -13823,7 +14196,7 @@ function (_ParseObject) {
     /**
      * Synchronizes auth data for a provider (e.g. puts the access token in the
      * right place to be used by the Facebook SDK).
-      */
+     */
 
   }, {
     key: "_synchronizeAuthData",
@@ -14414,7 +14787,7 @@ function (_ParseObject) {
       attrs = attrs || {};
       attrs.username = username;
       attrs.password = password;
-      var user = new ParseUser(attrs);
+      var user = new this(attrs);
       return user.signUp({}, options);
     }
     /**
@@ -14441,7 +14814,7 @@ function (_ParseObject) {
         return Promise.reject(new _ParseError.default(_ParseError.default.OTHER_CAUSE, 'Password must be a string.'));
       }
 
-      var user = new ParseUser();
+      var user = new this();
 
       user._finishFetch({
         username: username,
@@ -14683,13 +15056,24 @@ var DefaultController = {
     return _Storage.default.removeItemAsync(path);
   },
   setCurrentUser: function (user) {
+    var currentUser = this.currentUser();
+    var promise = Promise.resolve();
+
+    if (currentUser && !user.equals(currentUser) && _AnonymousUtils.default.isLinked(currentUser)) {
+      promise = currentUser.destroy({
+        sessionToken: currentUser.getSessionToken()
+      });
+    }
+
     currentUserCache = user;
 
     user._cleanupAuthData();
 
     user._synchronizeAllAuthData();
 
-    return DefaultController.updateUserOnDisk(user);
+    return promise.then(function () {
+      return DefaultController.updateUserOnDisk(user);
+    });
   },
   currentUser: function ()
   /*: ?ParseUser*/
@@ -14903,10 +15287,18 @@ var DefaultController = {
       var RESTController = _CoreManager.default.getRESTController();
 
       if (currentUser !== null) {
+        var isAnonymous = _AnonymousUtils.default.isLinked(currentUser);
+
         var currentSession = currentUser.getSessionToken();
 
         if (currentSession && (0, _isRevocableSession.default)(currentSession)) {
           promise = promise.then(function () {
+            if (isAnonymous) {
+              return currentUser.destroy({
+                sessionToken: currentSession
+              });
+            }
+          }).then(function () {
             return RESTController.request('POST', 'logout', {}, {
               sessionToken: currentSession
             });
@@ -14988,7 +15380,7 @@ _CoreManager.default.setUserController(DefaultController);
 
 var _default = ParseUser;
 exports.default = _default;
-},{"./CoreManager":3,"./ParseError":16,"./ParseObject":21,"./ParseSession":28,"./Storage":33,"./isRevocableSession":43,"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/get":55,"@babel/runtime/helpers/getPrototypeOf":56,"@babel/runtime/helpers/inherits":57,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/possibleConstructorReturn":63,"@babel/runtime/helpers/typeof":67}],30:[function(_dereq_,module,exports){
+},{"./AnonymousUtils":2,"./CoreManager":4,"./ParseError":18,"./ParseObject":23,"./ParseSession":30,"./Storage":35,"./isRevocableSession":45,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/get":58,"@babel/runtime/helpers/getPrototypeOf":59,"@babel/runtime/helpers/inherits":60,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/possibleConstructorReturn":68,"@babel/runtime/helpers/typeof":73}],32:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -15092,7 +15484,7 @@ var DefaultController = {
 };
 
 _CoreManager.default.setPushController(DefaultController);
-},{"./CoreManager":3,"./ParseQuery":24,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],31:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseQuery":26,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],33:[function(_dereq_,module,exports){
 (function (process){
 "use strict";
 
@@ -15268,6 +15660,10 @@ var RESTController = {
         headers['User-Agent'] = 'Parse/' + _CoreManager.default.get('VERSION') + ' (NodeJS ' + process.versions.node + ')';
       }
 
+      if (_CoreManager.default.get('SERVER_AUTH_TYPE') && _CoreManager.default.get('SERVER_AUTH_TOKEN')) {
+        headers['Authorization'] = _CoreManager.default.get('SERVER_AUTH_TYPE') + ' ' + _CoreManager.default.get('SERVER_AUTH_TOKEN');
+      }
+
       if (options && typeof options.progress === 'function') {
         if (xhr.upload) {
           xhr.upload.addEventListener('progress', function (oEvent) {
@@ -15428,7 +15824,7 @@ var RESTController = {
 };
 module.exports = RESTController;
 }).call(this,_dereq_('_process'))
-},{"./CoreManager":3,"./ParseError":16,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67,"_process":70}],32:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseError":18,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73,"_process":76}],34:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireWildcard = _dereq_("@babel/runtime/helpers/interopRequireWildcard");
@@ -15667,7 +16063,7 @@ function duplicateState(source
 ) {
   dest.id = source.id;
 }
-},{"./ObjectStateMutations":11,"@babel/runtime/helpers/interopRequireWildcard":59}],33:[function(_dereq_,module,exports){
+},{"./ObjectStateMutations":13,"@babel/runtime/helpers/interopRequireWildcard":62}],35:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -15805,7 +16201,7 @@ var Storage = {
 module.exports = Storage;
 
 _CoreManager.default.setStorageController(_dereq_('./StorageController.browser'));
-},{"./CoreManager":3,"./StorageController.browser":34,"@babel/runtime/helpers/interopRequireDefault":58}],34:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./StorageController.browser":36,"@babel/runtime/helpers/interopRequireDefault":61}],36:[function(_dereq_,module,exports){
 "use strict";
 /**
  * Copyright (c) 2015-present, Parse, LLC.
@@ -15849,7 +16245,7 @@ var StorageController = {
   }
 };
 module.exports = StorageController;
-},{}],35:[function(_dereq_,module,exports){
+},{}],37:[function(_dereq_,module,exports){
 /*:: type Task = {
   task: () => Promise;
   _completion: Promise
@@ -15945,7 +16341,7 @@ function () {
 }();
 
 module.exports = TaskQueue;
-},{"@babel/runtime/helpers/classCallCheck":51,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/defineProperty":54,"@babel/runtime/helpers/interopRequireDefault":58}],36:[function(_dereq_,module,exports){
+},{"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61}],38:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -16199,7 +16595,7 @@ function duplicateState(source
 function clearAllState() {
   objectState = new WeakMap();
 }
-},{"./ObjectStateMutations":11,"./TaskQueue":35,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/interopRequireWildcard":59}],37:[function(_dereq_,module,exports){
+},{"./ObjectStateMutations":13,"./TaskQueue":37,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/interopRequireWildcard":62}],39:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -16241,7 +16637,7 @@ function arrayContainsObject(array
 
   return false;
 }
-},{"./ParseObject":21,"@babel/runtime/helpers/interopRequireDefault":58}],38:[function(_dereq_,module,exports){
+},{"./ParseObject":23,"@babel/runtime/helpers/interopRequireDefault":61}],40:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -16335,7 +16731,7 @@ function canBeSerializedHelper(value
 
   return true;
 }
-},{"./ParseFile":17,"./ParseObject":21,"./ParseRelation":25,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],39:[function(_dereq_,module,exports){
+},{"./ParseFile":19,"./ParseObject":23,"./ParseRelation":27,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],41:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -16436,7 +16832,7 @@ function decode(value
 
   return copy;
 }
-},{"./ParseACL":14,"./ParseFile":17,"./ParseGeoPoint":18,"./ParseObject":21,"./ParseOp":22,"./ParsePolygon":23,"./ParseRelation":25,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],40:[function(_dereq_,module,exports){
+},{"./ParseACL":16,"./ParseFile":19,"./ParseGeoPoint":20,"./ParseObject":23,"./ParseOp":24,"./ParsePolygon":25,"./ParseRelation":27,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],42:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -16562,7 +16958,7 @@ function _default(value
 {
   return encode(value, !!disallowObjects, !!forcePointers, seen || []);
 }
-},{"./ParseACL":14,"./ParseFile":17,"./ParseGeoPoint":18,"./ParseObject":21,"./ParseOp":22,"./ParsePolygon":23,"./ParseRelation":25,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],41:[function(_dereq_,module,exports){
+},{"./ParseACL":16,"./ParseFile":19,"./ParseGeoPoint":20,"./ParseObject":23,"./ParseOp":24,"./ParsePolygon":25,"./ParseRelation":27,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],43:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -16649,7 +17045,7 @@ function equals(a, b) {
 
   return true;
 }
-},{"./ParseACL":14,"./ParseFile":17,"./ParseGeoPoint":18,"./ParseObject":21,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],42:[function(_dereq_,module,exports){
+},{"./ParseACL":16,"./ParseFile":19,"./ParseGeoPoint":20,"./ParseObject":23,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],44:[function(_dereq_,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16685,7 +17081,7 @@ function escape(str
     return encoded[char];
   });
 }
-},{}],43:[function(_dereq_,module,exports){
+},{}],45:[function(_dereq_,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16710,7 +17106,7 @@ function isRevocableSession(token
 {
   return token.indexOf('r:') > -1;
 }
-},{}],44:[function(_dereq_,module,exports){
+},{}],46:[function(_dereq_,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16749,7 +17145,7 @@ function parseDate(iso8601
   var milli = match[8] || 0;
   return new Date(Date.UTC(year, month, day, hour, minute, second, milli));
 }
-},{}],45:[function(_dereq_,module,exports){
+},{}],47:[function(_dereq_,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16839,7 +17235,7 @@ function continueWhile(test, emitter) {
 
   return Promise.resolve();
 }
-},{}],46:[function(_dereq_,module,exports){
+},{}],48:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -16885,7 +17281,7 @@ function unique
   });
   return uniques;
 }
-},{"./ParseObject":21,"./arrayContainsObject":37,"@babel/runtime/helpers/interopRequireDefault":58}],47:[function(_dereq_,module,exports){
+},{"./ParseObject":23,"./arrayContainsObject":39,"@babel/runtime/helpers/interopRequireDefault":61}],49:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -17009,7 +17405,13 @@ function traverse(obj
     }
   }
 }
-},{"./ParseFile":17,"./ParseObject":21,"./ParseRelation":25,"@babel/runtime/helpers/interopRequireDefault":58,"@babel/runtime/helpers/typeof":67}],48:[function(_dereq_,module,exports){
+},{"./ParseFile":19,"./ParseObject":23,"./ParseRelation":27,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],50:[function(_dereq_,module,exports){
+function _arrayWithHoles(arr) {
+  if (Array.isArray(arr)) return arr;
+}
+
+module.exports = _arrayWithHoles;
+},{}],51:[function(_dereq_,module,exports){
 function _arrayWithoutHoles(arr) {
   if (Array.isArray(arr)) {
     for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
@@ -17021,7 +17423,7 @@ function _arrayWithoutHoles(arr) {
 }
 
 module.exports = _arrayWithoutHoles;
-},{}],49:[function(_dereq_,module,exports){
+},{}],52:[function(_dereq_,module,exports){
 function _assertThisInitialized(self) {
   if (self === void 0) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -17031,7 +17433,7 @@ function _assertThisInitialized(self) {
 }
 
 module.exports = _assertThisInitialized;
-},{}],50:[function(_dereq_,module,exports){
+},{}],53:[function(_dereq_,module,exports){
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
   try {
     var info = gen[key](arg);
@@ -17069,7 +17471,7 @@ function _asyncToGenerator(fn) {
 }
 
 module.exports = _asyncToGenerator;
-},{}],51:[function(_dereq_,module,exports){
+},{}],54:[function(_dereq_,module,exports){
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -17077,7 +17479,7 @@ function _classCallCheck(instance, Constructor) {
 }
 
 module.exports = _classCallCheck;
-},{}],52:[function(_dereq_,module,exports){
+},{}],55:[function(_dereq_,module,exports){
 var setPrototypeOf = _dereq_("./setPrototypeOf");
 
 function isNativeReflectConstruct() {
@@ -17111,7 +17513,7 @@ function _construct(Parent, args, Class) {
 }
 
 module.exports = _construct;
-},{"./setPrototypeOf":64}],53:[function(_dereq_,module,exports){
+},{"./setPrototypeOf":69}],56:[function(_dereq_,module,exports){
 function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
@@ -17129,7 +17531,7 @@ function _createClass(Constructor, protoProps, staticProps) {
 }
 
 module.exports = _createClass;
-},{}],54:[function(_dereq_,module,exports){
+},{}],57:[function(_dereq_,module,exports){
 function _defineProperty(obj, key, value) {
   if (key in obj) {
     Object.defineProperty(obj, key, {
@@ -17146,7 +17548,7 @@ function _defineProperty(obj, key, value) {
 }
 
 module.exports = _defineProperty;
-},{}],55:[function(_dereq_,module,exports){
+},{}],58:[function(_dereq_,module,exports){
 var getPrototypeOf = _dereq_("./getPrototypeOf");
 
 var superPropBase = _dereq_("./superPropBase");
@@ -17172,7 +17574,7 @@ function _get(target, property, receiver) {
 }
 
 module.exports = _get;
-},{"./getPrototypeOf":56,"./superPropBase":65}],56:[function(_dereq_,module,exports){
+},{"./getPrototypeOf":59,"./superPropBase":71}],59:[function(_dereq_,module,exports){
 function _getPrototypeOf(o) {
   module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
@@ -17181,7 +17583,7 @@ function _getPrototypeOf(o) {
 }
 
 module.exports = _getPrototypeOf;
-},{}],57:[function(_dereq_,module,exports){
+},{}],60:[function(_dereq_,module,exports){
 var setPrototypeOf = _dereq_("./setPrototypeOf");
 
 function _inherits(subClass, superClass) {
@@ -17200,15 +17602,15 @@ function _inherits(subClass, superClass) {
 }
 
 module.exports = _inherits;
-},{"./setPrototypeOf":64}],58:[function(_dereq_,module,exports){
+},{"./setPrototypeOf":69}],61:[function(_dereq_,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
-    default: obj
+    "default": obj
   };
 }
 
 module.exports = _interopRequireDefault;
-},{}],59:[function(_dereq_,module,exports){
+},{}],62:[function(_dereq_,module,exports){
 function _interopRequireWildcard(obj) {
   if (obj && obj.__esModule) {
     return obj;
@@ -17229,31 +17631,65 @@ function _interopRequireWildcard(obj) {
       }
     }
 
-    newObj.default = obj;
+    newObj["default"] = obj;
     return newObj;
   }
 }
 
 module.exports = _interopRequireWildcard;
-},{}],60:[function(_dereq_,module,exports){
+},{}],63:[function(_dereq_,module,exports){
 function _isNativeFunction(fn) {
   return Function.toString.call(fn).indexOf("[native code]") !== -1;
 }
 
 module.exports = _isNativeFunction;
-},{}],61:[function(_dereq_,module,exports){
+},{}],64:[function(_dereq_,module,exports){
 function _iterableToArray(iter) {
   if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
 }
 
 module.exports = _iterableToArray;
-},{}],62:[function(_dereq_,module,exports){
+},{}],65:[function(_dereq_,module,exports){
+function _iterableToArrayLimit(arr, i) {
+  var _arr = [];
+  var _n = true;
+  var _d = false;
+  var _e = undefined;
+
+  try {
+    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+      _arr.push(_s.value);
+
+      if (i && _arr.length === i) break;
+    }
+  } catch (err) {
+    _d = true;
+    _e = err;
+  } finally {
+    try {
+      if (!_n && _i["return"] != null) _i["return"]();
+    } finally {
+      if (_d) throw _e;
+    }
+  }
+
+  return _arr;
+}
+
+module.exports = _iterableToArrayLimit;
+},{}],66:[function(_dereq_,module,exports){
+function _nonIterableRest() {
+  throw new TypeError("Invalid attempt to destructure non-iterable instance");
+}
+
+module.exports = _nonIterableRest;
+},{}],67:[function(_dereq_,module,exports){
 function _nonIterableSpread() {
   throw new TypeError("Invalid attempt to spread non-iterable instance");
 }
 
 module.exports = _nonIterableSpread;
-},{}],63:[function(_dereq_,module,exports){
+},{}],68:[function(_dereq_,module,exports){
 var _typeof = _dereq_("../helpers/typeof");
 
 var assertThisInitialized = _dereq_("./assertThisInitialized");
@@ -17267,7 +17703,7 @@ function _possibleConstructorReturn(self, call) {
 }
 
 module.exports = _possibleConstructorReturn;
-},{"../helpers/typeof":67,"./assertThisInitialized":49}],64:[function(_dereq_,module,exports){
+},{"../helpers/typeof":73,"./assertThisInitialized":52}],69:[function(_dereq_,module,exports){
 function _setPrototypeOf(o, p) {
   module.exports = _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
     o.__proto__ = p;
@@ -17278,7 +17714,19 @@ function _setPrototypeOf(o, p) {
 }
 
 module.exports = _setPrototypeOf;
-},{}],65:[function(_dereq_,module,exports){
+},{}],70:[function(_dereq_,module,exports){
+var arrayWithHoles = _dereq_("./arrayWithHoles");
+
+var iterableToArrayLimit = _dereq_("./iterableToArrayLimit");
+
+var nonIterableRest = _dereq_("./nonIterableRest");
+
+function _slicedToArray(arr, i) {
+  return arrayWithHoles(arr) || iterableToArrayLimit(arr, i) || nonIterableRest();
+}
+
+module.exports = _slicedToArray;
+},{"./arrayWithHoles":50,"./iterableToArrayLimit":65,"./nonIterableRest":66}],71:[function(_dereq_,module,exports){
 var getPrototypeOf = _dereq_("./getPrototypeOf");
 
 function _superPropBase(object, property) {
@@ -17291,7 +17739,7 @@ function _superPropBase(object, property) {
 }
 
 module.exports = _superPropBase;
-},{"./getPrototypeOf":56}],66:[function(_dereq_,module,exports){
+},{"./getPrototypeOf":59}],72:[function(_dereq_,module,exports){
 var arrayWithoutHoles = _dereq_("./arrayWithoutHoles");
 
 var iterableToArray = _dereq_("./iterableToArray");
@@ -17303,7 +17751,7 @@ function _toConsumableArray(arr) {
 }
 
 module.exports = _toConsumableArray;
-},{"./arrayWithoutHoles":48,"./iterableToArray":61,"./nonIterableSpread":62}],67:[function(_dereq_,module,exports){
+},{"./arrayWithoutHoles":51,"./iterableToArray":64,"./nonIterableSpread":67}],73:[function(_dereq_,module,exports){
 function _typeof2(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 function _typeof(obj) {
@@ -17321,7 +17769,7 @@ function _typeof(obj) {
 }
 
 module.exports = _typeof;
-},{}],68:[function(_dereq_,module,exports){
+},{}],74:[function(_dereq_,module,exports){
 var getPrototypeOf = _dereq_("./getPrototypeOf");
 
 var setPrototypeOf = _dereq_("./setPrototypeOf");
@@ -17365,12 +17813,12 @@ function _wrapNativeSuper(Class) {
 }
 
 module.exports = _wrapNativeSuper;
-},{"./construct":52,"./getPrototypeOf":56,"./isNativeFunction":60,"./setPrototypeOf":64}],69:[function(_dereq_,module,exports){
+},{"./construct":55,"./getPrototypeOf":59,"./isNativeFunction":63,"./setPrototypeOf":69}],75:[function(_dereq_,module,exports){
 module.exports = _dereq_("regenerator-runtime");
 
-},{"regenerator-runtime":72}],70:[function(_dereq_,module,exports){
+},{"regenerator-runtime":78}],76:[function(_dereq_,module,exports){
 
-},{}],71:[function(_dereq_,module,exports){
+},{}],77:[function(_dereq_,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -17895,7 +18343,7 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],72:[function(_dereq_,module,exports){
+},{}],78:[function(_dereq_,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -17903,46 +18351,7 @@ function functionBindPolyfill(context) {
  * LICENSE file in the root directory of this source tree.
  */
 
-// This method of obtaining a reference to the global object needs to be
-// kept identical to the way it is obtained in runtime.js
-var g = (function() {
-  return this || (typeof self === "object" && self);
-})() || Function("return this")();
-
-// Use `getOwnPropertyNames` because not all browsers support calling
-// `hasOwnProperty` on the global `self` object in a worker. See #183.
-var hadRuntime = g.regeneratorRuntime &&
-  Object.getOwnPropertyNames(g).indexOf("regeneratorRuntime") >= 0;
-
-// Save the old regeneratorRuntime in case it needs to be restored later.
-var oldRuntime = hadRuntime && g.regeneratorRuntime;
-
-// Force reevalutation of runtime.js.
-g.regeneratorRuntime = undefined;
-
-module.exports = _dereq_("./runtime");
-
-if (hadRuntime) {
-  // Restore the original runtime.
-  g.regeneratorRuntime = oldRuntime;
-} else {
-  // Remove the global property added by runtime.js.
-  try {
-    delete g.regeneratorRuntime;
-  } catch(e) {
-    g.regeneratorRuntime = undefined;
-  }
-}
-
-},{"./runtime":73}],73:[function(_dereq_,module,exports){
-/**
- * Copyright (c) 2014-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-!(function(global) {
+var runtime = (function (exports) {
   "use strict";
 
   var Op = Object.prototype;
@@ -17952,23 +18361,6 @@ if (hadRuntime) {
   var iteratorSymbol = $Symbol.iterator || "@@iterator";
   var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
   var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
-
-  var inModule = typeof module === "object";
-  var runtime = global.regeneratorRuntime;
-  if (runtime) {
-    if (inModule) {
-      // If regeneratorRuntime is defined globally and we're in a module,
-      // make the exports object identical to regeneratorRuntime.
-      module.exports = runtime;
-    }
-    // Don't bother evaluating the rest of this file if the runtime was
-    // already defined globally.
-    return;
-  }
-
-  // Define the runtime globally (as expected by generated code) as either
-  // module.exports (if we're in a module) or a new, empty object.
-  runtime = global.regeneratorRuntime = inModule ? module.exports : {};
 
   function wrap(innerFn, outerFn, self, tryLocsList) {
     // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
@@ -17982,7 +18374,7 @@ if (hadRuntime) {
 
     return generator;
   }
-  runtime.wrap = wrap;
+  exports.wrap = wrap;
 
   // Try/catch helper to minimize deoptimizations. Returns a completion
   // record like context.tryEntries[i].completion. This interface could
@@ -18053,7 +18445,7 @@ if (hadRuntime) {
     });
   }
 
-  runtime.isGeneratorFunction = function(genFun) {
+  exports.isGeneratorFunction = function(genFun) {
     var ctor = typeof genFun === "function" && genFun.constructor;
     return ctor
       ? ctor === GeneratorFunction ||
@@ -18063,7 +18455,7 @@ if (hadRuntime) {
       : false;
   };
 
-  runtime.mark = function(genFun) {
+  exports.mark = function(genFun) {
     if (Object.setPrototypeOf) {
       Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
     } else {
@@ -18080,7 +18472,7 @@ if (hadRuntime) {
   // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
   // `hasOwn.call(value, "__await")` to determine if the yielded value is
   // meant to be awaited.
-  runtime.awrap = function(arg) {
+  exports.awrap = function(arg) {
     return { __await: arg };
   };
 
@@ -18155,17 +18547,17 @@ if (hadRuntime) {
   AsyncIterator.prototype[asyncIteratorSymbol] = function () {
     return this;
   };
-  runtime.AsyncIterator = AsyncIterator;
+  exports.AsyncIterator = AsyncIterator;
 
   // Note that simple async functions are implemented on top of
   // AsyncIterator objects; they just return a Promise for the value of
   // the final result produced by the iterator.
-  runtime.async = function(innerFn, outerFn, self, tryLocsList) {
+  exports.async = function(innerFn, outerFn, self, tryLocsList) {
     var iter = new AsyncIterator(
       wrap(innerFn, outerFn, self, tryLocsList)
     );
 
-    return runtime.isGeneratorFunction(outerFn)
+    return exports.isGeneratorFunction(outerFn)
       ? iter // If outerFn is a generator, return the full iterator.
       : iter.next().then(function(result) {
           return result.done ? result.value : iter.next();
@@ -18262,7 +18654,8 @@ if (hadRuntime) {
       context.delegate = null;
 
       if (context.method === "throw") {
-        if (delegate.iterator.return) {
+        // Note: ["return"] must be used for ES3 parsing compatibility.
+        if (delegate.iterator["return"]) {
           // If the delegate iterator has a return method, give it a
           // chance to clean up.
           context.method = "return";
@@ -18382,7 +18775,7 @@ if (hadRuntime) {
     this.reset(true);
   }
 
-  runtime.keys = function(object) {
+  exports.keys = function(object) {
     var keys = [];
     for (var key in object) {
       keys.push(key);
@@ -18443,7 +18836,7 @@ if (hadRuntime) {
     // Return an iterator with no values.
     return { next: doneResult };
   }
-  runtime.values = values;
+  exports.values = values;
 
   function doneResult() {
     return { value: undefined, done: true };
@@ -18648,14 +19041,128 @@ if (hadRuntime) {
       return ContinueSentinel;
     }
   };
-})(
-  // In sloppy mode, unbound `this` refers to the global object, fallback to
-  // Function constructor if we're in global strict mode. That is sadly a form
-  // of indirect eval which violates Content Security Policy.
-  (function() {
-    return this || (typeof self === "object" && self);
-  })() || Function("return this")()
-);
 
-},{}]},{},[13])(13)
+  // Regardless of whether this script is executing as a CommonJS module
+  // or not, return the runtime object so that we can declare the variable
+  // regeneratorRuntime in the outer scope, which allows this module to be
+  // injected easily by `bin/regenerator --include-runtime script.js`.
+  return exports;
+
+}(
+  // If this script is executing as a CommonJS module, use module.exports
+  // as the regeneratorRuntime namespace. Otherwise create a new empty
+  // object. Either way, the resulting object will be used to initialize
+  // the regeneratorRuntime variable at the top of this file.
+  typeof module === "object" ? module.exports : {}
+));
+
+try {
+  regeneratorRuntime = runtime;
+} catch (accidentalStrictMode) {
+  // This module should not be running in strict mode, so the above
+  // assignment should always work unless something is misconfigured. Just
+  // in case runtime.js accidentally runs in strict mode, we can escape
+  // strict mode using a global Function call. This could conceivably fail
+  // if a Content Security Policy forbids using Function, but in that case
+  // the proper solution is to fix the accidental strict mode problem. If
+  // you've misconfigured your bundler to force strict mode and applied a
+  // CSP to forbid Function, and you're not willing to fix either of those
+  // problems, please detail your unique predicament in a GitHub issue.
+  Function("r", "regeneratorRuntime = r")(runtime);
+}
+
+},{}],79:[function(_dereq_,module,exports){
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
+  return ([bth[buf[i++]], bth[buf[i++]], 
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]]]).join('');
+}
+
+module.exports = bytesToUuid;
+
+},{}],80:[function(_dereq_,module,exports){
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+
+// getRandomValues needs to be invoked in a context where "this" is a Crypto
+// implementation. Also, find the complete implementation of crypto on IE11.
+var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto)) ||
+                      (typeof(msCrypto) != 'undefined' && typeof window.msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto));
+
+if (getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+
+  module.exports = function whatwgRNG() {
+    getRandomValues(rnds8);
+    return rnds8;
+  };
+} else {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+
+  module.exports = function mathRNG() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+},{}],81:[function(_dereq_,module,exports){
+var rng = _dereq_('./lib/rng');
+var bytesToUuid = _dereq_('./lib/bytesToUuid');
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options === 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rng)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid(rnds);
+}
+
+module.exports = v4;
+
+},{"./lib/bytesToUuid":79,"./lib/rng":80}]},{},[15])(15)
 });
