@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.3.0
+ * Parse JavaScript SDK v2.3.1
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -612,7 +612,7 @@ var config
   SERVER_AUTH_TYPE: null,
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + "2.3.0",
+  VERSION: 'js' + "2.3.1",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -5365,12 +5365,14 @@ var _CoreManager = _interopRequireDefault(_dereq_("./CoreManager"));
  * @flow
  */
 
-/* global File */
+/* global XMLHttpRequest, File */
 
 
-var http = _dereq_('http');
+var XHR = null;
 
-var https = _dereq_('https');
+if (typeof XMLHttpRequest !== 'undefined') {
+  XHR = XMLHttpRequest;
+}
 /*:: type Base64 = { base64: string };*/
 
 /*:: type FileData = Array<number> | Base64 | File;*/
@@ -5748,27 +5750,41 @@ var DefaultController = {
     });
   },
   download: function (uri) {
+    if (XHR) {
+      return this.downloadAjax(uri);
+    }
+
+    return Promise.reject('Cannot make a request: No definition of XMLHttpRequest was found.');
+  },
+  downloadAjax: function (uri) {
     return new Promise(function (resolve, reject) {
-      var client = http;
+      var xhr = new XHR();
+      xhr.open('GET', uri, true);
+      xhr.responseType = 'arraybuffer';
 
-      if (uri.indexOf('https') === 0) {
-        client = https;
-      }
+      xhr.onerror = function (e) {
+        reject(e);
+      };
 
-      client.get(uri, function (resp) {
-        resp.setEncoding('base64');
-        var base64 = '';
-        resp.on('data', function (data) {
-          return base64 += data;
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) {
+          return;
+        }
+
+        var bytes = new Uint8Array(this.response);
+        resolve({
+          base64: ParseFile.encodeBase64(bytes),
+          contentType: xhr.getResponseHeader('content-type')
         });
-        resp.on('end', function () {
-          resolve({
-            base64: base64,
-            contentType: resp.headers['content-type']
-          });
-        });
-      }).on('error', reject);
+      };
+
+      xhr.send();
     });
+  },
+  _setXHR: function (xhr
+  /*: any*/
+  ) {
+    XHR = xhr;
   }
 };
 
@@ -5776,7 +5792,7 @@ _CoreManager.default.setFileController(DefaultController);
 
 var _default = ParseFile;
 exports.default = _default;
-},{"./CoreManager":4,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61,"http":undefined,"https":undefined}],20:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61}],20:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -7859,11 +7875,6 @@ function () {
 
       if (options.hasOwnProperty('sessionToken') && typeof options.sessionToken === 'string') {
         saveOptions.sessionToken = options.sessionToken;
-      } // Pass sessionToken if saving currentUser
-
-
-      if (typeof this.getSessionToken === 'function' && this.getSessionToken()) {
-        saveOptions.sessionToken = this.getSessionToken();
       }
 
       var controller = _CoreManager.default.getObjectController();
@@ -14147,6 +14158,8 @@ function (_ParseObject) {
     /*: any*/
     , options
     /*: { authData?: AuthData }*/
+    , saveOpts
+    /*:: ?: FullOptions*/
     )
     /*: Promise*/
     {
@@ -14172,7 +14185,7 @@ function (_ParseObject) {
 
         var controller = _CoreManager.default.getUserController();
 
-        return controller.linkWith(this, authData);
+        return controller.linkWith(this, authData, saveOpts);
       } else {
         return new Promise(function (resolve, reject) {
           provider.authenticate({
@@ -14180,7 +14193,7 @@ function (_ParseObject) {
               var opts = {};
               opts.authData = result;
 
-              _this2._linkWith(provider, opts).then(function () {
+              _this2._linkWith(provider, opts, saveOpts).then(function () {
                 resolve(_this2);
               }, function (error) {
                 reject(error);
@@ -14271,12 +14284,14 @@ function (_ParseObject) {
     }
     /**
      * Unlinks a user from a service.
-      */
+     */
 
   }, {
     key: "_unlinkFrom",
     value: function (provider
     /*: any*/
+    , options
+    /*:: ?: FullOptions*/
     ) {
       var _this3 = this;
 
@@ -14286,7 +14301,7 @@ function (_ParseObject) {
 
       return this._linkWith(provider, {
         authData: null
-      }).then(function () {
+      }, options).then(function () {
         _this3._synchronizeAuthData(provider);
 
         return Promise.resolve(_this3);
@@ -15363,10 +15378,12 @@ var DefaultController = {
   /*: ParseUser*/
   , authData
   /*: AuthData*/
+  , options
+  /*: FullOptions*/
   ) {
     return user.save({
       authData: authData
-    }).then(function () {
+    }, options).then(function () {
       if (canUseCurrentUser) {
         return DefaultController.setCurrentUser(user);
       }
