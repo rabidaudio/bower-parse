@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.3.1
+ * Parse JavaScript SDK v2.3.2
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -612,7 +612,7 @@ var config
   SERVER_AUTH_TYPE: null,
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + "2.3.1",
+  VERSION: 'js' + "2.3.2",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -1044,6 +1044,15 @@ var FacebookUtils = {
    * SDK to authenticate the user, and then automatically logs in (or
    * creates, in the case where it is a new user) a Parse.User.
    *
+   * Standard API:
+   *
+   * <code>logIn(permission: string, authData: Object);</code>
+   *
+   * Advanced API: Used for handling your own oAuth tokens
+   * {@link https://docs.parseplatform.org/rest/guide/#linking-users}
+   *
+   * <code>logIn(authData: Object, options?: Object);</code>
+   *
    * @method logIn
    * @name Parse.FacebookUtils.logIn
    * @param {(String|Object)} permissions The permissions required for Facebook
@@ -1051,8 +1060,7 @@ var FacebookUtils = {
    *    Alternatively, supply a Facebook authData object as described in our
    *    REST API docs if you want to handle getting facebook auth tokens
    *    yourself.
-   * @param {Object} options Standard options object with success and error
-   *    callbacks.
+   * @param {Object} options MasterKey / SessionToken. Alternatively can be used for authData if permissions is a string
    * @returns {Promise}
    */
   logIn: function (permissions, options) {
@@ -1063,24 +1071,26 @@ var FacebookUtils = {
 
       requestedPermissions = permissions;
       return _ParseUser.default._logInWith('facebook', options);
-    } else {
-      var newOptions = {};
-
-      if (options) {
-        for (var key in options) {
-          newOptions[key] = options[key];
-        }
-      }
-
-      newOptions.authData = permissions;
-      return _ParseUser.default._logInWith('facebook', newOptions);
     }
+
+    return _ParseUser.default._logInWith('facebook', {
+      authData: permissions
+    }, options);
   },
 
   /**
    * Links Facebook to an existing PFUser. This method delegates to the
    * Facebook SDK to authenticate the user, and then automatically links
    * the account to the Parse.User.
+   *
+   * Standard API:
+   *
+   * <code>link(user: Parse.User, permission: string, authData?: Object);</code>
+   *
+   * Advanced API: Used for handling your own oAuth tokens
+   * {@link https://docs.parseplatform.org/rest/guide/#linking-users}
+   *
+   * <code>link(user: Parse.User, authData: Object, options?: FullOptions);</code>
    *
    * @method link
    * @name Parse.FacebookUtils.link
@@ -1091,8 +1101,7 @@ var FacebookUtils = {
    *    Alternatively, supply a Facebook authData object as described in our
    *    REST API docs if you want to handle getting facebook auth tokens
    *    yourself.
-   * @param {Object} options Standard options object with success and error
-   *    callbacks.
+   * @param {Object} options MasterKey / SessionToken. Alternatively can be used for authData if permissions is a string
    * @returns {Promise}
    */
   link: function (user, permissions, options) {
@@ -1103,18 +1112,11 @@ var FacebookUtils = {
 
       requestedPermissions = permissions;
       return user._linkWith('facebook', options);
-    } else {
-      var newOptions = {};
-
-      if (options) {
-        for (var key in options) {
-          newOptions[key] = options[key];
-        }
-      }
-
-      newOptions.authData = permissions;
-      return user._linkWith('facebook', newOptions);
     }
+
+    return user._linkWith('facebook', {
+      authData: permissions
+    }, options);
   },
 
   /**
@@ -1134,6 +1136,10 @@ var FacebookUtils = {
     }
 
     return user._unlinkFrom('facebook', options);
+  },
+  // Used for testing purposes
+  _getAuthProvider: function () {
+    return provider;
   }
 };
 var _default = FacebookUtils;
@@ -2775,7 +2781,7 @@ var LocalDatastore = {
     _regenerator.default.mark(function _callee8() {
       var _this2 = this;
 
-      var localDatastore, keys, key, pointersHash, _arr, _i, _key, _key$split, _key$split2, className, objectId, queryPromises, responses, objects, pinPromises;
+      var localDatastore, keys, key, pointersHash, _i, _keys, _key, _key$split, _key$split2, className, objectId, queryPromises, responses, objects, pinPromises;
 
       return _regenerator.default.wrap(function (_context8) {
         while (1) {
@@ -2812,10 +2818,9 @@ var LocalDatastore = {
             case 9:
               this.isSyncing = true;
               pointersHash = {};
-              _arr = keys;
 
-              for (_i = 0; _i < _arr.length; _i++) {
-                _key = _arr[_i]; // Ignore the OBJECT_PREFIX
+              for (_i = 0, _keys = keys; _i < _keys.length; _i++) {
+                _key = _keys[_i]; // Ignore the OBJECT_PREFIX
 
                 _key$split = _key.split('_'), _key$split2 = (0, _slicedToArray2.default)(_key$split, 4), className = _key$split2[2], objectId = _key$split2[3];
 
@@ -2839,11 +2844,11 @@ var LocalDatastore = {
 
                 return query.find();
               });
-              _context8.prev = 14;
-              _context8.next = 17;
+              _context8.prev = 13;
+              _context8.next = 16;
               return Promise.all(queryPromises);
 
-            case 17:
+            case 16:
               responses = _context8.sent;
               objects = [].concat.apply([], responses);
               pinPromises = objects.map(function (object) {
@@ -2851,26 +2856,26 @@ var LocalDatastore = {
 
                 return _this2.pinWithName(objectKey, object._toFullJSON());
               });
-              _context8.next = 22;
+              _context8.next = 21;
               return Promise.all(pinPromises);
 
-            case 22:
+            case 21:
               this.isSyncing = false;
-              _context8.next = 29;
+              _context8.next = 28;
               break;
 
-            case 25:
-              _context8.prev = 25;
-              _context8.t0 = _context8["catch"](14);
+            case 24:
+              _context8.prev = 24;
+              _context8.t0 = _context8["catch"](13);
               console.error('Error syncing LocalDatastore: ', _context8.t0);
               this.isSyncing = false;
 
-            case 29:
+            case 28:
             case "end":
               return _context8.stop();
           }
         }
-      }, _callee8, this, [[14, 25]]);
+      }, _callee8, this, [[13, 24]]);
     }));
 
     return function () {
@@ -5347,6 +5352,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
+var _regenerator = _interopRequireDefault(_dereq_("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/asyncToGenerator"));
+
 var _classCallCheck2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(_dereq_("@babel/runtime/helpers/createClass"));
@@ -5471,14 +5480,16 @@ function () {
     (0, _defineProperty2.default)(this, "_url", void 0);
     (0, _defineProperty2.default)(this, "_source", void 0);
     (0, _defineProperty2.default)(this, "_previousSave", void 0);
+    (0, _defineProperty2.default)(this, "_data", void 0);
     var specifiedType = type || '';
     this._name = name;
 
     if (data !== undefined) {
       if (Array.isArray(data)) {
+        this._data = ParseFile.encodeBase64(data);
         this._source = {
           format: 'base64',
-          base64: ParseFile.encodeBase64(data),
+          base64: this._data,
           type: specifiedType
         };
       } else if (typeof File !== 'undefined' && data instanceof File) {
@@ -5500,12 +5511,14 @@ function () {
         if (commaIndex !== -1) {
           var matches = dataUriRegexp.exec(base64.slice(0, commaIndex + 1)); // if data URI with type and charset, there will be 4 matches.
 
+          this._data = base64.slice(commaIndex + 1);
           this._source = {
             format: 'base64',
-            base64: base64.slice(commaIndex + 1),
+            base64: this._data,
             type: matches[1]
           };
         } else {
+          this._data = base64;
           this._source = {
             format: 'base64',
             base64: base64,
@@ -5518,14 +5531,70 @@ function () {
     }
   }
   /**
-   * Gets the name of the file. Before save is called, this is the filename
-   * given by the user. After save is called, that name gets prefixed with a
-   * unique identifier.
-   * @return {String}
+   * Return the data for the file, downloading it if not already present.
+   * Data is present if initialized with Byte Array, Base64 or Saved with Uri.
+   * Data is cleared if saved with File object selected with a file upload control
+   *
+   * @return {Promise} Promise that is resolve with base64 data
    */
 
 
   (0, _createClass2.default)(ParseFile, [{
+    key: "getData",
+    value: function () {
+      var _getData = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee() {
+        var controller, result;
+        return _regenerator.default.wrap(function (_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                if (!this._data) {
+                  _context.next = 2;
+                  break;
+                }
+
+                return _context.abrupt("return", this._data);
+
+              case 2:
+                if (this._url) {
+                  _context.next = 4;
+                  break;
+                }
+
+                throw new Error('Cannot retrieve data for unsaved ParseFile.');
+
+              case 4:
+                controller = _CoreManager.default.getFileController();
+                _context.next = 7;
+                return controller.download(this._url);
+
+              case 7:
+                result = _context.sent;
+                this._data = result.base64;
+                return _context.abrupt("return", this._data);
+
+              case 10:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      return function () {
+        return _getData.apply(this, arguments);
+      };
+    }()
+    /**
+     * Gets the name of the file. Before save is called, this is the filename
+     * given by the user. After save is called, that name gets prefixed with a
+     * unique identifier.
+     * @return {String}
+     */
+
+  }, {
     key: "name",
     value: function ()
     /*: string*/
@@ -5585,10 +5654,19 @@ function () {
           this._previousSave = controller.saveFile(this._name, this._source, options).then(function (res) {
             _this._name = res.name;
             _this._url = res.url;
+            _this._data = null;
             return _this;
           });
         } else if (this._source.format === 'uri') {
-          this._previousSave = controller.saveUri(this._name, this._source, options).then(function (res) {
+          this._previousSave = controller.download(this._source.uri).then(function (result) {
+            var newSource = {
+              format: 'base64',
+              base64: result.base64,
+              type: result.contentType
+            };
+            _this._data = result.base64;
+            return controller.saveBase64(_this._name, newSource, options);
+          }).then(function (res) {
             _this._name = res.name;
             _this._url = res.url;
             return _this;
@@ -5727,34 +5805,12 @@ var DefaultController = {
 
     return _CoreManager.default.getRESTController().request('POST', 'files/' + name, data, options);
   },
-  saveUri: function (name
-  /*: string*/
-  , source
-  /*: FileSource*/
-  , options
-  /*:: ?: FullOptions*/
-  ) {
-    var _this2 = this;
-
-    if (source.format !== 'uri') {
-      throw new Error('saveUri can only be used with Uri-type sources.');
-    }
-
-    return this.download(source.uri).then(function (result) {
-      var newSource = {
-        format: 'base64',
-        base64: result.base64,
-        type: result.contentType
-      };
-      return _this2.saveBase64(name, newSource, options);
-    });
-  },
   download: function (uri) {
     if (XHR) {
       return this.downloadAjax(uri);
+    } else {
+      return Promise.reject('Cannot make a request: No definition of XMLHttpRequest was found.');
     }
-
-    return Promise.reject('Cannot make a request: No definition of XMLHttpRequest was found.');
   },
   downloadAjax: function (uri) {
     return new Promise(function (resolve, reject) {
@@ -5792,7 +5848,7 @@ _CoreManager.default.setFileController(DefaultController);
 
 var _default = ParseFile;
 exports.default = _default;
-},{"./CoreManager":4,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61}],20:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"@babel/runtime/helpers/asyncToGenerator":53,"@babel/runtime/helpers/classCallCheck":54,"@babel/runtime/helpers/createClass":56,"@babel/runtime/helpers/defineProperty":57,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/regenerator":75}],20:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime/helpers/interopRequireDefault");
@@ -7645,10 +7701,9 @@ function () {
 
       if (keys.length) {
         keysToRevert = [];
-        var _arr = keys;
 
-        for (var _i = 0; _i < _arr.length; _i++) {
-          var _key3 = _arr[_i];
+        for (var _i = 0, _keys = keys; _i < _keys.length; _i++) {
+          var _key3 = _keys[_i];
 
           if (typeof _key3 === "string") {
             keysToRevert.push(_key3);
@@ -7781,6 +7836,8 @@ function () {
      * You can either call it as:<pre>
      *   object.save();</pre>
      * or<pre>
+     *   object.save(attrs);</pre>
+     * or<pre>
      *   object.save(null, options);</pre>
      * or<pre>
      *   object.save(attrs, options);</pre>
@@ -7797,13 +7854,36 @@ function () {
      *     // The save failed.  Error is an instance of Parse.Error.
      *   });</pre>
      *
-     * @param {Object} options
+     * @param {String|Object|null} [attrs]
      * Valid options are:<ul>
-     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *   <li>`Object` - Key/value pairs to update on the object.</li>
+     *   <li>`String` Key - Key of attribute to update (requires arg2 to also be string)</li>
+     *   <li>`null` - Passing null for arg1 allows you to save the object with options passed in arg2.</li>
+     * </ul>
+     *
+     * @param {String|Object} [options]
+     * <ul>
+     *   <li>`String` Value - If arg1 was passed as a key, arg2 is the value that should be set on that key.</li>
+     *   <li>`Object` Options - Valid options are:
+     *     <ul>
+     *       <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
      *     be used for this request.
+     *       <li>sessionToken: A valid session token, used for making a request on
+     *       behalf of a specific user.
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * @param {Object} [options]
+     * Used to pass option parameters to method if arg1 and arg2 were both passed as strings.
+     * Valid options are:
+     * <ul>
+     *   <li>useMasterKey: In Cloud Code and Node only, causes the Master Key to
+     *       be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      * </ul>
+     *
      * @return {Promise} A promise that is fulfilled when the save
      *     completes.
      */
@@ -8954,7 +9034,7 @@ var DefaultController = {
         var _ref = (0, _asyncToGenerator2.default)(
         /*#__PURE__*/
         _regenerator.default.mark(function _callee3(objects) {
-          var idMap, i, obj, _i2, _obj, id, _arr2, _i3, object;
+          var idMap, i, obj, _i2, _obj, id, _i3, _results, object;
 
           return _regenerator.default.wrap(function (_context3) {
             while (1) {
@@ -9007,28 +9087,27 @@ var DefaultController = {
                     }
                   }
 
-                  _arr2 = results;
-                  _i3 = 0;
+                  _i3 = 0, _results = results;
 
-                case 14:
-                  if (!(_i3 < _arr2.length)) {
-                    _context3.next = 21;
+                case 13:
+                  if (!(_i3 < _results.length)) {
+                    _context3.next = 20;
                     break;
                   }
 
-                  object = _arr2[_i3];
-                  _context3.next = 18;
+                  object = _results[_i3];
+                  _context3.next = 17;
                   return localDatastore._updateObjectIfPinned(object);
 
-                case 18:
+                case 17:
                   _i3++;
-                  _context3.next = 14;
+                  _context3.next = 13;
                   break;
 
-                case 21:
+                case 20:
                   return _context3.abrupt("return", Promise.resolve(results));
 
-                case 22:
+                case 21:
                 case "end":
                   return _context3.stop();
               }
