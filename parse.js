@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.3.2
+ * Parse JavaScript SDK v2.4.0
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -259,6 +259,8 @@ var _encode = _interopRequireDefault(_dereq_("./encode"));
 var _ParseError = _interopRequireDefault(_dereq_("./ParseError"));
 
 var _ParseQuery = _interopRequireDefault(_dereq_("./ParseQuery"));
+
+var _ParseObject = _interopRequireDefault(_dereq_("./ParseObject"));
 /**
  * Copyright (c) 2015-present, Parse, LLC.
  * All rights reserved.
@@ -299,9 +301,9 @@ function run(name
 , data
 /*: mixed*/
 , options
-/*: { [key: string]: mixed }*/
+/*: RequestOptions*/
 )
-/*: Promise*/
+/*: Promise<mixed>*/
 {
   options = options || {};
 
@@ -331,7 +333,7 @@ function run(name
 
 
 function getJobsData()
-/*: Promise*/
+/*: Promise<Object>*/
 {
   return _CoreManager.default.getCloudController().getJobsData({
     useMasterKey: true
@@ -343,8 +345,8 @@ function getJobsData()
   * @name Parse.Cloud.startJob
   * @param {String} name The function name.
   * @param {Object} data The parameters to send to the cloud function.
-  * @return {Promise} A promise that will be resolved with the result
-  * of the function.
+  * @return {Promise} A promise that will be resolved with the jobStatusId
+  * of the job.
   */
 
 
@@ -353,7 +355,7 @@ function startJob(name
 , data
 /*: mixed*/
 )
-/*: Promise*/
+/*: Promise<string>*/
 {
   if (typeof name !== 'string' || name.length === 0) {
     throw new TypeError('Cloud job name must be a string.');
@@ -375,7 +377,7 @@ function startJob(name
 function getJobStatus(jobStatusId
 /*: string*/
 )
-/*: Promise*/
+/*: Promise<ParseObject>*/
 {
   var query = new _ParseQuery.default('_JobStatus');
   return query.get(jobStatusId, {
@@ -384,7 +386,9 @@ function getJobStatus(jobStatusId
 }
 
 var DefaultController = {
-  run: function (name, data, options) {
+  run: function (name, data, options
+  /*: RequestOptions*/
+  ) {
     var RESTController = _CoreManager.default.getRESTController();
 
     var payload = (0, _encode.default)(data, true);
@@ -403,12 +407,16 @@ var DefaultController = {
       return Promise.resolve(undefined);
     });
   },
-  getJobsData: function (options) {
+  getJobsData: function (options
+  /*: RequestOptions*/
+  ) {
     var RESTController = _CoreManager.default.getRESTController();
 
     return RESTController.request('GET', 'cloud_code/jobs/data', null, options);
   },
-  startJob: function (name, data, options) {
+  startJob: function (name, data, options
+  /*: RequestOptions*/
+  ) {
     var RESTController = _CoreManager.default.getRESTController();
 
     var payload = (0, _encode.default)(data, true);
@@ -417,7 +425,7 @@ var DefaultController = {
 };
 
 _CoreManager.default.setCloudController(DefaultController);
-},{"./CoreManager":4,"./ParseError":18,"./ParseQuery":26,"./decode":41,"./encode":42,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],4:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseError":18,"./ParseObject":23,"./ParseQuery":26,"./decode":41,"./encode":42,"@babel/runtime/helpers/interopRequireDefault":61,"@babel/runtime/helpers/typeof":73}],4:[function(_dereq_,module,exports){
 (function (process){
 /*:: import type { AttributeMap, ObjectCache, OpsMap, State } from './ObjectStateMutations';*/
 
@@ -437,30 +445,28 @@ _CoreManager.default.setCloudController(DefaultController);
 
 /*:: import type { PushData } from './Push';*/
 
-/*:: type RequestOptions = {
-  useMasterKey?: boolean;
-  sessionToken?: string;
-  installationId?: string;
-};*/
+/*:: import type { RequestOptions, FullOptions } from './RESTController';*/
 
 /*:: type AnalyticsController = {
   track: (name: string, dimensions: { [key: string]: string }) => Promise;
 };*/
 
 /*:: type CloudController = {
-  run: (name: string, data: mixed, options: { [key: string]: mixed }) => Promise;
-  getJobsData: (options: { [key: string]: mixed }) => Promise;
-  startJob: (name: string, data: mixed, options: { [key: string]: mixed }) => Promise;
+  run: (name: string, data: mixed, options: RequestOptions) => Promise;
+  getJobsData: (options: RequestOptions) => Promise;
+  startJob: (name: string, data: mixed, options: RequestOptions) => Promise;
 };*/
 
 /*:: type ConfigController = {
   current: () => Promise;
   get: () => Promise;
+  save: (attrs: { [key: string]: any }) => Promise;
 };*/
 
 /*:: type FileController = {
-  saveFile: (name: string, source: FileSource) => Promise;
-  saveBase64: (name: string, source: FileSource) => Promise;
+  saveFile: (name: string, source: FileSource, options: FullOptions) => Promise;
+  saveBase64: (name: string, source: FileSource, options: FullOptions) => Promise;
+  download: (uri: string) => Promise;
 };*/
 
 /*:: type InstallationController = {
@@ -503,8 +509,8 @@ _CoreManager.default.setCloudController(DefaultController);
 };*/
 
 /*:: type RESTController = {
-  request: (method: string, path: string, data: mixed) => Promise;
-  ajax: (method: string, url: string, data: any, headers?: any) => Promise;
+  request: (method: string, path: string, data: mixed, options: RequestOptions) => Promise;
+  ajax: (method: string, url: string, data: any, headers?: any, options: FullOptions) => Promise;
 };*/
 
 /*:: type SchemaController = {
@@ -612,7 +618,7 @@ var config
   SERVER_AUTH_TYPE: null,
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + "2.3.2",
+  VERSION: 'js' + "2.4.0",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -1174,7 +1180,7 @@ function generateId() {
 
 var InstallationController = {
   currentInstallationId: function ()
-  /*: Promise*/
+  /*: Promise<string>*/
   {
     if (typeof iidCache === 'string') {
       return Promise.resolve(iidCache);
@@ -2039,10 +2045,12 @@ var _LocalDatastoreUtils = _dereq_("./LocalDatastoreUtils");
 
 
 var LocalDatastore = {
+  isEnabled: false,
+  isSyncing: false,
   fromPinWithName: function (name
   /*: string*/
   )
-  /*: Promise*/
+  /*: Promise<Array<Object>>*/
   {
     var controller = _CoreManager.default.getLocalDatastoreController();
 
@@ -2053,7 +2061,7 @@ var LocalDatastore = {
   , value
   /*: any*/
   )
-  /*: Promise*/
+  /*: Promise<void>*/
   {
     var controller = _CoreManager.default.getLocalDatastoreController();
 
@@ -2062,14 +2070,14 @@ var LocalDatastore = {
   unPinWithName: function (name
   /*: string*/
   )
-  /*: Promise*/
+  /*: Promise<void>*/
   {
     var controller = _CoreManager.default.getLocalDatastoreController();
 
     return controller.unPinWithName(name);
   },
   _getAllContents: function ()
-  /*: Promise*/
+  /*: Promise<Object>*/
   {
     var controller = _CoreManager.default.getLocalDatastoreController();
 
@@ -2077,14 +2085,14 @@ var LocalDatastore = {
   },
   // Use for testing
   _getRawStorage: function ()
-  /*: Promise*/
+  /*: Promise<Object>*/
   {
     var controller = _CoreManager.default.getLocalDatastoreController();
 
     return controller.getRawStorage();
   },
   _clear: function ()
-  /*: Promise*/
+  /*: Promise<void>*/
   {
     var controller = _CoreManager.default.getLocalDatastoreController();
 
@@ -2100,7 +2108,7 @@ var LocalDatastore = {
     , objects
     /*: Array<ParseObject>*/
     ) {
-      var pinName, toPinPromises, objectKeys, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, parent, children, parentKey, objectKey, fromPinPromise, _ref, _ref2, pinned, toPin;
+      var pinName, toPinPromises, objectKeys, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, parent, children, parentKey, json, objectKey, fromPinPromise, _ref, _ref2, pinned, toPin;
 
       return _regenerator.default.wrap(function (_context) {
         while (1) {
@@ -2118,7 +2126,13 @@ var LocalDatastore = {
                 parent = _step.value;
                 children = this._getChildren(parent);
                 parentKey = this.getKeyForObject(parent);
-                children[parentKey] = parent._toFullJSON();
+                json = parent._toFullJSON();
+
+                if (parent._localId) {
+                  json._localId = parent._localId;
+                }
+
+                children[parentKey] = json;
 
                 for (objectKey in children) {
                   objectKeys.push(objectKey);
@@ -2379,7 +2393,7 @@ var LocalDatastore = {
     var json = object._toFullJSON();
 
     for (var key in json) {
-      if (json[key].__type && json[key].__type === 'Object') {
+      if (json[key] && json[key].__type && json[key].__type === 'Object') {
         this._traverse(json[key], encountered);
       }
     }
@@ -2696,7 +2710,9 @@ var LocalDatastore = {
   _updateLocalIdForObject: function () {
     var _updateLocalIdForObject2 = (0, _asyncToGenerator2.default)(
     /*#__PURE__*/
-    _regenerator.default.mark(function _callee7(localId, object
+    _regenerator.default.mark(function _callee7(localId
+    /*: string*/
+    , object
     /*: ParseObject*/
     ) {
       var localKey, objectKey, unsaved, promises, localDatastore, key, pinned;
@@ -2818,19 +2834,43 @@ var LocalDatastore = {
             case 9:
               this.isSyncing = true;
               pointersHash = {};
+              _i = 0, _keys = keys;
 
-              for (_i = 0, _keys = keys; _i < _keys.length; _i++) {
-                _key = _keys[_i]; // Ignore the OBJECT_PREFIX
-
-                _key$split = _key.split('_'), _key$split2 = (0, _slicedToArray2.default)(_key$split, 4), className = _key$split2[2], objectId = _key$split2[3];
-
-                if (!(className in pointersHash)) {
-                  pointersHash[className] = new Set();
-                }
-
-                pointersHash[className].add(objectId);
+            case 12:
+              if (!(_i < _keys.length)) {
+                _context8.next = 23;
+                break;
               }
 
+              _key = _keys[_i]; // Ignore the OBJECT_PREFIX
+
+              _key$split = _key.split('_'), _key$split2 = (0, _slicedToArray2.default)(_key$split, 4), className = _key$split2[2], objectId = _key$split2[3]; // User key is split into [ 'Parse', 'LDS', '', 'User', 'objectId' ]
+
+              if (_key.split('_').length === 5 && _key.split('_')[3] === 'User') {
+                className = '_User';
+                objectId = _key.split('_')[4];
+              }
+
+              if (!objectId.startsWith('local')) {
+                _context8.next = 18;
+                break;
+              }
+
+              return _context8.abrupt("continue", 20);
+
+            case 18:
+              if (!(className in pointersHash)) {
+                pointersHash[className] = new Set();
+              }
+
+              pointersHash[className].add(objectId);
+
+            case 20:
+              _i++;
+              _context8.next = 12;
+              break;
+
+            case 23:
               queryPromises = Object.keys(pointersHash).map(function (className) {
                 var objectIds = Array.from(pointersHash[className]);
                 var query = new _ParseQuery.default(className);
@@ -2844,11 +2884,11 @@ var LocalDatastore = {
 
                 return query.find();
               });
-              _context8.prev = 13;
-              _context8.next = 16;
+              _context8.prev = 24;
+              _context8.next = 27;
               return Promise.all(queryPromises);
 
-            case 16:
+            case 27:
               responses = _context8.sent;
               objects = [].concat.apply([], responses);
               pinPromises = objects.map(function (object) {
@@ -2856,26 +2896,26 @@ var LocalDatastore = {
 
                 return _this2.pinWithName(objectKey, object._toFullJSON());
               });
-              _context8.next = 21;
+              _context8.next = 32;
               return Promise.all(pinPromises);
 
-            case 21:
+            case 32:
               this.isSyncing = false;
-              _context8.next = 28;
+              _context8.next = 39;
               break;
 
-            case 24:
-              _context8.prev = 24;
-              _context8.t0 = _context8["catch"](13);
+            case 35:
+              _context8.prev = 35;
+              _context8.t0 = _context8["catch"](24);
               console.error('Error syncing LocalDatastore: ', _context8.t0);
               this.isSyncing = false;
 
-            case 28:
+            case 39:
             case "end":
               return _context8.stop();
           }
         }
-      }, _callee8, this, [[13, 24]]);
+      }, _callee8, this, [[24, 35]]);
     }));
 
     return function () {
@@ -2906,8 +2946,6 @@ var LocalDatastore = {
     return this.isEnabled;
   }
 };
-LocalDatastore.isEnabled = false;
-LocalDatastore.isSyncing = false;
 module.exports = LocalDatastore;
 
 _CoreManager.default.setLocalDatastoreController(_dereq_('./LocalDatastoreController.browser'));
@@ -2974,7 +3012,12 @@ var LocalDatastoreController = {
 
       if ((0, _LocalDatastoreUtils.isLocalDatastoreKey)(key)) {
         var value = localStorage.getItem(key);
-        LDS[key] = JSON.parse(value);
+
+        try {
+          LDS[key] = JSON.parse(value);
+        } catch (error) {
+          console.error('Error getAllContents: ', error);
+        }
       }
     }
 
@@ -4674,7 +4717,9 @@ function () {
 
   }, {
     key: "save",
-    value: function (attrs) {
+    value: function (attrs
+    /*: { [key: string]: any }*/
+    ) {
       var controller = _CoreManager.default.getConfigController(); //To avoid a mismatch with the local and the cloud config we get a new version
 
 
@@ -4766,7 +4811,9 @@ var DefaultController = {
       });
     });
   },
-  save: function (attrs) {
+  save: function (attrs
+  /*: { [key: string]: any }*/
+  ) {
     var RESTController = _CoreManager.default.getRESTController();
 
     var encodedAttrs = {};
@@ -5384,7 +5431,9 @@ if (typeof XMLHttpRequest !== 'undefined') {
 }
 /*:: type Base64 = { base64: string };*/
 
-/*:: type FileData = Array<number> | Base64 | File;*/
+/*:: type Uri = { uri: string };*/
+
+/*:: type FileData = Array<number> | Base64 | File | Uri;*/
 
 /*:: export type FileSource = {
   format: 'file';
@@ -6714,7 +6763,7 @@ function () {
   }, {
     key: "_toFullJSON",
     value: function (seen
-    /*: Array<any>*/
+    /*:: ?: Array<any>*/
     )
     /*: AttributeMap*/
     {
@@ -8022,7 +8071,7 @@ function () {
   }, {
     key: "pin",
     value: function ()
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       return ParseObject.pinAllWithName(_LocalDatastoreUtils.DEFAULT_PIN, [this]);
     }
@@ -8040,7 +8089,7 @@ function () {
   }, {
     key: "unPin",
     value: function ()
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       return ParseObject.unPinAllWithName(_LocalDatastoreUtils.DEFAULT_PIN, [this]);
     }
@@ -8117,7 +8166,7 @@ function () {
     value: function (name
     /*: string*/
     )
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       return ParseObject.pinAllWithName(name, [this]);
     }
@@ -8137,7 +8186,7 @@ function () {
     value: function (name
     /*: string*/
     )
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       return ParseObject.unPinAllWithName(name, [this]);
     }
@@ -8500,7 +8549,9 @@ function () {
     value: function (list
     /*: Array<ParseObject>*/
     ) {
-      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var options
+      /*: RequestOptions*/
+      = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var saveOptions = {};
 
       if (options.hasOwnProperty('useMasterKey')) {
@@ -8534,7 +8585,9 @@ function () {
 
   }, {
     key: "createWithoutData",
-    value: function (id) {
+    value: function (id
+    /*: string*/
+    ) {
       var obj = new this();
       obj.id = id;
       return obj;
@@ -8550,7 +8603,11 @@ function () {
 
   }, {
     key: "fromJSON",
-    value: function (json, override) {
+    value: function (json
+    /*: any*/
+    , override
+    /*:: ?: boolean*/
+    ) {
       if (!json.className) {
         throw new Error('Cannot create an object without a className');
       }
@@ -8603,7 +8660,11 @@ function () {
 
   }, {
     key: "registerSubclass",
-    value: function (className, constructor) {
+    value: function (className
+    /*: string*/
+    , constructor
+    /*: any*/
+    ) {
       if (typeof className !== 'string') {
         throw new TypeError('The first argument must be a valid class name.');
       }
@@ -8809,7 +8870,7 @@ function () {
     value: function (objects
     /*: Array<ParseObject>*/
     )
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
@@ -8845,7 +8906,7 @@ function () {
     , objects
     /*: Array<ParseObject>*/
     )
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
@@ -8873,7 +8934,7 @@ function () {
     value: function (objects
     /*: Array<ParseObject>*/
     )
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
@@ -8903,7 +8964,7 @@ function () {
     , objects
     /*: Array<ParseObject>*/
     )
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
@@ -8927,7 +8988,7 @@ function () {
   }, {
     key: "unPinAllObjects",
     value: function ()
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
@@ -8955,7 +9016,7 @@ function () {
     value: function (name
     /*: string*/
     )
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       var localDatastore = _CoreManager.default.getLocalDatastore();
 
@@ -8977,7 +9038,7 @@ var DefaultController = {
   , options
   /*: RequestOptions*/
   )
-  /*: Promise*/
+  /*: Promise<Array<void> | ParseObject>*/
   {
     var localDatastore = _CoreManager.default.getLocalDatastore();
 
@@ -10483,7 +10544,7 @@ function () {
    * @param {(Number[][]|Parse.GeoPoint[])} coordinates An Array of coordinate pairs
    */
   function ParsePolygon(arg1
-  /*: Array*/
+  /*: Array<Array<number>> | Array<ParseGeoPoint>*/
   ) {
     (0, _classCallCheck2.default)(this, ParsePolygon);
     (0, _defineProperty2.default)(this, "_coordinates", void 0);
@@ -10505,7 +10566,7 @@ function () {
      * @return {Object}
      */
     value: function ()
-    /*: { __type: string; coordinates: Array;}*/
+    /*: { __type: string; coordinates: Array<Array<number>>;}*/
     {
       ParsePolygon._validate(this._coordinates);
 
@@ -10599,20 +10660,22 @@ function () {
   }, {
     key: "coordinates",
     get: function ()
-    /*: Array*/
+    /*: Array<Array<number>>*/
     {
       return this._coordinates;
     },
     set: function (coords
-    /*: Array*/
+    /*: Array<Array<number>> | Array<ParseGeoPoint>*/
     ) {
       this._coordinates = ParsePolygon._validate(coords);
     }
   }], [{
     key: "_validate",
     value: function (coords
-    /*: Array*/
-    ) {
+    /*: Array<Array<number>> | Array<ParseGeoPoint>*/
+    )
+    /*: Array<Array<number>>*/
+    {
       if (!Array.isArray(coords)) {
         throw new TypeError('Coordinates must be an Array');
       }
@@ -10716,7 +10779,7 @@ function quote(s
 function _getClassNameFromQueries(queries
 /*: Array<ParseQuery>*/
 )
-/*: string*/
+/*: ?string*/
 {
   var className = null;
   queries.forEach(function (q) {
@@ -11036,7 +11099,7 @@ function () {
     value: function (string
     /*: string*/
     )
-    /*: String*/
+    /*: string*/
     {
       return '^' + quote(string);
     }
@@ -11065,6 +11128,10 @@ function () {
                 objects = _context.sent;
                 results = objects.map(function (json, index, arr) {
                   var object = _ParseObject.default.fromJSON(json, false);
+
+                  if (json._localId && !json.objectId) {
+                    object._localId = json._localId;
+                  }
 
                   if (!_OfflineQuery.default.matchesQuery(_this2.className, object, arr, _this2)) {
                     return null;
@@ -11264,7 +11331,7 @@ function () {
     , options
     /*:: ?: FullOptions*/
     )
-    /*: Promise*/
+    /*: Promise<ParseObject>*/
     {
       this.equalTo('objectId', objectId);
       var firstOptions = {};
@@ -11308,7 +11375,7 @@ function () {
     value: function (options
     /*:: ?: FullOptions*/
     )
-    /*: Promise*/
+    /*: Promise<Array<ParseObject>>*/
     {
       var _this3 = this;
 
@@ -11374,7 +11441,7 @@ function () {
     value: function (options
     /*:: ?: FullOptions*/
     )
-    /*: Promise*/
+    /*: Promise<number>*/
     {
       options = options || {};
       var findOptions = {};
@@ -11416,12 +11483,11 @@ function () {
     , options
     /*:: ?: FullOptions*/
     )
-    /*: Promise*/
+    /*: Promise<Array<mixed>>*/
     {
       options = options || {};
-      var distinctOptions = {
-        useMasterKey: true
-      };
+      var distinctOptions = {};
+      distinctOptions.useMasterKey = true;
 
       if (options.hasOwnProperty('sessionToken')) {
         distinctOptions.sessionToken = options.sessionToken;
@@ -11456,12 +11522,11 @@ function () {
     , options
     /*:: ?: FullOptions*/
     )
-    /*: Promise*/
+    /*: Promise<Array<mixed>>*/
     {
       options = options || {};
-      var aggregateOptions = {
-        useMasterKey: true
-      };
+      var aggregateOptions = {};
+      aggregateOptions.useMasterKey = true;
 
       if (options.hasOwnProperty('sessionToken')) {
         aggregateOptions.sessionToken = options.sessionToken;
@@ -11501,7 +11566,7 @@ function () {
     value: function (options
     /*:: ?: FullOptions*/
     )
-    /*: Promise*/
+    /*: Promise<ParseObject | void>*/
     {
       var _this4 = this;
 
@@ -11579,7 +11644,7 @@ function () {
     , options
     /*:: ?: BatchOptions*/
     )
-    /*: Promise*/
+    /*: Promise<Array<ParseObject>>*/
     {
       options = options || {};
 
@@ -11874,12 +11939,12 @@ function () {
         values = [values];
       }
 
-      values = values.map(function (value) {
+      var regexObject = values.map(function (value) {
         return {
-          "$regex": _this._regexStartWith(value)
+          '$regex': _this._regexStartWith(value)
         };
       });
-      return this.containsAll(key, values);
+      return this.containsAll(key, regexObject);
     }
     /**
      * Adds a constraint for finding objects that contain the given key.
@@ -12131,9 +12196,8 @@ function () {
         throw new Error('The value being searched for must be a string.');
       }
 
-      var fullOptions = {
-        $term: value
-      };
+      var fullOptions = {};
+      fullOptions.$term = value;
 
       for (var option in options) {
         switch (option) {
@@ -12389,7 +12453,7 @@ function () {
     value: function (key
     /*: string*/
     , points
-    /*: Array*/
+    /*: Array<Array<number>>*/
     )
     /*: ParseQuery*/
     {
@@ -12658,6 +12722,7 @@ function () {
     /**
      * Subscribe this query to get liveQuery updates
      *
+     * @param {String} sessionToken (optional) Defaults to the currentUser
      * @return {Promise<LiveQuerySubscription>} Returns the liveQuerySubscription, it's an event emitter
      * which can be used to get liveQuery updates.
      */
@@ -12667,8 +12732,10 @@ function () {
     value: function () {
       var _subscribe = (0, _asyncToGenerator2.default)(
       /*#__PURE__*/
-      _regenerator.default.mark(function _callee2() {
-        var currentUser, sessionToken, liveQueryClient, subscription;
+      _regenerator.default.mark(function _callee2(sessionToken
+      /*:: ?: string*/
+      ) {
+        var currentUser, liveQueryClient, subscription;
         return _regenerator.default.wrap(function (_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
@@ -12678,7 +12745,11 @@ function () {
 
               case 2:
                 currentUser = _context2.sent;
-                sessionToken = currentUser ? currentUser.getSessionToken() : undefined;
+
+                if (!sessionToken) {
+                  sessionToken = currentUser ? currentUser.getSessionToken() : undefined;
+                }
+
                 _context2.next = 6;
                 return _CoreManager.default.getLiveQueryController().getDefaultLiveQueryClient();
 
@@ -12752,7 +12823,7 @@ function () {
   }, {
     key: "fromPinWithName",
     value: function (name
-    /*: string*/
+    /*:: ?: string*/
     )
     /*: ParseQuery*/
     {
@@ -12864,7 +12935,7 @@ var DefaultController = {
   , options
   /*: RequestOptions*/
   )
-  /*: Promise*/
+  /*: Promise<Array<ParseObject>>*/
   {
     var RESTController = _CoreManager.default.getRESTController();
 
@@ -12877,7 +12948,7 @@ var DefaultController = {
   , options
   /*: RequestOptions*/
   )
-  /*: Promise*/
+  /*: Promise<Array<mixed>>*/
   {
     var RESTController = _CoreManager.default.getRESTController();
 
@@ -14093,7 +14164,7 @@ var DefaultController = {
   getSession: function (options
   /*: RequestOptions*/
   )
-  /*: Promise*/
+  /*: Promise<ParseSession>*/
   {
     var RESTController = _CoreManager.default.getRESTController();
 
@@ -14213,7 +14284,7 @@ function (_ParseObject) {
     value: function (options
     /*: RequestOptions*/
     )
-    /*: Promise*/
+    /*: Promise<void>*/
     {
       options = options || {};
       var upgradeOptions = {};
@@ -14240,7 +14311,7 @@ function (_ParseObject) {
     , saveOpts
     /*:: ?: FullOptions*/
     )
-    /*: Promise*/
+    /*: Promise<ParseUser>*/
     {
       var _this2 = this;
 
@@ -14619,9 +14690,9 @@ function (_ParseObject) {
     value: function (attrs
     /*: AttributeMap*/
     , options
-    /*: FullOptions*/
+    /*:: ?: FullOptions*/
     )
-    /*: Promise*/
+    /*: Promise<ParseUser>*/
     {
       options = options || {};
       var signupOptions = {};
@@ -14655,9 +14726,9 @@ function (_ParseObject) {
   }, {
     key: "logIn",
     value: function (options
-    /*: FullOptions*/
+    /*:: ?: FullOptions*/
     )
-    /*: Promise*/
+    /*: Promise<ParseUser>*/
     {
       options = options || {};
       var loginOptions = {};
@@ -14682,7 +14753,7 @@ function (_ParseObject) {
   }, {
     key: "save",
     value: function ()
-    /*: Promise*/
+    /*: Promise<ParseUser>*/
     {
       var _this4 = this;
 
@@ -14706,7 +14777,7 @@ function (_ParseObject) {
   }, {
     key: "destroy",
     value: function ()
-    /*: Promise*/
+    /*: Promise<ParseUser>*/
     {
       var _this5 = this;
 
@@ -14730,7 +14801,7 @@ function (_ParseObject) {
   }, {
     key: "fetch",
     value: function ()
-    /*: Promise*/
+    /*: Promise<ParseUser>*/
     {
       var _this6 = this;
 
@@ -14754,7 +14825,7 @@ function (_ParseObject) {
   }, {
     key: "fetchWithInclude",
     value: function ()
-    /*: Promise*/
+    /*: Promise<ParseUser>*/
     {
       var _this7 = this;
 
@@ -14848,7 +14919,7 @@ function (_ParseObject) {
   }, {
     key: "currentAsync",
     value: function ()
-    /*: Promise*/
+    /*: Promise<?ParseUser>*/
     {
       if (!canUseCurrentUser) {
         return Promise.resolve(null);
@@ -14877,7 +14948,15 @@ function (_ParseObject) {
 
   }, {
     key: "signUp",
-    value: function (username, password, attrs, options) {
+    value: function (username
+    /*: string*/
+    , password
+    /*: string*/
+    , attrs
+    /*: AttributeMap*/
+    , options
+    /*:: ?: FullOptions*/
+    ) {
       attrs = attrs || {};
       attrs.username = username;
       attrs.password = password;
@@ -14901,7 +14980,13 @@ function (_ParseObject) {
 
   }, {
     key: "logIn",
-    value: function (username, password, options) {
+    value: function (username
+    /*: string*/
+    , password
+    /*: string*/
+    , options
+    /*:: ?: FullOptions*/
+    ) {
       if (typeof username !== 'string') {
         return Promise.reject(new _ParseError.default(_ParseError.default.OTHER_CAUSE, 'Username must be a string.'));
       } else if (typeof password !== 'string') {
@@ -14933,7 +15018,11 @@ function (_ParseObject) {
 
   }, {
     key: "become",
-    value: function (sessionToken, options) {
+    value: function (sessionToken
+    /*: string*/
+    , options
+    /*:: ?: RequestOptions*/
+    ) {
       if (!canUseCurrentUser) {
         throw new Error('It is not memory-safe to become a user in a server environment');
       }
@@ -14975,7 +15064,11 @@ function (_ParseObject) {
     }
   }, {
     key: "logInWith",
-    value: function (provider, options) {
+    value: function (provider
+    /*: any*/
+    , options
+    /*:: ?: RequestOptions*/
+    ) {
       return ParseUser._logInWith(provider, options);
     }
     /**
@@ -15014,7 +15107,11 @@ function (_ParseObject) {
 
   }, {
     key: "requestPasswordReset",
-    value: function (email, options) {
+    value: function (email
+    /*: string*/
+    , options
+    /*:: ?: RequestOptions*/
+    ) {
       options = options || {};
       var requestOptions = {};
 
@@ -15059,7 +15156,9 @@ function (_ParseObject) {
 
   }, {
     key: "enableRevocableSession",
-    value: function (options) {
+    value: function (options
+    /*:: ?: RequestOptions*/
+    ) {
       options = options || {};
 
       _CoreManager.default.set('FORCE_REVOCABLE_SESSION', true);
@@ -15100,7 +15199,9 @@ function (_ParseObject) {
     }
   }, {
     key: "_registerAuthenticationProvider",
-    value: function (provider) {
+    value: function (provider
+    /*: any*/
+    ) {
       authProviders[provider.getAuthType()] = provider; // Synchronize the current user with the auth provider.
 
       ParseUser.currentAsync().then(function (current) {
@@ -15111,7 +15212,11 @@ function (_ParseObject) {
     }
   }, {
     key: "_logInWith",
-    value: function (provider, options) {
+    value: function (provider
+    /*: any*/
+    , options
+    /*:: ?: RequestOptions*/
+    ) {
       var user = new ParseUser();
       return user._linkWith(provider, options);
     }
@@ -15123,7 +15228,9 @@ function (_ParseObject) {
     }
   }, {
     key: "_setCurrentUserCache",
-    value: function (user) {
+    value: function (user
+    /*: ParseUser*/
+    ) {
       currentUserCache = user;
     }
   }]);
@@ -15223,7 +15330,7 @@ var DefaultController = {
     return current;
   },
   currentUserAsync: function ()
-  /*: Promise*/
+  /*: Promise<?ParseUser>*/
   {
     if (currentUserCache) {
       return Promise.resolve(currentUserCache);
@@ -15278,7 +15385,7 @@ var DefaultController = {
   , options
   /*: RequestOptions*/
   )
-  /*: Promise*/
+  /*: Promise<ParseUser>*/
   {
     var username = attrs && attrs.username || user.get('username');
     var password = attrs && attrs.password || user.get('password');
@@ -15309,7 +15416,7 @@ var DefaultController = {
   , options
   /*: RequestOptions*/
   )
-  /*: Promise*/
+  /*: Promise<ParseUser>*/
   {
     var RESTController = _CoreManager.default.getRESTController();
 
@@ -15341,7 +15448,7 @@ var DefaultController = {
   become: function (options
   /*: RequestOptions*/
   )
-  /*: Promise*/
+  /*: Promise<ParseUser>*/
   {
     var user = new ParseUser();
 
@@ -15357,7 +15464,9 @@ var DefaultController = {
   },
   hydrate: function (userJSON
   /*: AttributeMap*/
-  ) {
+  )
+  /*: Promise<ParseUser>*/
+  {
     var user = new ParseUser();
 
     user._finishFetch(userJSON);
@@ -15371,7 +15480,7 @@ var DefaultController = {
     }
   },
   logOut: function ()
-  /*: Promise*/
+  /*: Promise<ParseUser>*/
   {
     return DefaultController.currentUserAsync().then(function (currentUser) {
       var path = _Storage.default.generatePath(CURRENT_USER_KEY);
@@ -16201,7 +16310,7 @@ var Storage = {
   getItemAsync: function (path
   /*: string*/
   )
-  /*: Promise*/
+  /*: Promise<string>*/
   {
     var controller = _CoreManager.default.getStorageController();
 
@@ -16231,7 +16340,7 @@ var Storage = {
   , value
   /*: string*/
   )
-  /*: Promise*/
+  /*: Promise<void>*/
   {
     var controller = _CoreManager.default.getStorageController();
 
@@ -16257,7 +16366,7 @@ var Storage = {
   removeItemAsync: function (path
   /*: string*/
   )
-  /*: Promise*/
+  /*: Promise<void>*/
   {
     var controller = _CoreManager.default.getStorageController();
 
@@ -17232,13 +17341,13 @@ function parseDate(iso8601
     return null;
   }
 
-  var year = match[1] || 0;
-  var month = (match[2] || 1) - 1;
-  var day = match[3] || 0;
-  var hour = match[4] || 0;
-  var minute = match[5] || 0;
-  var second = match[6] || 0;
-  var milli = match[8] || 0;
+  var year = parseInt(match[1]) || 0;
+  var month = (parseInt(match[2]) || 1) - 1;
+  var day = parseInt(match[3]) || 0;
+  var hour = parseInt(match[4]) || 0;
+  var minute = parseInt(match[5]) || 0;
+  var second = parseInt(match[6]) || 0;
+  var milli = parseInt(match[8]) || 0;
   return new Date(Date.UTC(year, month, day, hour, minute, second, milli));
 }
 },{}],47:[function(_dereq_,module,exports){
