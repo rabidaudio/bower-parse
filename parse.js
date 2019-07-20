@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.5.0
+ * Parse JavaScript SDK v2.5.1
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -627,7 +627,7 @@ var config
   SERVER_AUTH_TYPE: null,
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + "2.5.0",
+  VERSION: 'js' + "2.5.1",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
