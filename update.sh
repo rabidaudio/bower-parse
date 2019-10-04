@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 VERSION="$1"
 MESSAGE="$2"
 if [ -z "$VERSION" ]; then
@@ -13,6 +14,7 @@ npm install
 ./build_releases.sh
 cd ..
 cp ./Parse-SDK-JS/dist/* .
+head parse.js | grep "$VERSION" || exit 1
 git commit -a -m "updated to $VERSION \n $MESSAGE"
 cd Parse-SDK-JS
 git reset --hard HEAD
