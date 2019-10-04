@@ -1,6 +1,6 @@
 {
   "name": "parse",
-  "version": "1.11.1",
+  "version": "2.7.0",
   "main": [
     "parse.js"
   ],
