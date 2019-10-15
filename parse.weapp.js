@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.7.1
+ * Parse JavaScript SDK v2.8.0
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -658,7 +658,7 @@ var config
   SERVER_AUTH_TYPE: null,
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + "2.7.1",
+  VERSION: 'js' + "2.8.0",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -5808,6 +5808,7 @@ function () {
     (0, _defineProperty2.default)(this, "_source", void 0);
     (0, _defineProperty2.default)(this, "_previousSave", void 0);
     (0, _defineProperty2.default)(this, "_data", void 0);
+    (0, _defineProperty2.default)(this, "_requestTask", void 0);
     var specifiedType = type || '';
     this._name = name;
 
@@ -5872,7 +5873,9 @@ function () {
       var _getData = (0, _asyncToGenerator2.default)(
       /*#__PURE__*/
       _regenerator.default.mark(function _callee() {
-        var controller, result;
+        var _this = this;
+
+        var options, controller, result;
         return _regenerator.default.wrap(function (_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -5893,16 +5896,21 @@ function () {
                 throw new Error('Cannot retrieve data for unsaved ParseFile.');
 
               case 4:
+                options = {
+                  requestTask: function (task) {
+                    return _this._requestTask = task;
+                  }
+                };
                 controller = _CoreManager.default.getFileController();
-                _context.next = 7;
-                return controller.download(this._url);
+                _context.next = 8;
+                return controller.download(this._url, options);
 
-              case 7:
+              case 8:
                 result = _context.sent;
                 this._data = result.base64;
                 return _context.abrupt("return", this._data);
 
-              case 10:
+              case 11:
               case "end":
                 return _context.stop();
             }
@@ -5970,39 +5978,51 @@ function () {
     value: function (options
     /*:: ?: FullOptions*/
     ) {
-      var _this = this;
+      var _this2 = this;
 
       options = options || {};
+
+      options.requestTask = function (task) {
+        return _this2._requestTask = task;
+      };
 
       var controller = _CoreManager.default.getFileController();
 
       if (!this._previousSave) {
         if (this._source.format === 'file') {
           this._previousSave = controller.saveFile(this._name, this._source, options).then(function (res) {
-            _this._name = res.name;
-            _this._url = res.url;
-            _this._data = null;
-            return _this;
+            _this2._name = res.name;
+            _this2._url = res.url;
+            _this2._data = null;
+            _this2._requestTask = null;
+            return _this2;
           });
         } else if (this._source.format === 'uri') {
-          this._previousSave = controller.download(this._source.uri).then(function (result) {
+          this._previousSave = controller.download(this._source.uri, options).then(function (result) {
+            if (!(result && result.base64)) {
+              return {};
+            }
+
             var newSource = {
               format: 'base64',
               base64: result.base64,
               type: result.contentType
             };
-            _this._data = result.base64;
-            return controller.saveBase64(_this._name, newSource, options);
+            _this2._data = result.base64;
+            _this2._requestTask = null;
+            return controller.saveBase64(_this2._name, newSource, options);
           }).then(function (res) {
-            _this._name = res.name;
-            _this._url = res.url;
-            return _this;
+            _this2._name = res.name;
+            _this2._url = res.url;
+            _this2._requestTask = null;
+            return _this2;
           });
         } else {
           this._previousSave = controller.saveBase64(this._name, this._source, options).then(function (res) {
-            _this._name = res.name;
-            _this._url = res.url;
-            return _this;
+            _this2._name = res.name;
+            _this2._url = res.url;
+            _this2._requestTask = null;
+            return _this2;
           });
         }
       }
@@ -6010,6 +6030,19 @@ function () {
       if (this._previousSave) {
         return this._previousSave;
       }
+    }
+    /**
+     * Aborts the request if it has already been sent.
+     */
+
+  }, {
+    key: "cancel",
+    value: function () {
+      if (this._requestTask && typeof this._requestTask.abort === 'function') {
+        this._requestTask.abort();
+      }
+
+      this._requestTask = null;
     }
   }, {
     key: "toJSON",
@@ -6132,14 +6165,14 @@ var DefaultController = {
 
     return _CoreManager.default.getRESTController().request('POST', 'files/' + name, data, options);
   },
-  download: function (uri) {
+  download: function (uri, options) {
     if (XHR) {
-      return this.downloadAjax(uri);
+      return this.downloadAjax(uri, options);
     } else {
       return _promise.default.reject('Cannot make a request: No definition of XMLHttpRequest was found.');
     }
   },
-  downloadAjax: function (uri) {
+  downloadAjax: function (uri, options) {
     return new _promise.default(function (resolve, reject) {
       var xhr = new XHR();
       xhr.open('GET', uri, true);
@@ -6150,8 +6183,12 @@ var DefaultController = {
       };
 
       xhr.onreadystatechange = function () {
-        if (xhr.readyState !== 4) {
+        if (xhr.readyState !== xhr.DONE) {
           return;
+        }
+
+        if (!this.response) {
+          return resolve({});
         }
 
         var bytes = new Uint8Array(this.response);
@@ -6161,6 +6198,7 @@ var DefaultController = {
         });
       };
 
+      options.requestTask(xhr);
       xhr.send();
     });
   },
@@ -6840,12 +6878,12 @@ var _unsavedChildren = _interopRequireDefault(_dereq_("./unsavedChildren"));
  */
 
 
+var uuidv4 = _dereq_('uuid/v4');
+
 var DEFAULT_BATCH_SIZE = 20; // Mapping of class names to constructors, so we can populate objects from the
 // server with appropriate subclasses of ParseObject
 
-var classMap = {}; // Global counter for generating unique local Ids
-
-var localCount = 0; // Global counter for generating unique Ids for non-single-instance objects
+var classMap = {}; // Global counter for generating unique Ids for non-single-instance objects
 
 var objectCount = 0; // On web clients, objects are single-instance: any two objects with the same Id
 // will have the same attributes. However, this may be dangerous default
@@ -6968,7 +7006,7 @@ function () {
         return this._localId;
       }
 
-      var localId = 'local' + String(localCount++);
+      var localId = 'local' + uuidv4();
       this._localId = localId;
       return localId;
     }
@@ -10235,7 +10273,7 @@ _CoreManager.default.setObjectController(DefaultController);
 
 var _default = ParseObject;
 exports.default = _default;
-},{"./CoreManager":4,"./LocalDatastoreUtils":12,"./ParseACL":16,"./ParseError":18,"./ParseFile":19,"./ParseOp":24,"./ParseQuery":26,"./ParseRelation":27,"./SingleInstanceStateController":34,"./UniqueInstanceStateController":39,"./canBeSerialized":42,"./decode":43,"./encode":44,"./escape":46,"./parseDate":48,"./promiseUtils":49,"./unique":50,"./unsavedChildren":51,"@babel/runtime-corejs3/core-js-stable/array/is-array":53,"@babel/runtime-corejs3/core-js-stable/instance/concat":55,"@babel/runtime-corejs3/core-js-stable/instance/find":57,"@babel/runtime-corejs3/core-js-stable/instance/for-each":58,"@babel/runtime-corejs3/core-js-stable/instance/includes":59,"@babel/runtime-corejs3/core-js-stable/instance/index-of":60,"@babel/runtime-corejs3/core-js-stable/instance/map":62,"@babel/runtime-corejs3/core-js-stable/json/stringify":68,"@babel/runtime-corejs3/core-js-stable/object/create":71,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/object/freeze":74,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/core-js/get-iterator":86,"@babel/runtime-corejs3/helpers/asyncToGenerator":105,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/interopRequireWildcard":114,"@babel/runtime-corejs3/helpers/typeof":125,"@babel/runtime-corejs3/regenerator":128}],24:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./LocalDatastoreUtils":12,"./ParseACL":16,"./ParseError":18,"./ParseFile":19,"./ParseOp":24,"./ParseQuery":26,"./ParseRelation":27,"./SingleInstanceStateController":34,"./UniqueInstanceStateController":39,"./canBeSerialized":42,"./decode":43,"./encode":44,"./escape":46,"./parseDate":48,"./promiseUtils":49,"./unique":50,"./unsavedChildren":51,"@babel/runtime-corejs3/core-js-stable/array/is-array":53,"@babel/runtime-corejs3/core-js-stable/instance/concat":55,"@babel/runtime-corejs3/core-js-stable/instance/find":57,"@babel/runtime-corejs3/core-js-stable/instance/for-each":58,"@babel/runtime-corejs3/core-js-stable/instance/includes":59,"@babel/runtime-corejs3/core-js-stable/instance/index-of":60,"@babel/runtime-corejs3/core-js-stable/instance/map":62,"@babel/runtime-corejs3/core-js-stable/json/stringify":68,"@babel/runtime-corejs3/core-js-stable/object/create":71,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/object/freeze":74,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/core-js/get-iterator":86,"@babel/runtime-corejs3/helpers/asyncToGenerator":105,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/interopRequireWildcard":114,"@babel/runtime-corejs3/helpers/typeof":125,"@babel/runtime-corejs3/regenerator":128,"uuid/v4":434}],24:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -13311,8 +13349,8 @@ function () {
       return this;
     }
     /**
-     * Sets the limit of the number of results to return. The default limit is
-     * 100, with a maximum of 1000 results being returned at a time.
+     * Sets the limit of the number of results to return. The default limit is 100.
+     *
      * @param {Number} n the number of results to limit to.
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -14659,8 +14697,7 @@ function () {
     /**
      * Deleting a Field to Update on a Schema
      *
-     * @param {String} name Name of the field that will be created on Parse
-     * @param {String} targetClass Name of the target Pointer Class
+     * @param {String} name Name of the field
      * @return {Parse.Schema} Returns the schema, so you can chain this call.
      */
 
@@ -14672,12 +14709,12 @@ function () {
       this._fields[name] = {
         __op: 'Delete'
       };
+      return this;
     }
     /**
      * Deleting an Index to Update on a Schema
      *
-     * @param {String} name Name of the field that will be created on Parse
-     * @param {String} targetClass Name of the target Pointer Class
+     * @param {String} name Name of the field
      * @return {Parse.Schema} Returns the schema, so you can chain this call.
      */
 
@@ -14689,6 +14726,7 @@ function () {
       this._indexes[name] = {
         __op: 'Delete'
       };
+      return this;
     }
   }], [{
     key: "all",
@@ -16677,6 +16715,10 @@ function ajaxIE9(method
   return new _promise.default(function (resolve, reject) {
     var xdr = new XDomainRequest();
 
+    if (options && typeof options.requestTask === 'function') {
+      options.requestTask(xdr);
+    }
+
     xdr.onload = function () {
       var response;
 
@@ -16746,7 +16788,12 @@ var RESTController = {
       }
 
       var handled = false;
+      var aborted = false;
       var xhr = new XHR();
+
+      if (options && typeof options.requestTask === 'function') {
+        options.requestTask(xhr);
+      }
 
       xhr.onreadystatechange = function () {
         if (xhr.readyState !== 4 || handled) {
@@ -16779,6 +16826,12 @@ var RESTController = {
               xhr: xhr
             });
           }
+        } else if (aborted && xhr.status === 0) {
+          promise.resolve({
+            response: {},
+            status: 0,
+            xhr: xhr
+          });
         } else if (xhr.status >= 500 || xhr.status === 0) {
           // retry on 5XX or node-xmlhttprequest error
           if (++attempts < _CoreManager.default.get('REQUEST_ATTEMPT_LIMIT')) {
@@ -16829,6 +16882,10 @@ var RESTController = {
           });
         }
       }
+
+      xhr.onabort = function () {
+        aborted = true;
+      };
 
       xhr.open(method, url, true);
 
@@ -17833,8 +17890,13 @@ module.exports =
 function () {
   function XhrWeapp() {
     (0, _classCallCheck2.default)(this, XhrWeapp);
+    this.UNSENT = 0;
+    this.OPENED = 1;
+    this.HEADERS_RECEIVED = 2;
+    this.LOADING = 3;
+    this.DONE = 4;
     this.header = {};
-    this.readyState = 4;
+    this.readyState = this.DONE;
     this.status = 0;
     this.response = '';
     this.responseType = '';
@@ -17843,9 +17905,13 @@ function () {
     this.method = '';
     this.url = '';
 
+    this.onabort = function () {};
+
     this.onerror = function () {};
 
     this.onreadystatechange = function () {};
+
+    this.requestTask = null;
   }
 
   (0, _createClass2.default)(XhrWeapp, [{
@@ -17876,11 +17942,24 @@ function () {
       this.url = url;
     }
   }, {
+    key: "abort",
+    value: function () {
+      if (!this.requestTask) {
+        return;
+      }
+
+      this.requestTask.abort();
+      this.status = 0;
+      this.response = undefined;
+      this.onabort();
+      this.onreadystatechange();
+    }
+  }, {
     key: "send",
     value: function (data) {
       var _this = this;
 
-      wx.request({
+      this.requestTask = wx.request({
         url: this.url,
         method: this.method,
         data: data,
@@ -17891,10 +17970,13 @@ function () {
           _this.response = res.data;
           _this.responseHeader = res.header;
           _this.responseText = (0, _stringify.default)(res.data);
+          _this.requestTask = null;
 
           _this.onreadystatechange();
         },
         fail: function (err) {
+          _this.requestTask = null;
+
           _this.onerror(err);
         }
       });
