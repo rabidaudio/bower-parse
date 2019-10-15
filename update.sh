@@ -11,7 +11,7 @@ git submodule update --remote
 cd Parse-SDK-JS
 git checkout ${VERSION}
 npm install
-./build_releases.sh
+npm run build
 cd ..
 cp ./Parse-SDK-JS/dist/* .
 head parse.js | grep "$VERSION" || exit 1
