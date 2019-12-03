@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.9.0
+ * Parse JavaScript SDK v2.9.1
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -658,7 +658,7 @@ var config
   SERVER_AUTH_TYPE: null,
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + "2.9.0",
+  VERSION: 'js' + "2.9.1",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -16347,7 +16347,7 @@ var DefaultController = {
     var path = _Storage.default.generatePath(CURRENT_USER_KEY);
 
     var json = user.toJSON();
-    json.className = user.constructor.name === 'ParseUser' ? '_User' : user.constructor.name;
+    json.className = user.constructor.name === ParseUser.name ? '_User' : user.constructor.name;
     return _Storage.default.setItemAsync(path, (0, _stringify.default)(json)).then(function () {
       return user;
     });
