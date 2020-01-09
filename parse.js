@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.10.0
+ * Parse JavaScript SDK v2.11.0
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -106,7 +106,7 @@ var DefaultController = {
 };
 
 _CoreManager.default.setAnalyticsController(DefaultController);
-},{"./CoreManager":4,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],2:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],2:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -249,7 +249,7 @@ var AnonymousUtils = {
 };
 var _default = AnonymousUtils;
 exports.default = _default;
-},{"./ParseUser":31,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"uuid/v4":440}],3:[function(_dereq_,module,exports){
+},{"./ParseUser":32,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"uuid/v4":457}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -446,7 +446,7 @@ var DefaultController = {
 };
 
 _CoreManager.default.setCloudController(DefaultController);
-},{"./CoreManager":4,"./ParseError":18,"./ParseObject":23,"./ParseQuery":26,"./decode":41,"./encode":42,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/object/keys":77,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],4:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseError":19,"./ParseObject":24,"./ParseQuery":27,"./decode":42,"./encode":43,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],4:[function(_dereq_,module,exports){
 (function (process){
 "use strict";
 
@@ -500,6 +500,11 @@ var _forEach = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-st
   current: () => Promise;
   get: () => Promise;
   save: (attrs: { [key: string]: any }) => Promise;
+};*/
+
+/*:: type CryptoController = {
+  encrypt: (obj: any, secretKey: string) => string;
+  decrypt: (encryptedText: string, secretKey: any) => string;
 };*/
 
 /*:: type FileController = {
@@ -659,13 +664,15 @@ var config
   SERVER_AUTH_TYPE: null,
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
-  VERSION: 'js' + "2.10.0",
+  ENCRYPTED_KEY: null,
+  VERSION: 'js' + "2.11.0",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
   USE_MASTER_KEY: false,
   PERFORM_USER_REWRITE: true,
-  FORCE_REVOCABLE_SESSION: false
+  FORCE_REVOCABLE_SESSION: false,
+  ENCRYPTED_USER: false
 };
 
 function requireMethods(name
@@ -739,6 +746,17 @@ module.exports = {
   /*: ConfigController*/
   {
     return config['ConfigController'];
+  },
+  setCryptoController: function (controller
+  /*: CryptoController*/
+  ) {
+    requireMethods('CryptoController', ['encrypt', 'decrypt'], controller);
+    config['CryptoController'] = controller;
+  },
+  getCryptoController: function ()
+  /*: CryptoController*/
+  {
+    return config['CryptoController'];
   },
   setFileController: function (controller
   /*: FileController*/
@@ -927,7 +945,43 @@ module.exports = {
   }
 };
 }).call(this,_dereq_('_process'))
-},{"@babel/runtime-corejs3/core-js-stable/instance/concat":53,"@babel/runtime-corejs3/core-js-stable/instance/for-each":56,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"_process":126}],5:[function(_dereq_,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/instance/concat":54,"@babel/runtime-corejs3/core-js-stable/instance/for-each":57,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"_process":129}],5:[function(_dereq_,module,exports){
+"use strict";
+
+var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
+
+var _stringify = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/json/stringify"));
+
+var _aes = _interopRequireDefault(_dereq_("crypto-js/aes"));
+
+var _encUtf = _interopRequireDefault(_dereq_("crypto-js/enc-utf8"));
+
+var CryptoController = {
+  encrypt: function (obj
+  /*: any*/
+  , secretKey
+  /*: string*/
+  )
+  /*: ?string*/
+  {
+    var encrypted = _aes.default.encrypt((0, _stringify.default)(obj), secretKey);
+
+    return encrypted.toString();
+  },
+  decrypt: function (encryptedText
+  /*: string*/
+  , secretKey
+  /*: string*/
+  )
+  /*: ?string*/
+  {
+    var decryptedStr = _aes.default.decrypt(encryptedText, secretKey).toString(_encUtf.default);
+
+    return decryptedStr;
+  }
+};
+module.exports = CryptoController;
+},{"@babel/runtime-corejs3/core-js-stable/json/stringify":68,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"crypto-js/aes":445,"crypto-js/enc-utf8":449}],6:[function(_dereq_,module,exports){
 "use strict";
 /**
  * Copyright (c) 2015-present, Parse, LLC.
@@ -942,7 +996,7 @@ module.exports = {
 
 module.exports = _dereq_('events').EventEmitter;
 var EventEmitter;
-},{"events":437}],6:[function(_dereq_,module,exports){
+},{"events":454}],7:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -1206,7 +1260,7 @@ var FacebookUtils = {
 };
 var _default = FacebookUtils;
 exports.default = _default;
-},{"./ParseUser":31,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],7:[function(_dereq_,module,exports){
+},{"./ParseUser":32,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],8:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -1262,7 +1316,7 @@ var InstallationController = {
   }
 };
 module.exports = InstallationController;
-},{"./Storage":35,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"uuid/v4":440}],8:[function(_dereq_,module,exports){
+},{"./Storage":36,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"uuid/v4":457}],9:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -1937,7 +1991,7 @@ _CoreManager.default.setWebSocketController(typeof WebSocket === 'function' || (
 
 var _default = LiveQueryClient;
 exports.default = _default;
-},{"./CoreManager":4,"./EventEmitter":5,"./LiveQuerySubscription":9,"./ParseObject":23,"./promiseUtils":47,"@babel/runtime-corejs3/core-js-stable/instance/bind":52,"@babel/runtime-corejs3/core-js-stable/instance/for-each":56,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/instance/keys":59,"@babel/runtime-corejs3/core-js-stable/instance/values":66,"@babel/runtime-corejs3/core-js-stable/json/stringify":67,"@babel/runtime-corejs3/core-js-stable/map":68,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/set-timeout":80,"@babel/runtime-corejs3/core-js/get-iterator":85,"@babel/runtime-corejs3/helpers/assertThisInitialized":102,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/getPrototypeOf":108,"@babel/runtime-corejs3/helpers/inherits":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":117,"@babel/runtime-corejs3/helpers/typeof":122}],9:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./EventEmitter":6,"./LiveQuerySubscription":10,"./ParseObject":24,"./promiseUtils":48,"@babel/runtime-corejs3/core-js-stable/instance/bind":53,"@babel/runtime-corejs3/core-js-stable/instance/for-each":57,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/instance/keys":60,"@babel/runtime-corejs3/core-js-stable/instance/values":67,"@babel/runtime-corejs3/core-js-stable/json/stringify":68,"@babel/runtime-corejs3/core-js-stable/map":69,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/set-timeout":81,"@babel/runtime-corejs3/core-js/get-iterator":86,"@babel/runtime-corejs3/helpers/assertThisInitialized":104,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/getPrototypeOf":111,"@babel/runtime-corejs3/helpers/inherits":112,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":120,"@babel/runtime-corejs3/helpers/typeof":125}],10:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -2112,7 +2166,7 @@ function (_EventEmitter) {
 
 var _default = Subscription;
 exports.default = _default;
-},{"./CoreManager":4,"./EventEmitter":5,"./promiseUtils":47,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/getPrototypeOf":108,"@babel/runtime-corejs3/helpers/inherits":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":117}],10:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./EventEmitter":6,"./promiseUtils":48,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/getPrototypeOf":111,"@babel/runtime-corejs3/helpers/inherits":112,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":120}],11:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -2148,6 +2202,8 @@ var _toConsumableArray2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3
 var _promise = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/promise"));
 
 var _slicedToArray2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/slicedToArray"));
+
+var _asyncToGenerator2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/asyncToGenerator"));
 
 var _CoreManager = _interopRequireDefault(_dereq_("./CoreManager"));
 
@@ -2243,276 +2299,292 @@ var LocalDatastore = {
   },
   // Pin the object and children recursively
   // Saves the object and children key to Pin Name
-  _handlePinAllWithName: function (name
-  /*: string*/
-  , objects
-  /*: Array<ParseObject>*/
-  ) {
-    var _context;
+  _handlePinAllWithName: function () {
+    var _handlePinAllWithName2 = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee(name
+    /*: string*/
+    , objects
+    /*: Array<ParseObject>*/
+    ) {
+      var _context;
 
-    var pinName, toPinPromises, objectKeys, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, parent, children, parentKey, json, objectKey, fromPinPromise, _ref, _ref2, pinned, toPin;
+      var pinName, toPinPromises, objectKeys, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, parent, children, parentKey, json, objectKey, fromPinPromise, _ref, _ref2, pinned, toPin;
 
-    return _regenerator.default.async(function (_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            pinName = this.getPinName(name);
-            toPinPromises = [];
-            objectKeys = [];
-            _iteratorNormalCompletion = true;
-            _didIteratorError = false;
-            _iteratorError = undefined;
-            _context2.prev = 6;
+      return _regenerator.default.wrap(function (_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              pinName = this.getPinName(name);
+              toPinPromises = [];
+              objectKeys = [];
+              _iteratorNormalCompletion = true;
+              _didIteratorError = false;
+              _iteratorError = undefined;
+              _context2.prev = 6;
 
-            for (_iterator = (0, _getIterator2.default)(objects); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              parent = _step.value;
-              children = this._getChildren(parent);
-              parentKey = this.getKeyForObject(parent);
-              json = parent._toFullJSON();
+              for (_iterator = (0, _getIterator2.default)(objects); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                parent = _step.value;
+                children = this._getChildren(parent);
+                parentKey = this.getKeyForObject(parent);
+                json = parent._toFullJSON();
 
-              if (parent._localId) {
-                json._localId = parent._localId;
+                if (parent._localId) {
+                  json._localId = parent._localId;
+                }
+
+                children[parentKey] = json;
+
+                for (objectKey in children) {
+                  objectKeys.push(objectKey);
+                  toPinPromises.push(this.pinWithName(objectKey, [children[objectKey]]));
+                }
               }
 
-              children[parentKey] = json;
-
-              for (objectKey in children) {
-                objectKeys.push(objectKey);
-                toPinPromises.push(this.pinWithName(objectKey, [children[objectKey]]));
-              }
-            }
-
-            _context2.next = 14;
-            break;
-
-          case 10:
-            _context2.prev = 10;
-            _context2.t0 = _context2["catch"](6);
-            _didIteratorError = true;
-            _iteratorError = _context2.t0;
-
-          case 14:
-            _context2.prev = 14;
-            _context2.prev = 15;
-
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
-            }
-
-          case 17:
-            _context2.prev = 17;
-
-            if (!_didIteratorError) {
-              _context2.next = 20;
+              _context2.next = 14;
               break;
-            }
 
-            throw _iteratorError;
+            case 10:
+              _context2.prev = 10;
+              _context2.t0 = _context2["catch"](6);
+              _didIteratorError = true;
+              _iteratorError = _context2.t0;
 
-          case 20:
-            return _context2.finish(17);
+            case 14:
+              _context2.prev = 14;
+              _context2.prev = 15;
 
-          case 21:
-            return _context2.finish(14);
+              if (!_iteratorNormalCompletion && _iterator.return != null) {
+                _iterator.return();
+              }
 
-          case 22:
-            fromPinPromise = this.fromPinWithName(pinName);
-            _context2.next = 25;
-            return _regenerator.default.awrap(_promise.default.all([fromPinPromise, toPinPromises]));
+            case 17:
+              _context2.prev = 17;
 
-          case 25:
-            _ref = _context2.sent;
-            _ref2 = (0, _slicedToArray2.default)(_ref, 1);
-            pinned = _ref2[0];
-            toPin = (0, _toConsumableArray2.default)(new _set.default((0, _concat.default)(_context = []).call(_context, (0, _toConsumableArray2.default)(pinned || []), objectKeys)));
-            return _context2.abrupt("return", this.pinWithName(pinName, toPin));
+              if (!_didIteratorError) {
+                _context2.next = 20;
+                break;
+              }
 
-          case 30:
-          case "end":
-            return _context2.stop();
+              throw _iteratorError;
+
+            case 20:
+              return _context2.finish(17);
+
+            case 21:
+              return _context2.finish(14);
+
+            case 22:
+              fromPinPromise = this.fromPinWithName(pinName);
+              _context2.next = 25;
+              return _promise.default.all([fromPinPromise, toPinPromises]);
+
+            case 25:
+              _ref = _context2.sent;
+              _ref2 = (0, _slicedToArray2.default)(_ref, 1);
+              pinned = _ref2[0];
+              toPin = (0, _toConsumableArray2.default)(new _set.default((0, _concat.default)(_context = []).call(_context, (0, _toConsumableArray2.default)(pinned || []), objectKeys)));
+              return _context2.abrupt("return", this.pinWithName(pinName, toPin));
+
+            case 30:
+            case "end":
+              return _context2.stop();
+          }
         }
-      }
-    }, null, this, [[6, 10, 14, 22], [15,, 17, 21]]);
-  },
+      }, _callee, this, [[6, 10, 14, 22], [15,, 17, 21]]);
+    }));
+
+    return function () {
+      return _handlePinAllWithName2.apply(this, arguments);
+    };
+  }(),
   // Removes object and children keys from pin name
   // Keeps the object and children pinned
-  _handleUnPinAllWithName: function (name
-  /*: string*/
-  , objects
-  /*: Array<ParseObject>*/
-  ) {
-    var localDatastore, pinName, promises, objectKeys, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _objectKeys, _context3, parent, children, parentKey, pinned, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, objectKey, hasReference, key, pinnedObjects;
+  _handleUnPinAllWithName: function () {
+    var _handleUnPinAllWithName2 = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee2(name
+    /*: string*/
+    , objects
+    /*: Array<ParseObject>*/
+    ) {
+      var localDatastore, pinName, promises, objectKeys, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _objectKeys, _context3, parent, children, parentKey, pinned, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, objectKey, hasReference, key, pinnedObjects;
 
-    return _regenerator.default.async(function (_context4) {
-      while (1) {
-        switch (_context4.prev = _context4.next) {
-          case 0:
-            _context4.next = 2;
-            return _regenerator.default.awrap(this._getAllContents());
+      return _regenerator.default.wrap(function (_context4) {
+        while (1) {
+          switch (_context4.prev = _context4.next) {
+            case 0:
+              _context4.next = 2;
+              return this._getAllContents();
 
-          case 2:
-            localDatastore = _context4.sent;
-            pinName = this.getPinName(name);
-            promises = [];
-            objectKeys = [];
-            _iteratorNormalCompletion2 = true;
-            _didIteratorError2 = false;
-            _iteratorError2 = undefined;
-            _context4.prev = 9;
+            case 2:
+              localDatastore = _context4.sent;
+              pinName = this.getPinName(name);
+              promises = [];
+              objectKeys = [];
+              _iteratorNormalCompletion2 = true;
+              _didIteratorError2 = false;
+              _iteratorError2 = undefined;
+              _context4.prev = 9;
 
-            for (_iterator2 = (0, _getIterator2.default)(objects); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-              parent = _step2.value;
-              children = this._getChildren(parent);
-              parentKey = this.getKeyForObject(parent);
+              for (_iterator2 = (0, _getIterator2.default)(objects); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                parent = _step2.value;
+                children = this._getChildren(parent);
+                parentKey = this.getKeyForObject(parent);
 
-              (_objectKeys = objectKeys).push.apply(_objectKeys, (0, _concat.default)(_context3 = [parentKey]).call(_context3, (0, _toConsumableArray2.default)((0, _keys3.default)(children))));
-            }
+                (_objectKeys = objectKeys).push.apply(_objectKeys, (0, _concat.default)(_context3 = [parentKey]).call(_context3, (0, _toConsumableArray2.default)((0, _keys3.default)(children))));
+              }
 
-            _context4.next = 17;
-            break;
-
-          case 13:
-            _context4.prev = 13;
-            _context4.t0 = _context4["catch"](9);
-            _didIteratorError2 = true;
-            _iteratorError2 = _context4.t0;
-
-          case 17:
-            _context4.prev = 17;
-            _context4.prev = 18;
-
-            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-              _iterator2.return();
-            }
-
-          case 20:
-            _context4.prev = 20;
-
-            if (!_didIteratorError2) {
-              _context4.next = 23;
+              _context4.next = 17;
               break;
-            }
 
-            throw _iteratorError2;
+            case 13:
+              _context4.prev = 13;
+              _context4.t0 = _context4["catch"](9);
+              _didIteratorError2 = true;
+              _iteratorError2 = _context4.t0;
 
-          case 23:
-            return _context4.finish(20);
+            case 17:
+              _context4.prev = 17;
+              _context4.prev = 18;
 
-          case 24:
-            return _context4.finish(17);
+              if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                _iterator2.return();
+              }
 
-          case 25:
-            objectKeys = (0, _toConsumableArray2.default)(new _set.default(objectKeys));
-            pinned = localDatastore[pinName] || [];
-            pinned = (0, _filter.default)(pinned).call(pinned, function (item) {
-              return !(0, _includes.default)(objectKeys).call(objectKeys, item);
-            });
+            case 20:
+              _context4.prev = 20;
 
-            if (pinned.length == 0) {
-              promises.push(this.unPinWithName(pinName));
-              delete localDatastore[pinName];
-            } else {
-              promises.push(this.pinWithName(pinName, pinned));
-              localDatastore[pinName] = pinned;
-            }
+              if (!_didIteratorError2) {
+                _context4.next = 23;
+                break;
+              }
 
-            _iteratorNormalCompletion3 = true;
-            _didIteratorError3 = false;
-            _iteratorError3 = undefined;
-            _context4.prev = 32;
-            _iterator3 = (0, _getIterator2.default)(objectKeys);
+              throw _iteratorError2;
 
-          case 34:
-            if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-              _context4.next = 51;
+            case 23:
+              return _context4.finish(20);
+
+            case 24:
+              return _context4.finish(17);
+
+            case 25:
+              objectKeys = (0, _toConsumableArray2.default)(new _set.default(objectKeys));
+              pinned = localDatastore[pinName] || [];
+              pinned = (0, _filter.default)(pinned).call(pinned, function (item) {
+                return !(0, _includes.default)(objectKeys).call(objectKeys, item);
+              });
+
+              if (pinned.length == 0) {
+                promises.push(this.unPinWithName(pinName));
+                delete localDatastore[pinName];
+              } else {
+                promises.push(this.pinWithName(pinName, pinned));
+                localDatastore[pinName] = pinned;
+              }
+
+              _iteratorNormalCompletion3 = true;
+              _didIteratorError3 = false;
+              _iteratorError3 = undefined;
+              _context4.prev = 32;
+              _iterator3 = (0, _getIterator2.default)(objectKeys);
+
+            case 34:
+              if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                _context4.next = 51;
+                break;
+              }
+
+              objectKey = _step3.value;
+              hasReference = false;
+              _context4.t1 = (0, _keys2.default)(_regenerator.default).call(_regenerator.default, localDatastore);
+
+            case 38:
+              if ((_context4.t2 = _context4.t1()).done) {
+                _context4.next = 47;
+                break;
+              }
+
+              key = _context4.t2.value;
+
+              if (!(key === _LocalDatastoreUtils.DEFAULT_PIN || (0, _startsWith.default)(key).call(key, _LocalDatastoreUtils.PIN_PREFIX))) {
+                _context4.next = 45;
+                break;
+              }
+
+              pinnedObjects = localDatastore[key] || [];
+
+              if (!(0, _includes.default)(pinnedObjects).call(pinnedObjects, objectKey)) {
+                _context4.next = 45;
+                break;
+              }
+
+              hasReference = true;
+              return _context4.abrupt("break", 47);
+
+            case 45:
+              _context4.next = 38;
               break;
-            }
 
-            objectKey = _step3.value;
-            hasReference = false;
-            _context4.t1 = (0, _keys2.default)(_regenerator.default).call(_regenerator.default, localDatastore);
+            case 47:
+              if (!hasReference) {
+                promises.push(this.unPinWithName(objectKey));
+              }
 
-          case 38:
-            if ((_context4.t2 = _context4.t1()).done) {
-              _context4.next = 47;
+            case 48:
+              _iteratorNormalCompletion3 = true;
+              _context4.next = 34;
               break;
-            }
 
-            key = _context4.t2.value;
-
-            if (!(key === _LocalDatastoreUtils.DEFAULT_PIN || (0, _startsWith.default)(key).call(key, _LocalDatastoreUtils.PIN_PREFIX))) {
-              _context4.next = 45;
+            case 51:
+              _context4.next = 57;
               break;
-            }
 
-            pinnedObjects = localDatastore[key] || [];
+            case 53:
+              _context4.prev = 53;
+              _context4.t3 = _context4["catch"](32);
+              _didIteratorError3 = true;
+              _iteratorError3 = _context4.t3;
 
-            if (!(0, _includes.default)(pinnedObjects).call(pinnedObjects, objectKey)) {
-              _context4.next = 45;
-              break;
-            }
+            case 57:
+              _context4.prev = 57;
+              _context4.prev = 58;
 
-            hasReference = true;
-            return _context4.abrupt("break", 47);
+              if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+                _iterator3.return();
+              }
 
-          case 45:
-            _context4.next = 38;
-            break;
+            case 60:
+              _context4.prev = 60;
 
-          case 47:
-            if (!hasReference) {
-              promises.push(this.unPinWithName(objectKey));
-            }
+              if (!_didIteratorError3) {
+                _context4.next = 63;
+                break;
+              }
 
-          case 48:
-            _iteratorNormalCompletion3 = true;
-            _context4.next = 34;
-            break;
+              throw _iteratorError3;
 
-          case 51:
-            _context4.next = 57;
-            break;
+            case 63:
+              return _context4.finish(60);
 
-          case 53:
-            _context4.prev = 53;
-            _context4.t3 = _context4["catch"](32);
-            _didIteratorError3 = true;
-            _iteratorError3 = _context4.t3;
+            case 64:
+              return _context4.finish(57);
 
-          case 57:
-            _context4.prev = 57;
-            _context4.prev = 58;
+            case 65:
+              return _context4.abrupt("return", _promise.default.all(promises));
 
-            if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-              _iterator3.return();
-            }
-
-          case 60:
-            _context4.prev = 60;
-
-            if (!_didIteratorError3) {
-              _context4.next = 63;
-              break;
-            }
-
-            throw _iteratorError3;
-
-          case 63:
-            return _context4.finish(60);
-
-          case 64:
-            return _context4.finish(57);
-
-          case 65:
-            return _context4.abrupt("return", _promise.default.all(promises));
-
-          case 66:
-          case "end":
-            return _context4.stop();
+            case 66:
+            case "end":
+              return _context4.stop();
+          }
         }
-      }
-    }, null, this, [[9, 13, 17, 25], [18,, 20, 24], [32, 53, 57, 65], [58,, 60, 64]]);
-  },
+      }, _callee2, this, [[9, 13, 17, 25], [18,, 20, 24], [32, 53, 57, 65], [58,, 60, 64]]);
+    }));
+
+    return function () {
+      return _handleUnPinAllWithName2.apply(this, arguments);
+    };
+  }(),
   // Retrieve all pointer fields from object recursively
   _getChildren: function (object
   /*: ParseObject*/
@@ -2559,320 +2631,360 @@ var LocalDatastore = {
     }
   },
   // Transform keys in pin name to objects
-  _serializeObjectsFromPinName: function (name
-  /*: string*/
-  ) {
-    var _this = this,
-        _context5,
-        _concatInstanceProper,
-        _context6;
+  _serializeObjectsFromPinName: function () {
+    var _serializeObjectsFromPinName2 = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee3(name
+    /*: string*/
+    ) {
+      var _this = this,
+          _context5,
+          _concatInstanceProper,
+          _context6;
 
-    var localDatastore, allObjects, key, pinName, pinned, promises, objects;
-    return _regenerator.default.async(function (_context7) {
-      while (1) {
-        switch (_context7.prev = _context7.next) {
-          case 0:
-            _context7.next = 2;
-            return _regenerator.default.awrap(this._getAllContents());
+      var localDatastore, allObjects, key, pinName, pinned, promises, objects;
+      return _regenerator.default.wrap(function (_context7) {
+        while (1) {
+          switch (_context7.prev = _context7.next) {
+            case 0:
+              _context7.next = 2;
+              return this._getAllContents();
 
-          case 2:
-            localDatastore = _context7.sent;
-            allObjects = [];
+            case 2:
+              localDatastore = _context7.sent;
+              allObjects = [];
 
-            for (key in localDatastore) {
-              if ((0, _startsWith.default)(key).call(key, _LocalDatastoreUtils.OBJECT_PREFIX)) {
-                allObjects.push(localDatastore[key][0]);
+              for (key in localDatastore) {
+                if ((0, _startsWith.default)(key).call(key, _LocalDatastoreUtils.OBJECT_PREFIX)) {
+                  allObjects.push(localDatastore[key][0]);
+                }
               }
-            }
 
-            if (name) {
-              _context7.next = 7;
-              break;
-            }
+              if (name) {
+                _context7.next = 7;
+                break;
+              }
 
-            return _context7.abrupt("return", allObjects);
+              return _context7.abrupt("return", allObjects);
 
-          case 7:
-            pinName = this.getPinName(name);
-            pinned = localDatastore[pinName];
+            case 7:
+              pinName = this.getPinName(name);
+              pinned = localDatastore[pinName];
 
-            if ((0, _isArray.default)(pinned)) {
-              _context7.next = 11;
-              break;
-            }
+              if ((0, _isArray.default)(pinned)) {
+                _context7.next = 11;
+                break;
+              }
 
-            return _context7.abrupt("return", []);
+              return _context7.abrupt("return", []);
 
-          case 11:
-            promises = (0, _map.default)(pinned).call(pinned, function (objectKey) {
-              return _this.fromPinWithName(objectKey);
-            });
-            _context7.next = 14;
-            return _regenerator.default.awrap(_promise.default.all(promises));
+            case 11:
+              promises = (0, _map.default)(pinned).call(pinned, function (objectKey) {
+                return _this.fromPinWithName(objectKey);
+              });
+              _context7.next = 14;
+              return _promise.default.all(promises);
 
-          case 14:
-            objects = _context7.sent;
-            objects = (_concatInstanceProper = (0, _concat.default)(_context5 = [])).call.apply(_concatInstanceProper, (0, _concat.default)(_context6 = [_context5]).call(_context6, (0, _toConsumableArray2.default)(objects)));
-            return _context7.abrupt("return", (0, _filter.default)(objects).call(objects, function (object) {
-              return object != null;
-            }));
+            case 14:
+              objects = _context7.sent;
+              objects = (_concatInstanceProper = (0, _concat.default)(_context5 = [])).call.apply(_concatInstanceProper, (0, _concat.default)(_context6 = [_context5]).call(_context6, (0, _toConsumableArray2.default)(objects)));
+              return _context7.abrupt("return", (0, _filter.default)(objects).call(objects, function (object) {
+                return object != null;
+              }));
 
-          case 17:
-          case "end":
-            return _context7.stop();
+            case 17:
+            case "end":
+              return _context7.stop();
+          }
         }
-      }
-    }, null, this);
-  },
+      }, _callee3, this);
+    }));
+
+    return function () {
+      return _serializeObjectsFromPinName2.apply(this, arguments);
+    };
+  }(),
   // Replaces object pointers with pinned pointers
   // The object pointers may contain old data
   // Uses Breadth First Search Algorithm
-  _serializeObject: function (objectKey
-  /*: string*/
-  , localDatastore
-  /*: any*/
-  ) {
-    var LDS, root, queue, meta, uniqueId, nodeId, subTreeRoot, field, value, key, pointer;
-    return _regenerator.default.async(function (_context8) {
-      while (1) {
-        switch (_context8.prev = _context8.next) {
-          case 0:
-            LDS = localDatastore;
+  _serializeObject: function () {
+    var _serializeObject2 = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee4(objectKey
+    /*: string*/
+    , localDatastore
+    /*: any*/
+    ) {
+      var LDS, root, queue, meta, uniqueId, nodeId, subTreeRoot, field, value, key, pointer;
+      return _regenerator.default.wrap(function (_context8) {
+        while (1) {
+          switch (_context8.prev = _context8.next) {
+            case 0:
+              LDS = localDatastore;
 
-            if (LDS) {
-              _context8.next = 5;
-              break;
-            }
+              if (LDS) {
+                _context8.next = 5;
+                break;
+              }
 
-            _context8.next = 4;
-            return _regenerator.default.awrap(this._getAllContents());
+              _context8.next = 4;
+              return this._getAllContents();
 
-          case 4:
-            LDS = _context8.sent;
+            case 4:
+              LDS = _context8.sent;
 
-          case 5:
-            if (!(!LDS[objectKey] || LDS[objectKey].length === 0)) {
-              _context8.next = 7;
-              break;
-            }
+            case 5:
+              if (!(!LDS[objectKey] || LDS[objectKey].length === 0)) {
+                _context8.next = 7;
+                break;
+              }
 
-            return _context8.abrupt("return", null);
+              return _context8.abrupt("return", null);
 
-          case 7:
-            root = LDS[objectKey][0];
-            queue = [];
-            meta = {};
-            uniqueId = 0;
-            meta[uniqueId] = root;
-            queue.push(uniqueId);
+            case 7:
+              root = LDS[objectKey][0];
+              queue = [];
+              meta = {};
+              uniqueId = 0;
+              meta[uniqueId] = root;
+              queue.push(uniqueId);
 
-            while (queue.length !== 0) {
-              nodeId = queue.shift();
-              subTreeRoot = meta[nodeId];
+              while (queue.length !== 0) {
+                nodeId = queue.shift();
+                subTreeRoot = meta[nodeId];
 
-              for (field in subTreeRoot) {
-                value = subTreeRoot[field];
+                for (field in subTreeRoot) {
+                  value = subTreeRoot[field];
 
-                if (value.__type && value.__type === 'Object') {
-                  key = this.getKeyForObject(value);
+                  if (value.__type && value.__type === 'Object') {
+                    key = this.getKeyForObject(value);
 
-                  if (LDS[key] && LDS[key].length > 0) {
-                    pointer = LDS[key][0];
-                    uniqueId++;
-                    meta[uniqueId] = pointer;
-                    subTreeRoot[field] = pointer;
-                    queue.push(uniqueId);
+                    if (LDS[key] && LDS[key].length > 0) {
+                      pointer = LDS[key][0];
+                      uniqueId++;
+                      meta[uniqueId] = pointer;
+                      subTreeRoot[field] = pointer;
+                      queue.push(uniqueId);
+                    }
                   }
                 }
               }
-            }
 
-            return _context8.abrupt("return", root);
+              return _context8.abrupt("return", root);
 
-          case 15:
-          case "end":
-            return _context8.stop();
+            case 15:
+            case "end":
+              return _context8.stop();
+          }
         }
-      }
-    }, null, this);
-  },
+      }, _callee4, this);
+    }));
+
+    return function () {
+      return _serializeObject2.apply(this, arguments);
+    };
+  }(),
   // Called when an object is save / fetched
   // Update object pin value
-  _updateObjectIfPinned: function (object
-  /*: ParseObject*/
-  ) {
-    var objectKey, pinned;
-    return _regenerator.default.async(function (_context9) {
-      while (1) {
-        switch (_context9.prev = _context9.next) {
-          case 0:
-            if (this.isEnabled) {
-              _context9.next = 2;
-              break;
-            }
+  _updateObjectIfPinned: function () {
+    var _updateObjectIfPinned2 = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee5(object
+    /*: ParseObject*/
+    ) {
+      var objectKey, pinned;
+      return _regenerator.default.wrap(function (_context9) {
+        while (1) {
+          switch (_context9.prev = _context9.next) {
+            case 0:
+              if (this.isEnabled) {
+                _context9.next = 2;
+                break;
+              }
 
-            return _context9.abrupt("return");
+              return _context9.abrupt("return");
 
-          case 2:
-            objectKey = this.getKeyForObject(object);
-            _context9.next = 5;
-            return _regenerator.default.awrap(this.fromPinWithName(objectKey));
+            case 2:
+              objectKey = this.getKeyForObject(object);
+              _context9.next = 5;
+              return this.fromPinWithName(objectKey);
 
-          case 5:
-            pinned = _context9.sent;
+            case 5:
+              pinned = _context9.sent;
 
-            if (!(!pinned || pinned.length === 0)) {
-              _context9.next = 8;
-              break;
-            }
+              if (!(!pinned || pinned.length === 0)) {
+                _context9.next = 8;
+                break;
+              }
 
-            return _context9.abrupt("return");
+              return _context9.abrupt("return");
 
-          case 8:
-            return _context9.abrupt("return", this.pinWithName(objectKey, [object._toFullJSON()]));
+            case 8:
+              return _context9.abrupt("return", this.pinWithName(objectKey, [object._toFullJSON()]));
 
-          case 9:
-          case "end":
-            return _context9.stop();
+            case 9:
+            case "end":
+              return _context9.stop();
+          }
         }
-      }
-    }, null, this);
-  },
+      }, _callee5, this);
+    }));
+
+    return function () {
+      return _updateObjectIfPinned2.apply(this, arguments);
+    };
+  }(),
   // Called when object is destroyed
   // Unpin object and remove all references from pin names
   // TODO: Destroy children?
-  _destroyObjectIfPinned: function (object
-  /*: ParseObject*/
-  ) {
-    var localDatastore, objectKey, pin, promises, key, pinned;
-    return _regenerator.default.async(function (_context10) {
-      while (1) {
-        switch (_context10.prev = _context10.next) {
-          case 0:
-            if (this.isEnabled) {
-              _context10.next = 2;
-              break;
-            }
+  _destroyObjectIfPinned: function () {
+    var _destroyObjectIfPinned2 = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee6(object
+    /*: ParseObject*/
+    ) {
+      var localDatastore, objectKey, pin, promises, key, pinned;
+      return _regenerator.default.wrap(function (_context10) {
+        while (1) {
+          switch (_context10.prev = _context10.next) {
+            case 0:
+              if (this.isEnabled) {
+                _context10.next = 2;
+                break;
+              }
 
-            return _context10.abrupt("return");
+              return _context10.abrupt("return");
 
-          case 2:
-            _context10.next = 4;
-            return _regenerator.default.awrap(this._getAllContents());
+            case 2:
+              _context10.next = 4;
+              return this._getAllContents();
 
-          case 4:
-            localDatastore = _context10.sent;
-            objectKey = this.getKeyForObject(object);
-            pin = localDatastore[objectKey];
+            case 4:
+              localDatastore = _context10.sent;
+              objectKey = this.getKeyForObject(object);
+              pin = localDatastore[objectKey];
 
-            if (pin) {
-              _context10.next = 9;
-              break;
-            }
+              if (pin) {
+                _context10.next = 9;
+                break;
+              }
 
-            return _context10.abrupt("return");
+              return _context10.abrupt("return");
 
-          case 9:
-            promises = [this.unPinWithName(objectKey)];
-            delete localDatastore[objectKey];
+            case 9:
+              promises = [this.unPinWithName(objectKey)];
+              delete localDatastore[objectKey];
 
-            for (key in localDatastore) {
-              if (key === _LocalDatastoreUtils.DEFAULT_PIN || (0, _startsWith.default)(key).call(key, _LocalDatastoreUtils.PIN_PREFIX)) {
-                pinned = localDatastore[key] || [];
+              for (key in localDatastore) {
+                if (key === _LocalDatastoreUtils.DEFAULT_PIN || (0, _startsWith.default)(key).call(key, _LocalDatastoreUtils.PIN_PREFIX)) {
+                  pinned = localDatastore[key] || [];
 
-                if ((0, _includes.default)(pinned).call(pinned, objectKey)) {
-                  pinned = (0, _filter.default)(pinned).call(pinned, function (item) {
-                    return item !== objectKey;
-                  });
+                  if ((0, _includes.default)(pinned).call(pinned, objectKey)) {
+                    pinned = (0, _filter.default)(pinned).call(pinned, function (item) {
+                      return item !== objectKey;
+                    });
 
-                  if (pinned.length == 0) {
-                    promises.push(this.unPinWithName(key));
-                    delete localDatastore[key];
-                  } else {
+                    if (pinned.length == 0) {
+                      promises.push(this.unPinWithName(key));
+                      delete localDatastore[key];
+                    } else {
+                      promises.push(this.pinWithName(key, pinned));
+                      localDatastore[key] = pinned;
+                    }
+                  }
+                }
+              }
+
+              return _context10.abrupt("return", _promise.default.all(promises));
+
+            case 13:
+            case "end":
+              return _context10.stop();
+          }
+        }
+      }, _callee6, this);
+    }));
+
+    return function () {
+      return _destroyObjectIfPinned2.apply(this, arguments);
+    };
+  }(),
+  // Update pin and references of the unsaved object
+  _updateLocalIdForObject: function () {
+    var _updateLocalIdForObject2 = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee7(localId
+    /*: string*/
+    , object
+    /*: ParseObject*/
+    ) {
+      var _context11, _context12;
+
+      var localKey, objectKey, unsaved, promises, localDatastore, key, pinned;
+      return _regenerator.default.wrap(function (_context13) {
+        while (1) {
+          switch (_context13.prev = _context13.next) {
+            case 0:
+              if (this.isEnabled) {
+                _context13.next = 2;
+                break;
+              }
+
+              return _context13.abrupt("return");
+
+            case 2:
+              localKey = (0, _concat.default)(_context11 = (0, _concat.default)(_context12 = "".concat(_LocalDatastoreUtils.OBJECT_PREFIX)).call(_context12, object.className, "_")).call(_context11, localId);
+              objectKey = this.getKeyForObject(object);
+              _context13.next = 6;
+              return this.fromPinWithName(localKey);
+
+            case 6:
+              unsaved = _context13.sent;
+
+              if (!(!unsaved || unsaved.length === 0)) {
+                _context13.next = 9;
+                break;
+              }
+
+              return _context13.abrupt("return");
+
+            case 9:
+              promises = [this.unPinWithName(localKey), this.pinWithName(objectKey, unsaved)];
+              _context13.next = 12;
+              return this._getAllContents();
+
+            case 12:
+              localDatastore = _context13.sent;
+
+              for (key in localDatastore) {
+                if (key === _LocalDatastoreUtils.DEFAULT_PIN || (0, _startsWith.default)(key).call(key, _LocalDatastoreUtils.PIN_PREFIX)) {
+                  pinned = localDatastore[key] || [];
+
+                  if ((0, _includes.default)(pinned).call(pinned, localKey)) {
+                    pinned = (0, _filter.default)(pinned).call(pinned, function (item) {
+                      return item !== localKey;
+                    });
+                    pinned.push(objectKey);
                     promises.push(this.pinWithName(key, pinned));
                     localDatastore[key] = pinned;
                   }
                 }
               }
-            }
 
-            return _context10.abrupt("return", _promise.default.all(promises));
+              return _context13.abrupt("return", _promise.default.all(promises));
 
-          case 13:
-          case "end":
-            return _context10.stop();
+            case 15:
+            case "end":
+              return _context13.stop();
+          }
         }
-      }
-    }, null, this);
-  },
-  // Update pin and references of the unsaved object
-  _updateLocalIdForObject: function (localId
-  /*: string*/
-  , object
-  /*: ParseObject*/
-  ) {
-    var _context11, _context12;
+      }, _callee7, this);
+    }));
 
-    var localKey, objectKey, unsaved, promises, localDatastore, key, pinned;
-    return _regenerator.default.async(function (_context13) {
-      while (1) {
-        switch (_context13.prev = _context13.next) {
-          case 0:
-            if (this.isEnabled) {
-              _context13.next = 2;
-              break;
-            }
-
-            return _context13.abrupt("return");
-
-          case 2:
-            localKey = (0, _concat.default)(_context11 = (0, _concat.default)(_context12 = "".concat(_LocalDatastoreUtils.OBJECT_PREFIX)).call(_context12, object.className, "_")).call(_context11, localId);
-            objectKey = this.getKeyForObject(object);
-            _context13.next = 6;
-            return _regenerator.default.awrap(this.fromPinWithName(localKey));
-
-          case 6:
-            unsaved = _context13.sent;
-
-            if (!(!unsaved || unsaved.length === 0)) {
-              _context13.next = 9;
-              break;
-            }
-
-            return _context13.abrupt("return");
-
-          case 9:
-            promises = [this.unPinWithName(localKey), this.pinWithName(objectKey, unsaved)];
-            _context13.next = 12;
-            return _regenerator.default.awrap(this._getAllContents());
-
-          case 12:
-            localDatastore = _context13.sent;
-
-            for (key in localDatastore) {
-              if (key === _LocalDatastoreUtils.DEFAULT_PIN || (0, _startsWith.default)(key).call(key, _LocalDatastoreUtils.PIN_PREFIX)) {
-                pinned = localDatastore[key] || [];
-
-                if ((0, _includes.default)(pinned).call(pinned, localKey)) {
-                  pinned = (0, _filter.default)(pinned).call(pinned, function (item) {
-                    return item !== localKey;
-                  });
-                  pinned.push(objectKey);
-                  promises.push(this.pinWithName(key, pinned));
-                  localDatastore[key] = pinned;
-                }
-              }
-            }
-
-            return _context13.abrupt("return", _promise.default.all(promises));
-
-          case 15:
-          case "end":
-            return _context13.stop();
-        }
-      }
-    }, null, this);
-  },
+    return function () {
+      return _updateLocalIdForObject2.apply(this, arguments);
+    };
+  }(),
 
   /**
    * Updates Local Datastore from Server
@@ -2885,129 +2997,137 @@ var LocalDatastore = {
    * @static
    */
   updateFromServer: function () {
-    var _context14,
-        _this2 = this;
+    var _updateFromServer = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee8() {
+      var _context14,
+          _this2 = this;
 
-    var localDatastore, keys, key, pointersHash, _i, _keys, _key, _key$split, _key$split2, className, objectId, queryPromises, responses, objects, pinPromises;
+      var localDatastore, keys, key, pointersHash, _i, _keys, _key, _key$split, _key$split2, className, objectId, queryPromises, responses, objects, pinPromises;
 
-    return _regenerator.default.async(function (_context15) {
-      while (1) {
-        switch (_context15.prev = _context15.next) {
-          case 0:
-            if (!(!this.checkIfEnabled() || this.isSyncing)) {
-              _context15.next = 2;
-              break;
-            }
-
-            return _context15.abrupt("return");
-
-          case 2:
-            _context15.next = 4;
-            return _regenerator.default.awrap(this._getAllContents());
-
-          case 4:
-            localDatastore = _context15.sent;
-            keys = [];
-
-            for (key in localDatastore) {
-              if ((0, _startsWith.default)(key).call(key, _LocalDatastoreUtils.OBJECT_PREFIX)) {
-                keys.push(key);
-              }
-            }
-
-            if (!(keys.length === 0)) {
-              _context15.next = 9;
-              break;
-            }
-
-            return _context15.abrupt("return");
-
-          case 9:
-            this.isSyncing = true;
-            pointersHash = {};
-            _i = 0, _keys = keys;
-
-          case 12:
-            if (!(_i < _keys.length)) {
-              _context15.next = 23;
-              break;
-            }
-
-            _key = _keys[_i]; // Ignore the OBJECT_PREFIX
-
-            _key$split = _key.split('_'), _key$split2 = (0, _slicedToArray2.default)(_key$split, 4), className = _key$split2[2], objectId = _key$split2[3]; // User key is split into [ 'Parse', 'LDS', '', 'User', 'objectId' ]
-
-            if (_key.split('_').length === 5 && _key.split('_')[3] === 'User') {
-              className = '_User';
-              objectId = _key.split('_')[4];
-            }
-
-            if (!(0, _startsWith.default)(objectId).call(objectId, 'local')) {
-              _context15.next = 18;
-              break;
-            }
-
-            return _context15.abrupt("continue", 20);
-
-          case 18:
-            if (!(className in pointersHash)) {
-              pointersHash[className] = new _set.default();
-            }
-
-            pointersHash[className].add(objectId);
-
-          case 20:
-            _i++;
-            _context15.next = 12;
-            break;
-
-          case 23:
-            queryPromises = (0, _map.default)(_context14 = (0, _keys3.default)(pointersHash)).call(_context14, function (className) {
-              var objectIds = (0, _from.default)(pointersHash[className]);
-              var query = new _ParseQuery.default(className);
-              query.limit(objectIds.length);
-
-              if (objectIds.length === 1) {
-                query.equalTo('objectId', objectIds[0]);
-              } else {
-                query.containedIn('objectId', objectIds);
+      return _regenerator.default.wrap(function (_context15) {
+        while (1) {
+          switch (_context15.prev = _context15.next) {
+            case 0:
+              if (!(!this.checkIfEnabled() || this.isSyncing)) {
+                _context15.next = 2;
+                break;
               }
 
-              return (0, _find.default)(query).call(query);
-            });
-            _context15.prev = 24;
-            _context15.next = 27;
-            return _regenerator.default.awrap(_promise.default.all(queryPromises));
+              return _context15.abrupt("return");
 
-          case 27:
-            responses = _context15.sent;
-            objects = (0, _concat.default)([]).apply([], responses);
-            pinPromises = (0, _map.default)(objects).call(objects, function (object) {
-              var objectKey = _this2.getKeyForObject(object);
+            case 2:
+              _context15.next = 4;
+              return this._getAllContents();
 
-              return _this2.pinWithName(objectKey, object._toFullJSON());
-            });
-            _context15.next = 32;
-            return _regenerator.default.awrap(_promise.default.all(pinPromises));
+            case 4:
+              localDatastore = _context15.sent;
+              keys = [];
 
-          case 32:
-            this.isSyncing = false;
-            _context15.next = 39;
-            break;
+              for (key in localDatastore) {
+                if ((0, _startsWith.default)(key).call(key, _LocalDatastoreUtils.OBJECT_PREFIX)) {
+                  keys.push(key);
+                }
+              }
 
-          case 35:
-            _context15.prev = 35;
-            _context15.t0 = _context15["catch"](24);
-            console.error('Error syncing LocalDatastore: ', _context15.t0);
-            this.isSyncing = false;
+              if (!(keys.length === 0)) {
+                _context15.next = 9;
+                break;
+              }
 
-          case 39:
-          case "end":
-            return _context15.stop();
+              return _context15.abrupt("return");
+
+            case 9:
+              this.isSyncing = true;
+              pointersHash = {};
+              _i = 0, _keys = keys;
+
+            case 12:
+              if (!(_i < _keys.length)) {
+                _context15.next = 23;
+                break;
+              }
+
+              _key = _keys[_i]; // Ignore the OBJECT_PREFIX
+
+              _key$split = _key.split('_'), _key$split2 = (0, _slicedToArray2.default)(_key$split, 4), className = _key$split2[2], objectId = _key$split2[3]; // User key is split into [ 'Parse', 'LDS', '', 'User', 'objectId' ]
+
+              if (_key.split('_').length === 5 && _key.split('_')[3] === 'User') {
+                className = '_User';
+                objectId = _key.split('_')[4];
+              }
+
+              if (!(0, _startsWith.default)(objectId).call(objectId, 'local')) {
+                _context15.next = 18;
+                break;
+              }
+
+              return _context15.abrupt("continue", 20);
+
+            case 18:
+              if (!(className in pointersHash)) {
+                pointersHash[className] = new _set.default();
+              }
+
+              pointersHash[className].add(objectId);
+
+            case 20:
+              _i++;
+              _context15.next = 12;
+              break;
+
+            case 23:
+              queryPromises = (0, _map.default)(_context14 = (0, _keys3.default)(pointersHash)).call(_context14, function (className) {
+                var objectIds = (0, _from.default)(pointersHash[className]);
+                var query = new _ParseQuery.default(className);
+                query.limit(objectIds.length);
+
+                if (objectIds.length === 1) {
+                  query.equalTo('objectId', objectIds[0]);
+                } else {
+                  query.containedIn('objectId', objectIds);
+                }
+
+                return (0, _find.default)(query).call(query);
+              });
+              _context15.prev = 24;
+              _context15.next = 27;
+              return _promise.default.all(queryPromises);
+
+            case 27:
+              responses = _context15.sent;
+              objects = (0, _concat.default)([]).apply([], responses);
+              pinPromises = (0, _map.default)(objects).call(objects, function (object) {
+                var objectKey = _this2.getKeyForObject(object);
+
+                return _this2.pinWithName(objectKey, object._toFullJSON());
+              });
+              _context15.next = 32;
+              return _promise.default.all(pinPromises);
+
+            case 32:
+              this.isSyncing = false;
+              _context15.next = 39;
+              break;
+
+            case 35:
+              _context15.prev = 35;
+              _context15.t0 = _context15["catch"](24);
+              console.error('Error syncing LocalDatastore: ', _context15.t0);
+              this.isSyncing = false;
+
+            case 39:
+            case "end":
+              return _context15.stop();
+          }
         }
-      }
-    }, null, this, [[24, 35]]);
-  },
+      }, _callee8, this, [[24, 35]]);
+    }));
+
+    return function () {
+      return _updateFromServer.apply(this, arguments);
+    };
+  }(),
   getKeyForObject: function (object
   /*: any*/
   ) {
@@ -3039,7 +3159,7 @@ module.exports = LocalDatastore;
 _CoreManager.default.setLocalDatastoreController(_dereq_('./LocalDatastoreController'));
 
 _CoreManager.default.setLocalDatastore(LocalDatastore);
-},{"./CoreManager":4,"./LocalDatastoreController":11,"./LocalDatastoreUtils":12,"./ParseQuery":26,"@babel/runtime-corejs3/core-js-stable/array/from":50,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/instance/concat":53,"@babel/runtime-corejs3/core-js-stable/instance/filter":54,"@babel/runtime-corejs3/core-js-stable/instance/find":55,"@babel/runtime-corejs3/core-js-stable/instance/includes":57,"@babel/runtime-corejs3/core-js-stable/instance/keys":59,"@babel/runtime-corejs3/core-js-stable/instance/map":60,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":65,"@babel/runtime-corejs3/core-js-stable/object/keys":77,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/core-js-stable/set":81,"@babel/runtime-corejs3/core-js/get-iterator":85,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/slicedToArray":119,"@babel/runtime-corejs3/helpers/toConsumableArray":121,"@babel/runtime-corejs3/regenerator":125}],11:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./LocalDatastoreController":12,"./LocalDatastoreUtils":13,"./ParseQuery":27,"@babel/runtime-corejs3/core-js-stable/array/from":51,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/instance/concat":54,"@babel/runtime-corejs3/core-js-stable/instance/filter":55,"@babel/runtime-corejs3/core-js-stable/instance/find":56,"@babel/runtime-corejs3/core-js-stable/instance/includes":58,"@babel/runtime-corejs3/core-js-stable/instance/keys":60,"@babel/runtime-corejs3/core-js-stable/instance/map":61,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":66,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/core-js-stable/set":82,"@babel/runtime-corejs3/core-js/get-iterator":86,"@babel/runtime-corejs3/helpers/asyncToGenerator":105,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/slicedToArray":122,"@babel/runtime-corejs3/helpers/toConsumableArray":124,"@babel/runtime-corejs3/regenerator":128}],12:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -3055,6 +3175,8 @@ var _reduce = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-sta
 var _stringify = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/json/stringify"));
 
 var _regenerator = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/asyncToGenerator"));
 
 var _LocalDatastoreUtils = _dereq_("./LocalDatastoreUtils");
 
@@ -3072,38 +3194,46 @@ var _Storage = _interopRequireDefault(_dereq_("./Storage"));
 
 
 var LocalDatastoreController = {
-  fromPinWithName: function (name
-  /*: string*/
-  ) {
-    var values, objects;
-    return _regenerator.default.async(function (_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            _context.next = 2;
-            return _regenerator.default.awrap(_Storage.default.getItemAsync(name));
+  fromPinWithName: function () {
+    var _fromPinWithName = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee(name
+    /*: string*/
+    ) {
+      var values, objects;
+      return _regenerator.default.wrap(function (_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              _context.next = 2;
+              return _Storage.default.getItemAsync(name);
 
-          case 2:
-            values = _context.sent;
+            case 2:
+              values = _context.sent;
 
-            if (values) {
-              _context.next = 5;
-              break;
-            }
+              if (values) {
+                _context.next = 5;
+                break;
+              }
 
-            return _context.abrupt("return", []);
+              return _context.abrupt("return", []);
 
-          case 5:
-            objects = JSON.parse(values);
-            return _context.abrupt("return", objects);
+            case 5:
+              objects = JSON.parse(values);
+              return _context.abrupt("return", objects);
 
-          case 7:
-          case "end":
-            return _context.stop();
+            case 7:
+            case "end":
+              return _context.stop();
+          }
         }
-      }
-    });
-  },
+      }, _callee);
+    }));
+
+    return function () {
+      return _fromPinWithName.apply(this, arguments);
+    };
+  }(),
   pinWithName: function (name
   /*: string*/
   , value
@@ -3118,182 +3248,226 @@ var LocalDatastoreController = {
     return _Storage.default.removeItemAsync(name);
   },
   getAllContents: function () {
-    var keys;
-    return _regenerator.default.async(function (_context3) {
-      while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-            _context3.next = 2;
-            return _regenerator.default.awrap(_Storage.default.getAllKeysAsync());
+    var _getAllContents = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee3() {
+      var keys;
+      return _regenerator.default.wrap(function (_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              _context3.next = 2;
+              return _Storage.default.getAllKeysAsync();
 
-          case 2:
-            keys = _context3.sent;
-            return _context3.abrupt("return", (0, _reduce.default)(keys).call(keys, function (previousPromise, key) {
-              var LDS, value;
-              return _regenerator.default.async(function (_context2) {
-                while (1) {
-                  switch (_context2.prev = _context2.next) {
-                    case 0:
-                      _context2.next = 2;
-                      return _regenerator.default.awrap(previousPromise);
+            case 2:
+              keys = _context3.sent;
+              return _context3.abrupt("return", (0, _reduce.default)(keys).call(keys,
+              /*#__PURE__*/
+              function () {
+                var _ref = (0, _asyncToGenerator2.default)(
+                /*#__PURE__*/
+                _regenerator.default.mark(function _callee2(previousPromise, key) {
+                  var LDS, value;
+                  return _regenerator.default.wrap(function (_context2) {
+                    while (1) {
+                      switch (_context2.prev = _context2.next) {
+                        case 0:
+                          _context2.next = 2;
+                          return previousPromise;
 
-                    case 2:
-                      LDS = _context2.sent;
+                        case 2:
+                          LDS = _context2.sent;
 
-                      if (!(0, _LocalDatastoreUtils.isLocalDatastoreKey)(key)) {
-                        _context2.next = 8;
-                        break;
+                          if (!(0, _LocalDatastoreUtils.isLocalDatastoreKey)(key)) {
+                            _context2.next = 8;
+                            break;
+                          }
+
+                          _context2.next = 6;
+                          return _Storage.default.getItemAsync(key);
+
+                        case 6:
+                          value = _context2.sent;
+
+                          try {
+                            LDS[key] = JSON.parse(value);
+                          } catch (error) {
+                            console.error('Error getAllContents: ', error);
+                          }
+
+                        case 8:
+                          return _context2.abrupt("return", LDS);
+
+                        case 9:
+                        case "end":
+                          return _context2.stop();
                       }
+                    }
+                  }, _callee2);
+                }));
 
-                      _context2.next = 6;
-                      return _regenerator.default.awrap(_Storage.default.getItemAsync(key));
+                return function () {
+                  return _ref.apply(this, arguments);
+                };
+              }(), _promise.default.resolve({})));
 
-                    case 6:
-                      value = _context2.sent;
-
-                      try {
-                        LDS[key] = JSON.parse(value);
-                      } catch (error) {
-                        console.error('Error getAllContents: ', error);
-                      }
-
-                    case 8:
-                      return _context2.abrupt("return", LDS);
-
-                    case 9:
-                    case "end":
-                      return _context2.stop();
-                  }
-                }
-              });
-            }, _promise.default.resolve({})));
-
-          case 4:
-          case "end":
-            return _context3.stop();
+            case 4:
+            case "end":
+              return _context3.stop();
+          }
         }
-      }
-    });
-  },
+      }, _callee3);
+    }));
+
+    return function () {
+      return _getAllContents.apply(this, arguments);
+    };
+  }(),
   // Used for testing
   getRawStorage: function () {
-    var keys;
-    return _regenerator.default.async(function (_context5) {
-      while (1) {
-        switch (_context5.prev = _context5.next) {
-          case 0:
-            _context5.next = 2;
-            return _regenerator.default.awrap(_Storage.default.getAllKeysAsync());
+    var _getRawStorage = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee5() {
+      var keys;
+      return _regenerator.default.wrap(function (_context5) {
+        while (1) {
+          switch (_context5.prev = _context5.next) {
+            case 0:
+              _context5.next = 2;
+              return _Storage.default.getAllKeysAsync();
 
-          case 2:
-            keys = _context5.sent;
-            return _context5.abrupt("return", (0, _reduce.default)(keys).call(keys, function (previousPromise, key) {
-              var LDS, value;
-              return _regenerator.default.async(function (_context4) {
-                while (1) {
-                  switch (_context4.prev = _context4.next) {
-                    case 0:
-                      _context4.next = 2;
-                      return _regenerator.default.awrap(previousPromise);
+            case 2:
+              keys = _context5.sent;
+              return _context5.abrupt("return", (0, _reduce.default)(keys).call(keys,
+              /*#__PURE__*/
+              function () {
+                var _ref2 = (0, _asyncToGenerator2.default)(
+                /*#__PURE__*/
+                _regenerator.default.mark(function _callee4(previousPromise, key) {
+                  var LDS, value;
+                  return _regenerator.default.wrap(function (_context4) {
+                    while (1) {
+                      switch (_context4.prev = _context4.next) {
+                        case 0:
+                          _context4.next = 2;
+                          return previousPromise;
 
-                    case 2:
-                      LDS = _context4.sent;
-                      _context4.next = 5;
-                      return _regenerator.default.awrap(_Storage.default.getItemAsync(key));
+                        case 2:
+                          LDS = _context4.sent;
+                          _context4.next = 5;
+                          return _Storage.default.getItemAsync(key);
 
-                    case 5:
-                      value = _context4.sent;
-                      LDS[key] = value;
-                      return _context4.abrupt("return", LDS);
+                        case 5:
+                          value = _context4.sent;
+                          LDS[key] = value;
+                          return _context4.abrupt("return", LDS);
 
-                    case 8:
-                    case "end":
-                      return _context4.stop();
-                  }
-                }
-              });
-            }, _promise.default.resolve({})));
+                        case 8:
+                        case "end":
+                          return _context4.stop();
+                      }
+                    }
+                  }, _callee4);
+                }));
 
-          case 4:
-          case "end":
-            return _context5.stop();
+                return function () {
+                  return _ref2.apply(this, arguments);
+                };
+              }(), _promise.default.resolve({})));
+
+            case 4:
+            case "end":
+              return _context5.stop();
+          }
         }
-      }
-    });
-  },
+      }, _callee5);
+    }));
+
+    return function () {
+      return _getRawStorage.apply(this, arguments);
+    };
+  }(),
   clear: function () {
-    var keys, toRemove, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, key, promises;
+    var _clear = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee6() {
+      var keys, toRemove, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, key, promises;
 
-    return _regenerator.default.async(function (_context6) {
-      while (1) {
-        switch (_context6.prev = _context6.next) {
-          case 0:
-            _context6.next = 2;
-            return _regenerator.default.awrap(_Storage.default.getAllKeysAsync());
+      return _regenerator.default.wrap(function (_context6) {
+        while (1) {
+          switch (_context6.prev = _context6.next) {
+            case 0:
+              _context6.next = 2;
+              return _Storage.default.getAllKeysAsync();
 
-          case 2:
-            keys = _context6.sent;
-            toRemove = [];
-            _iteratorNormalCompletion = true;
-            _didIteratorError = false;
-            _iteratorError = undefined;
-            _context6.prev = 7;
+            case 2:
+              keys = _context6.sent;
+              toRemove = [];
+              _iteratorNormalCompletion = true;
+              _didIteratorError = false;
+              _iteratorError = undefined;
+              _context6.prev = 7;
 
-            for (_iterator = (0, _getIterator2.default)(keys); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              key = _step.value;
+              for (_iterator = (0, _getIterator2.default)(keys); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                key = _step.value;
 
-              if ((0, _LocalDatastoreUtils.isLocalDatastoreKey)(key)) {
-                toRemove.push(key);
+                if ((0, _LocalDatastoreUtils.isLocalDatastoreKey)(key)) {
+                  toRemove.push(key);
+                }
               }
-            }
 
-            _context6.next = 15;
-            break;
-
-          case 11:
-            _context6.prev = 11;
-            _context6.t0 = _context6["catch"](7);
-            _didIteratorError = true;
-            _iteratorError = _context6.t0;
-
-          case 15:
-            _context6.prev = 15;
-            _context6.prev = 16;
-
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
-            }
-
-          case 18:
-            _context6.prev = 18;
-
-            if (!_didIteratorError) {
-              _context6.next = 21;
+              _context6.next = 15;
               break;
-            }
 
-            throw _iteratorError;
+            case 11:
+              _context6.prev = 11;
+              _context6.t0 = _context6["catch"](7);
+              _didIteratorError = true;
+              _iteratorError = _context6.t0;
 
-          case 21:
-            return _context6.finish(18);
+            case 15:
+              _context6.prev = 15;
+              _context6.prev = 16;
 
-          case 22:
-            return _context6.finish(15);
+              if (!_iteratorNormalCompletion && _iterator.return != null) {
+                _iterator.return();
+              }
 
-          case 23:
-            promises = (0, _map.default)(toRemove).call(toRemove, this.unPinWithName);
-            return _context6.abrupt("return", _promise.default.all(promises));
+            case 18:
+              _context6.prev = 18;
 
-          case 25:
-          case "end":
-            return _context6.stop();
+              if (!_didIteratorError) {
+                _context6.next = 21;
+                break;
+              }
+
+              throw _iteratorError;
+
+            case 21:
+              return _context6.finish(18);
+
+            case 22:
+              return _context6.finish(15);
+
+            case 23:
+              promises = (0, _map.default)(toRemove).call(toRemove, this.unPinWithName);
+              return _context6.abrupt("return", _promise.default.all(promises));
+
+            case 25:
+            case "end":
+              return _context6.stop();
+          }
         }
-      }
-    }, null, this, [[7, 11, 15, 23], [16,, 18, 22]]);
-  }
+      }, _callee6, this, [[7, 11, 15, 23], [16,, 18, 22]]);
+    }));
+
+    return function () {
+      return _clear.apply(this, arguments);
+    };
+  }()
 };
 module.exports = LocalDatastoreController;
-},{"./LocalDatastoreUtils":12,"./Storage":35,"@babel/runtime-corejs3/core-js-stable/instance/map":60,"@babel/runtime-corejs3/core-js-stable/instance/reduce":61,"@babel/runtime-corejs3/core-js-stable/json/stringify":67,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/core-js/get-iterator":85,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/regenerator":125}],12:[function(_dereq_,module,exports){
+},{"./LocalDatastoreUtils":13,"./Storage":36,"@babel/runtime-corejs3/core-js-stable/instance/map":61,"@babel/runtime-corejs3/core-js-stable/instance/reduce":62,"@babel/runtime-corejs3/core-js-stable/json/stringify":68,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/core-js/get-iterator":86,"@babel/runtime-corejs3/helpers/asyncToGenerator":105,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/regenerator":128}],13:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -3334,7 +3508,7 @@ function isLocalDatastoreKey(key
 {
   return !!(key && (key === DEFAULT_PIN || (0, _startsWith.default)(key).call(key, PIN_PREFIX) || (0, _startsWith.default)(key).call(key, OBJECT_PREFIX)));
 }
-},{"@babel/runtime-corejs3/core-js-stable/instance/starts-with":65,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],13:[function(_dereq_,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/instance/starts-with":66,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],14:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -3565,7 +3739,7 @@ function commitServerChanges(serverData
     }
   }
 }
-},{"./ParseFile":19,"./ParseObject":23,"./ParseOp":24,"./ParseRelation":27,"./TaskQueue":37,"./encode":42,"@babel/runtime-corejs3/core-js-stable/instance/includes":57,"@babel/runtime-corejs3/core-js-stable/json/stringify":67,"@babel/runtime-corejs3/core-js-stable/object/assign":69,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],14:[function(_dereq_,module,exports){
+},{"./ParseFile":20,"./ParseObject":24,"./ParseOp":25,"./ParseRelation":28,"./TaskQueue":38,"./encode":43,"@babel/runtime-corejs3/core-js-stable/instance/includes":58,"@babel/runtime-corejs3/core-js-stable/json/stringify":68,"@babel/runtime-corejs3/core-js-stable/object/assign":70,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],15:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -4079,7 +4253,7 @@ var OfflineQuery = {
   validateQuery: validateQuery
 };
 module.exports = OfflineQuery;
-},{"./ParseError":18,"./ParseGeoPoint":20,"./ParsePolygon":25,"./decode":41,"./equals":43,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/instance/filter":54,"@babel/runtime-corejs3/core-js-stable/instance/for-each":56,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/instance/map":60,"@babel/runtime-corejs3/core-js-stable/instance/slice":62,"@babel/runtime-corejs3/core-js-stable/object/keys":77,"@babel/runtime-corejs3/core-js/get-iterator":85,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],15:[function(_dereq_,module,exports){
+},{"./ParseError":19,"./ParseGeoPoint":21,"./ParsePolygon":26,"./decode":42,"./equals":44,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/instance/filter":55,"@babel/runtime-corejs3/core-js-stable/instance/for-each":57,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/instance/map":61,"@babel/runtime-corejs3/core-js-stable/instance/slice":63,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/core-js/get-iterator":86,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],16:[function(_dereq_,module,exports){
 (function (process){
 "use strict";
 
@@ -4096,6 +4270,8 @@ var _decode = _interopRequireDefault(_dereq_("./decode"));
 var _encode = _interopRequireDefault(_dereq_("./encode"));
 
 var _CoreManager = _interopRequireDefault(_dereq_("./CoreManager"));
+
+var _CryptoController = _interopRequireDefault(_dereq_("./CryptoController"));
 
 var _InstallationController = _interopRequireDefault(_dereq_("./InstallationController"));
 
@@ -4283,6 +4459,34 @@ var Parse = {
     _CoreManager.default.set('LIVEQUERY_SERVER_URL', value);
   }
 });
+/**
+ * @member Parse.encryptedUser
+ * @type boolean
+ * @static
+ */
+
+(0, _defineProperty.default)(Parse, 'encryptedUser', {
+  get: function () {
+    return _CoreManager.default.get('ENCRYPTED_USER');
+  },
+  set: function (value) {
+    _CoreManager.default.set('ENCRYPTED_USER', value);
+  }
+});
+/**
+ * @member Parse.secret
+ * @type string
+ * @static
+ */
+
+(0, _defineProperty.default)(Parse, 'secret', {
+  get: function () {
+    return _CoreManager.default.get('ENCRYPTED_KEY');
+  },
+  set: function (value) {
+    _CoreManager.default.set('ENCRYPTED_KEY', value);
+  }
+});
 /* End setters */
 
 Parse.ACL = _dereq_('./ParseACL').default;
@@ -4388,6 +4592,29 @@ Parse.dumpLocalDatastore = function () {
     return Parse.LocalDatastore._getAllContents();
   }
 };
+/**
+ * Enable the current user encryption.
+ * This must be called before login any user.
+ *
+ * @static
+ */
+
+
+Parse.enableEncryptedUser = function () {
+  Parse.encryptedUser = true;
+};
+/**
+ * Flag that indicates whether Encrypted User is enabled.
+ *
+ * @static
+ */
+
+
+Parse.isEncryptedUserEnabled = function () {
+  return Parse.encryptedUser;
+};
+
+_CoreManager.default.setCryptoController(_CryptoController.default);
 
 _CoreManager.default.setInstallationController(_InstallationController.default);
 
@@ -4397,7 +4624,7 @@ _CoreManager.default.setRESTController(_RESTController.default);
 Parse.Parse = Parse;
 module.exports = Parse;
 }).call(this,_dereq_('_process'))
-},{"./Analytics":1,"./AnonymousUtils":2,"./Cloud":3,"./CoreManager":4,"./FacebookUtils":6,"./InstallationController":7,"./LiveQueryClient":8,"./LocalDatastore":10,"./ParseACL":16,"./ParseConfig":17,"./ParseError":18,"./ParseFile":19,"./ParseGeoPoint":20,"./ParseInstallation":21,"./ParseLiveQuery":22,"./ParseObject":23,"./ParseOp":24,"./ParsePolygon":25,"./ParseQuery":26,"./ParseRelation":27,"./ParseRole":28,"./ParseSchema":29,"./ParseSession":30,"./ParseUser":31,"./Push":32,"./RESTController":33,"./Storage":35,"./decode":41,"./encode":42,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/interopRequireWildcard":111,"_process":126}],16:[function(_dereq_,module,exports){
+},{"./Analytics":1,"./AnonymousUtils":2,"./Cloud":3,"./CoreManager":4,"./CryptoController":5,"./FacebookUtils":7,"./InstallationController":8,"./LiveQueryClient":9,"./LocalDatastore":11,"./ParseACL":17,"./ParseConfig":18,"./ParseError":19,"./ParseFile":20,"./ParseGeoPoint":21,"./ParseInstallation":22,"./ParseLiveQuery":23,"./ParseObject":24,"./ParseOp":25,"./ParsePolygon":26,"./ParseQuery":27,"./ParseRelation":28,"./ParseRole":29,"./ParseSchema":30,"./ParseSession":31,"./ParseUser":32,"./Push":33,"./RESTController":34,"./Storage":36,"./decode":42,"./encode":43,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/interopRequireWildcard":114,"_process":129}],17:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -4869,7 +5096,7 @@ function () {
 
 var _default = ParseACL;
 exports.default = _default;
-},{"./ParseRole":28,"./ParseUser":31,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/object/keys":77,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],17:[function(_dereq_,module,exports){
+},{"./ParseRole":29,"./ParseUser":32,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],18:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -5166,7 +5393,7 @@ _CoreManager.default.setConfigController(DefaultController);
 
 var _default = ParseConfig;
 exports.default = _default;
-},{"./CoreManager":4,"./ParseError":18,"./Storage":35,"./decode":41,"./encode":42,"./escape":44,"@babel/runtime-corejs3/core-js-stable/json/stringify":67,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],18:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseError":19,"./Storage":36,"./decode":42,"./encode":43,"./escape":45,"@babel/runtime-corejs3/core-js-stable/json/stringify":68,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],19:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -5719,7 +5946,7 @@ ParseError.FILE_READ_ERROR = 601;
 ParseError.X_DOMAIN_REQUEST = 602;
 var _default = ParseError;
 exports.default = _default;
-},{"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/assertThisInitialized":102,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/getPrototypeOf":108,"@babel/runtime-corejs3/helpers/inherits":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":117,"@babel/runtime-corejs3/helpers/wrapNativeSuper":123}],19:[function(_dereq_,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/assertThisInitialized":104,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/getPrototypeOf":111,"@babel/runtime-corejs3/helpers/inherits":112,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":120,"@babel/runtime-corejs3/helpers/wrapNativeSuper":126}],20:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -5735,6 +5962,8 @@ exports.default = void 0;
 var _promise = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/promise"));
 
 var _regenerator = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/asyncToGenerator"));
 
 var _slice = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/slice"));
 
@@ -5930,50 +6159,58 @@ function () {
   (0, _createClass2.default)(ParseFile, [{
     key: "getData",
     value: function () {
-      var _this = this;
+      var _getData = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee() {
+        var _this = this;
 
-      var options, controller, result;
-      return _regenerator.default.async(function (_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              if (!this._data) {
-                _context.next = 2;
-                break;
-              }
-
-              return _context.abrupt("return", this._data);
-
-            case 2:
-              if (this._url) {
-                _context.next = 4;
-                break;
-              }
-
-              throw new Error('Cannot retrieve data for unsaved ParseFile.');
-
-            case 4:
-              options = {
-                requestTask: function (task) {
-                  return _this._requestTask = task;
+        var options, controller, result;
+        return _regenerator.default.wrap(function (_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                if (!this._data) {
+                  _context.next = 2;
+                  break;
                 }
-              };
-              controller = _CoreManager.default.getFileController();
-              _context.next = 8;
-              return _regenerator.default.awrap(controller.download(this._url, options));
 
-            case 8:
-              result = _context.sent;
-              this._data = result.base64;
-              return _context.abrupt("return", this._data);
+                return _context.abrupt("return", this._data);
 
-            case 11:
-            case "end":
-              return _context.stop();
+              case 2:
+                if (this._url) {
+                  _context.next = 4;
+                  break;
+                }
+
+                throw new Error('Cannot retrieve data for unsaved ParseFile.');
+
+              case 4:
+                options = {
+                  requestTask: function (task) {
+                    return _this._requestTask = task;
+                  }
+                };
+                controller = _CoreManager.default.getFileController();
+                _context.next = 8;
+                return controller.download(this._url, options);
+
+              case 8:
+                result = _context.sent;
+                this._data = result.base64;
+                return _context.abrupt("return", this._data);
+
+              case 11:
+              case "end":
+                return _context.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee, this);
+      }));
+
+      return function () {
+        return _getData.apply(this, arguments);
+      };
+    }()
     /**
      * Gets the name of the file. Before save is called, this is the filename
      * given by the user. After save is called, that name gets prefixed with a
@@ -6265,7 +6502,7 @@ _CoreManager.default.setFileController(DefaultController);
 
 var _default = ParseFile;
 exports.default = _default;
-},{"./CoreManager":4,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/instance/slice":62,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/regenerator":125}],20:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/instance/slice":63,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/asyncToGenerator":105,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/regenerator":128}],21:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -6537,7 +6774,7 @@ function () {
 
 var _default = ParseGeoPoint;
 exports.default = _default;
-},{"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],21:[function(_dereq_,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],22:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -6601,7 +6838,7 @@ function (_ParseObject) {
 exports.default = Installation;
 
 _ParseObject2.default.registerSubclass('_Installation', Installation);
-},{"./ParseObject":23,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/getPrototypeOf":108,"@babel/runtime-corejs3/helpers/inherits":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":117,"@babel/runtime-corejs3/helpers/typeof":122}],22:[function(_dereq_,module,exports){
+},{"./ParseObject":24,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/getPrototypeOf":111,"@babel/runtime-corejs3/helpers/inherits":112,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":120,"@babel/runtime-corejs3/helpers/typeof":125}],23:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -6621,6 +6858,8 @@ var _promise = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-st
 var _slicedToArray2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/slicedToArray"));
 
 var _regenerator = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/asyncToGenerator"));
 
 var _EventEmitter = _interopRequireDefault(_dereq_("./EventEmitter"));
 
@@ -6681,14 +6920,18 @@ var LiveQuery = new _EventEmitter.default();
  * to the LiveQuery server.
  */
 
-LiveQuery.open = function () {
+LiveQuery.open =
+/*#__PURE__*/
+(0, _asyncToGenerator2.default)(
+/*#__PURE__*/
+_regenerator.default.mark(function _callee() {
   var liveQueryClient;
-  return _regenerator.default.async(function (_context) {
+  return _regenerator.default.wrap(function (_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
           _context.next = 2;
-          return _regenerator.default.awrap(getLiveQueryClient());
+          return getLiveQueryClient();
 
         case 2:
           liveQueryClient = _context.sent;
@@ -6699,8 +6942,8 @@ LiveQuery.open = function () {
           return _context.stop();
       }
     }
-  });
-};
+  }, _callee);
+}));
 /**
  * When you're done using LiveQuery, you can call Parse.LiveQuery.close().
  * This function will close the WebSocket connection to the LiveQuery server,
@@ -6709,15 +6952,18 @@ LiveQuery.open = function () {
  * connection to the LiveQuery server.
  */
 
-
-LiveQuery.close = function () {
+LiveQuery.close =
+/*#__PURE__*/
+(0, _asyncToGenerator2.default)(
+/*#__PURE__*/
+_regenerator.default.mark(function _callee2() {
   var liveQueryClient;
-  return _regenerator.default.async(function (_context2) {
+  return _regenerator.default.wrap(function (_context2) {
     while (1) {
       switch (_context2.prev = _context2.next) {
         case 0:
           _context2.next = 2;
-          return _regenerator.default.awrap(getLiveQueryClient());
+          return getLiveQueryClient();
 
         case 2:
           liveQueryClient = _context2.sent;
@@ -6728,9 +6974,8 @@ LiveQuery.close = function () {
           return _context2.stop();
       }
     }
-  });
-}; // Register a default onError callback to make sure we do not crash on error
-
+  }, _callee2);
+})); // Register a default onError callback to make sure we do not crash on error
 
 LiveQuery.on('error', function () {});
 var _default = LiveQuery;
@@ -6743,85 +6988,93 @@ var DefaultLiveQueryController = {
     defaultLiveQueryClient = liveQueryClient;
   },
   getDefaultLiveQueryClient: function () {
-    var _ref, _ref2, currentUser, installationId, sessionToken, liveQueryServerURL, serverURL, protocol, host, applicationId, javascriptKey, masterKey;
+    var _getDefaultLiveQueryClient = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee3() {
+      var _ref3, _ref4, currentUser, installationId, sessionToken, liveQueryServerURL, serverURL, protocol, host, applicationId, javascriptKey, masterKey;
 
-    return _regenerator.default.async(function (_context3) {
-      while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-            if (!defaultLiveQueryClient) {
-              _context3.next = 2;
-              break;
-            }
+      return _regenerator.default.wrap(function (_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              if (!defaultLiveQueryClient) {
+                _context3.next = 2;
+                break;
+              }
 
-            return _context3.abrupt("return", defaultLiveQueryClient);
+              return _context3.abrupt("return", defaultLiveQueryClient);
 
-          case 2:
-            _context3.next = 4;
-            return _regenerator.default.awrap(_promise.default.all([_CoreManager.default.getUserController().currentUserAsync(), _CoreManager.default.getInstallationController().currentInstallationId()]));
+            case 2:
+              _context3.next = 4;
+              return _promise.default.all([_CoreManager.default.getUserController().currentUserAsync(), _CoreManager.default.getInstallationController().currentInstallationId()]);
 
-          case 4:
-            _ref = _context3.sent;
-            _ref2 = (0, _slicedToArray2.default)(_ref, 2);
-            currentUser = _ref2[0];
-            installationId = _ref2[1];
-            sessionToken = currentUser ? currentUser.getSessionToken() : undefined;
-            liveQueryServerURL = _CoreManager.default.get('LIVEQUERY_SERVER_URL');
+            case 4:
+              _ref3 = _context3.sent;
+              _ref4 = (0, _slicedToArray2.default)(_ref3, 2);
+              currentUser = _ref4[0];
+              installationId = _ref4[1];
+              sessionToken = currentUser ? currentUser.getSessionToken() : undefined;
+              liveQueryServerURL = _CoreManager.default.get('LIVEQUERY_SERVER_URL');
 
-            if (!(liveQueryServerURL && (0, _indexOf.default)(liveQueryServerURL).call(liveQueryServerURL, 'ws') !== 0)) {
-              _context3.next = 12;
-              break;
-            }
+              if (!(liveQueryServerURL && (0, _indexOf.default)(liveQueryServerURL).call(liveQueryServerURL, 'ws') !== 0)) {
+                _context3.next = 12;
+                break;
+              }
 
-            throw new Error('You need to set a proper Parse LiveQuery server url before using LiveQueryClient');
+              throw new Error('You need to set a proper Parse LiveQuery server url before using LiveQueryClient');
 
-          case 12:
-            // If we can not find Parse.liveQueryServerURL, we try to extract it from Parse.serverURL
-            if (!liveQueryServerURL) {
-              serverURL = _CoreManager.default.get('SERVER_URL');
-              protocol = (0, _indexOf.default)(serverURL).call(serverURL, 'https') === 0 ? 'wss://' : 'ws://';
-              host = serverURL.replace(/^https?:\/\//, '');
-              liveQueryServerURL = protocol + host;
+            case 12:
+              // If we can not find Parse.liveQueryServerURL, we try to extract it from Parse.serverURL
+              if (!liveQueryServerURL) {
+                serverURL = _CoreManager.default.get('SERVER_URL');
+                protocol = (0, _indexOf.default)(serverURL).call(serverURL, 'https') === 0 ? 'wss://' : 'ws://';
+                host = serverURL.replace(/^https?:\/\//, '');
+                liveQueryServerURL = protocol + host;
 
-              _CoreManager.default.set('LIVEQUERY_SERVER_URL', liveQueryServerURL);
-            }
+                _CoreManager.default.set('LIVEQUERY_SERVER_URL', liveQueryServerURL);
+              }
 
-            applicationId = _CoreManager.default.get('APPLICATION_ID');
-            javascriptKey = _CoreManager.default.get('JAVASCRIPT_KEY');
-            masterKey = _CoreManager.default.get('MASTER_KEY');
-            defaultLiveQueryClient = new _LiveQueryClient.default({
-              applicationId: applicationId,
-              serverURL: liveQueryServerURL,
-              javascriptKey: javascriptKey,
-              masterKey: masterKey,
-              sessionToken: sessionToken,
-              installationId: installationId
-            });
-            defaultLiveQueryClient.on('error', function (error) {
-              LiveQuery.emit('error', error);
-            });
-            defaultLiveQueryClient.on('open', function () {
-              LiveQuery.emit('open');
-            });
-            defaultLiveQueryClient.on('close', function () {
-              LiveQuery.emit('close');
-            });
-            return _context3.abrupt("return", defaultLiveQueryClient);
+              applicationId = _CoreManager.default.get('APPLICATION_ID');
+              javascriptKey = _CoreManager.default.get('JAVASCRIPT_KEY');
+              masterKey = _CoreManager.default.get('MASTER_KEY');
+              defaultLiveQueryClient = new _LiveQueryClient.default({
+                applicationId: applicationId,
+                serverURL: liveQueryServerURL,
+                javascriptKey: javascriptKey,
+                masterKey: masterKey,
+                sessionToken: sessionToken,
+                installationId: installationId
+              });
+              defaultLiveQueryClient.on('error', function (error) {
+                LiveQuery.emit('error', error);
+              });
+              defaultLiveQueryClient.on('open', function () {
+                LiveQuery.emit('open');
+              });
+              defaultLiveQueryClient.on('close', function () {
+                LiveQuery.emit('close');
+              });
+              return _context3.abrupt("return", defaultLiveQueryClient);
 
-          case 21:
-          case "end":
-            return _context3.stop();
+            case 21:
+            case "end":
+              return _context3.stop();
+          }
         }
-      }
-    });
-  },
+      }, _callee3);
+    }));
+
+    return function () {
+      return _getDefaultLiveQueryClient.apply(this, arguments);
+    };
+  }(),
   _clearCachedDefaultClient: function () {
     defaultLiveQueryClient = null;
   }
 };
 
 _CoreManager.default.setLiveQueryController(DefaultLiveQueryController);
-},{"./CoreManager":4,"./EventEmitter":5,"./LiveQueryClient":8,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/slicedToArray":119,"@babel/runtime-corejs3/regenerator":125}],23:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./EventEmitter":6,"./LiveQueryClient":9,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/asyncToGenerator":105,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/slicedToArray":122,"@babel/runtime-corejs3/regenerator":128}],24:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireWildcard = _dereq_("@babel/runtime-corejs3/helpers/interopRequireWildcard");
@@ -6853,6 +7106,8 @@ var _isArray = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-st
 var _getIterator2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js/get-iterator"));
 
 var _regenerator = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/asyncToGenerator"));
 
 var _concat = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/concat"));
 
@@ -8091,51 +8346,59 @@ function () {
 
   }, {
     key: "exists",
-    value: function (options
-    /*:: ?: RequestOptions*/
-    ) {
-      var query;
-      return _regenerator.default.async(function (_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              if (this.id) {
-                _context.next = 2;
-                break;
-              }
+    value: function () {
+      var _exists = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee(options
+      /*:: ?: RequestOptions*/
+      ) {
+        var query;
+        return _regenerator.default.wrap(function (_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                if (this.id) {
+                  _context.next = 2;
+                  break;
+                }
 
-              return _context.abrupt("return", false);
+                return _context.abrupt("return", false);
 
-            case 2:
-              _context.prev = 2;
-              query = new _ParseQuery.default(this.className);
-              _context.next = 6;
-              return _regenerator.default.awrap(query.get(this.id, options));
+              case 2:
+                _context.prev = 2;
+                query = new _ParseQuery.default(this.className);
+                _context.next = 6;
+                return query.get(this.id, options);
 
-            case 6:
-              return _context.abrupt("return", true);
+              case 6:
+                return _context.abrupt("return", true);
 
-            case 9:
-              _context.prev = 9;
-              _context.t0 = _context["catch"](2);
+              case 9:
+                _context.prev = 9;
+                _context.t0 = _context["catch"](2);
 
-              if (!(_context.t0.code === _ParseError.default.OBJECT_NOT_FOUND)) {
-                _context.next = 13;
-                break;
-              }
+                if (!(_context.t0.code === _ParseError.default.OBJECT_NOT_FOUND)) {
+                  _context.next = 13;
+                  break;
+                }
 
-              return _context.abrupt("return", false);
+                return _context.abrupt("return", false);
 
-            case 13:
-              throw _context.t0;
+              case 13:
+                throw _context.t0;
 
-            case 14:
-            case "end":
-              return _context.stop();
+              case 14:
+              case "end":
+                return _context.stop();
+            }
           }
-        }
-      }, null, this, [[2, 9]]);
-    }
+        }, _callee, this, [[2, 9]]);
+      }));
+
+      return function () {
+        return _exists.apply(this, arguments);
+      };
+    }()
     /**
      * Checks if the model is currently in a valid state.
      * @return {Boolean}
@@ -8514,6 +8777,10 @@ function () {
         saveOptions.sessionToken = options.sessionToken;
       }
 
+      if (options.hasOwnProperty('installationId') && typeof options.installationId === 'string') {
+        saveOptions.installationId = options.installationId;
+      }
+
       var controller = _CoreManager.default.getObjectController();
 
       var unsaved = options.cascadeSave !== false ? (0, _unsavedChildren.default)(this) : null;
@@ -8614,36 +8881,44 @@ function () {
   }, {
     key: "isPinned",
     value: function () {
-      var localDatastore, objectKey, pin;
-      return _regenerator.default.async(function (_context4) {
-        while (1) {
-          switch (_context4.prev = _context4.next) {
-            case 0:
-              localDatastore = _CoreManager.default.getLocalDatastore();
+      var _isPinned = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee2() {
+        var localDatastore, objectKey, pin;
+        return _regenerator.default.wrap(function (_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                localDatastore = _CoreManager.default.getLocalDatastore();
 
-              if (localDatastore.isEnabled) {
-                _context4.next = 3;
-                break;
-              }
+                if (localDatastore.isEnabled) {
+                  _context4.next = 3;
+                  break;
+                }
 
-              return _context4.abrupt("return", _promise.default.reject('Parse.enableLocalDatastore() must be called first'));
+                return _context4.abrupt("return", _promise.default.reject('Parse.enableLocalDatastore() must be called first'));
 
-            case 3:
-              objectKey = localDatastore.getKeyForObject(this);
-              _context4.next = 6;
-              return _regenerator.default.awrap(localDatastore.fromPinWithName(objectKey));
+              case 3:
+                objectKey = localDatastore.getKeyForObject(this);
+                _context4.next = 6;
+                return localDatastore.fromPinWithName(objectKey);
 
-            case 6:
-              pin = _context4.sent;
-              return _context4.abrupt("return", pin.length > 0);
+              case 6:
+                pin = _context4.sent;
+                return _context4.abrupt("return", pin.length > 0);
 
-            case 8:
-            case "end":
-              return _context4.stop();
+              case 8:
+              case "end":
+                return _context4.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee2, this);
+      }));
+
+      return function () {
+        return _isPinned.apply(this, arguments);
+      };
+    }()
     /**
      * Asynchronously stores the objects and every object they point to in the local datastore, recursively.
      *
@@ -8706,49 +8981,57 @@ function () {
   }, {
     key: "fetchFromLocalDatastore",
     value: function () {
-      var localDatastore, objectKey, pinned, result;
-      return _regenerator.default.async(function (_context5) {
-        while (1) {
-          switch (_context5.prev = _context5.next) {
-            case 0:
-              localDatastore = _CoreManager.default.getLocalDatastore();
+      var _fetchFromLocalDatastore = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee3() {
+        var localDatastore, objectKey, pinned, result;
+        return _regenerator.default.wrap(function (_context5) {
+          while (1) {
+            switch (_context5.prev = _context5.next) {
+              case 0:
+                localDatastore = _CoreManager.default.getLocalDatastore();
 
-              if (localDatastore.isEnabled) {
-                _context5.next = 3;
-                break;
-              }
+                if (localDatastore.isEnabled) {
+                  _context5.next = 3;
+                  break;
+                }
 
-              throw new Error('Parse.enableLocalDatastore() must be called first');
+                throw new Error('Parse.enableLocalDatastore() must be called first');
 
-            case 3:
-              objectKey = localDatastore.getKeyForObject(this);
-              _context5.next = 6;
-              return _regenerator.default.awrap(localDatastore._serializeObject(objectKey));
+              case 3:
+                objectKey = localDatastore.getKeyForObject(this);
+                _context5.next = 6;
+                return localDatastore._serializeObject(objectKey);
 
-            case 6:
-              pinned = _context5.sent;
+              case 6:
+                pinned = _context5.sent;
 
-              if (pinned) {
-                _context5.next = 9;
-                break;
-              }
+                if (pinned) {
+                  _context5.next = 9;
+                  break;
+                }
 
-              throw new Error('Cannot fetch an unsaved ParseObject');
+                throw new Error('Cannot fetch an unsaved ParseObject');
 
-            case 9:
-              result = ParseObject.fromJSON(pinned);
+              case 9:
+                result = ParseObject.fromJSON(pinned);
 
-              this._finishFetch(result.toJSON());
+                this._finishFetch(result.toJSON());
 
-              return _context5.abrupt("return", this);
+                return _context5.abrupt("return", this);
 
-            case 12:
-            case "end":
-              return _context5.stop();
+              case 12:
+              case "end":
+                return _context5.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee3, this);
+      }));
+
+      return function () {
+        return _fetchFromLocalDatastore.apply(this, arguments);
+      };
+    }()
     /** Static methods **/
 
   }, {
@@ -9637,125 +9920,135 @@ var DefaultController = {
       }
 
       query._limit = ids.length;
-      return (0, _find.default)(query).call(query, options).then(function (objects) {
-        var idMap, i, obj, _i, _obj, id, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, object;
+      return (0, _find.default)(query).call(query, options).then(
+      /*#__PURE__*/
+      function () {
+        var _ref = (0, _asyncToGenerator2.default)(
+        /*#__PURE__*/
+        _regenerator.default.mark(function _callee4(objects) {
+          var idMap, i, obj, _i, _obj, id, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, object;
 
-        return _regenerator.default.async(function (_context7) {
-          while (1) {
-            switch (_context7.prev = _context7.next) {
-              case 0:
-                idMap = {};
-                (0, _forEach.default)(objects).call(objects, function (o) {
-                  idMap[o.id] = o;
-                });
-                i = 0;
+          return _regenerator.default.wrap(function (_context7) {
+            while (1) {
+              switch (_context7.prev = _context7.next) {
+                case 0:
+                  idMap = {};
+                  (0, _forEach.default)(objects).call(objects, function (o) {
+                    idMap[o.id] = o;
+                  });
+                  i = 0;
 
-              case 3:
-                if (!(i < objs.length)) {
-                  _context7.next = 11;
+                case 3:
+                  if (!(i < objs.length)) {
+                    _context7.next = 11;
+                    break;
+                  }
+
+                  obj = objs[i];
+
+                  if (!(!obj || !obj.id || !idMap[obj.id])) {
+                    _context7.next = 8;
+                    break;
+                  }
+
+                  if (!forceFetch) {
+                    _context7.next = 8;
+                    break;
+                  }
+
+                  return _context7.abrupt("return", _promise.default.reject(new _ParseError.default(_ParseError.default.OBJECT_NOT_FOUND, 'All objects must exist on the server.')));
+
+                case 8:
+                  i++;
+                  _context7.next = 3;
                   break;
-                }
 
-                obj = objs[i];
+                case 11:
+                  if (!singleInstance) {
+                    // If single instance objects are disabled, we need to replace the
+                    for (_i = 0; _i < results.length; _i++) {
+                      _obj = results[_i];
 
-                if (!(!obj || !obj.id || !idMap[obj.id])) {
-                  _context7.next = 8;
-                  break;
-                }
+                      if (_obj && _obj.id && idMap[_obj.id]) {
+                        id = _obj.id;
 
-                if (!forceFetch) {
-                  _context7.next = 8;
-                  break;
-                }
+                        _obj._finishFetch(idMap[id].toJSON());
 
-                return _context7.abrupt("return", _promise.default.reject(new _ParseError.default(_ParseError.default.OBJECT_NOT_FOUND, 'All objects must exist on the server.')));
-
-              case 8:
-                i++;
-                _context7.next = 3;
-                break;
-
-              case 11:
-                if (!singleInstance) {
-                  // If single instance objects are disabled, we need to replace the
-                  for (_i = 0; _i < results.length; _i++) {
-                    _obj = results[_i];
-
-                    if (_obj && _obj.id && idMap[_obj.id]) {
-                      id = _obj.id;
-
-                      _obj._finishFetch(idMap[id].toJSON());
-
-                      results[_i] = idMap[id];
+                        results[_i] = idMap[id];
+                      }
                     }
                   }
-                }
 
-                _iteratorNormalCompletion2 = true;
-                _didIteratorError2 = false;
-                _iteratorError2 = undefined;
-                _context7.prev = 15;
-                _iterator2 = (0, _getIterator2.default)(results);
+                  _iteratorNormalCompletion2 = true;
+                  _didIteratorError2 = false;
+                  _iteratorError2 = undefined;
+                  _context7.prev = 15;
+                  _iterator2 = (0, _getIterator2.default)(results);
 
-              case 17:
-                if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                  _context7.next = 24;
+                case 17:
+                  if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                    _context7.next = 24;
+                    break;
+                  }
+
+                  object = _step2.value;
+                  _context7.next = 21;
+                  return localDatastore._updateObjectIfPinned(object);
+
+                case 21:
+                  _iteratorNormalCompletion2 = true;
+                  _context7.next = 17;
                   break;
-                }
 
-                object = _step2.value;
-                _context7.next = 21;
-                return _regenerator.default.awrap(localDatastore._updateObjectIfPinned(object));
-
-              case 21:
-                _iteratorNormalCompletion2 = true;
-                _context7.next = 17;
-                break;
-
-              case 24:
-                _context7.next = 30;
-                break;
-
-              case 26:
-                _context7.prev = 26;
-                _context7.t0 = _context7["catch"](15);
-                _didIteratorError2 = true;
-                _iteratorError2 = _context7.t0;
-
-              case 30:
-                _context7.prev = 30;
-                _context7.prev = 31;
-
-                if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-                  _iterator2.return();
-                }
-
-              case 33:
-                _context7.prev = 33;
-
-                if (!_didIteratorError2) {
-                  _context7.next = 36;
+                case 24:
+                  _context7.next = 30;
                   break;
-                }
 
-                throw _iteratorError2;
+                case 26:
+                  _context7.prev = 26;
+                  _context7.t0 = _context7["catch"](15);
+                  _didIteratorError2 = true;
+                  _iteratorError2 = _context7.t0;
 
-              case 36:
-                return _context7.finish(33);
+                case 30:
+                  _context7.prev = 30;
+                  _context7.prev = 31;
 
-              case 37:
-                return _context7.finish(30);
+                  if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                    _iterator2.return();
+                  }
 
-              case 38:
-                return _context7.abrupt("return", _promise.default.resolve(results));
+                case 33:
+                  _context7.prev = 33;
 
-              case 39:
-              case "end":
-                return _context7.stop();
+                  if (!_didIteratorError2) {
+                    _context7.next = 36;
+                    break;
+                  }
+
+                  throw _iteratorError2;
+
+                case 36:
+                  return _context7.finish(33);
+
+                case 37:
+                  return _context7.finish(30);
+
+                case 38:
+                  return _context7.abrupt("return", _promise.default.resolve(results));
+
+                case 39:
+                case "end":
+                  return _context7.stop();
+              }
             }
-          }
-        }, null, null, [[15, 26, 30, 38], [31,, 33, 37]]);
-      });
+          }, _callee4, null, [[15, 26, 30, 38], [31,, 33, 37]]);
+        }));
+
+        return function () {
+          return _ref.apply(this, arguments);
+        };
+      }());
     } else {
       var RESTController = _CoreManager.default.getRESTController();
 
@@ -9765,224 +10058,250 @@ var DefaultController = {
         params.include = options.include.join();
       }
 
-      return RESTController.request('GET', 'classes/' + target.className + '/' + target._getId(), params, options).then(function (response) {
-        return _regenerator.default.async(function (_context8) {
-          while (1) {
-            switch (_context8.prev = _context8.next) {
-              case 0:
-                if (target instanceof ParseObject) {
-                  target._clearPendingOps();
+      return RESTController.request('GET', 'classes/' + target.className + '/' + target._getId(), params, options).then(
+      /*#__PURE__*/
+      function () {
+        var _ref2 = (0, _asyncToGenerator2.default)(
+        /*#__PURE__*/
+        _regenerator.default.mark(function _callee5(response) {
+          return _regenerator.default.wrap(function (_context8) {
+            while (1) {
+              switch (_context8.prev = _context8.next) {
+                case 0:
+                  if (target instanceof ParseObject) {
+                    target._clearPendingOps();
 
-                  target._clearServerData();
+                    target._clearServerData();
 
-                  target._finishFetch(response);
-                }
+                    target._finishFetch(response);
+                  }
 
-                _context8.next = 3;
-                return _regenerator.default.awrap(localDatastore._updateObjectIfPinned(target));
+                  _context8.next = 3;
+                  return localDatastore._updateObjectIfPinned(target);
 
-              case 3:
-                return _context8.abrupt("return", target);
+                case 3:
+                  return _context8.abrupt("return", target);
 
-              case 4:
-              case "end":
-                return _context8.stop();
+                case 4:
+                case "end":
+                  return _context8.stop();
+              }
             }
-          }
-        });
-      });
+          }, _callee5);
+        }));
+
+        return function () {
+          return _ref2.apply(this, arguments);
+        };
+      }());
     }
   },
-  destroy: function (target
-  /*: ParseObject | Array<ParseObject>*/
-  , options
-  /*: RequestOptions*/
-  ) {
-    var batchSize, localDatastore, RESTController, batches, deleteCompleted, errors;
-    return _regenerator.default.async(function (_context11) {
-      while (1) {
-        switch (_context11.prev = _context11.next) {
-          case 0:
-            batchSize = options && options.batchSize ? options.batchSize : DEFAULT_BATCH_SIZE;
-            localDatastore = _CoreManager.default.getLocalDatastore();
-            RESTController = _CoreManager.default.getRESTController();
+  destroy: function () {
+    var _destroy = (0, _asyncToGenerator2.default)(
+    /*#__PURE__*/
+    _regenerator.default.mark(function _callee8(target
+    /*: ParseObject | Array<ParseObject>*/
+    , options
+    /*: RequestOptions*/
+    ) {
+      var batchSize, localDatastore, RESTController, batches, deleteCompleted, errors;
+      return _regenerator.default.wrap(function (_context11) {
+        while (1) {
+          switch (_context11.prev = _context11.next) {
+            case 0:
+              batchSize = options && options.batchSize ? options.batchSize : DEFAULT_BATCH_SIZE;
+              localDatastore = _CoreManager.default.getLocalDatastore();
+              RESTController = _CoreManager.default.getRESTController();
 
-            if (!(0, _isArray.default)(target)) {
-              _context11.next = 15;
-              break;
-            }
-
-            if (!(target.length < 1)) {
-              _context11.next = 6;
-              break;
-            }
-
-            return _context11.abrupt("return", _promise.default.resolve([]));
-
-          case 6:
-            batches = [[]];
-            (0, _forEach.default)(target).call(target, function (obj) {
-              if (!obj.id) {
-                return;
+              if (!(0, _isArray.default)(target)) {
+                _context11.next = 15;
+                break;
               }
 
-              batches[batches.length - 1].push(obj);
-
-              if (batches[batches.length - 1].length >= batchSize) {
-                batches.push([]);
+              if (!(target.length < 1)) {
+                _context11.next = 6;
+                break;
               }
-            });
 
-            if (batches[batches.length - 1].length === 0) {
-              // If the last batch is empty, remove it
-              batches.pop();
-            }
+              return _context11.abrupt("return", _promise.default.resolve([]));
 
-            deleteCompleted = _promise.default.resolve();
-            errors = [];
-            (0, _forEach.default)(batches).call(batches, function (batch) {
-              deleteCompleted = deleteCompleted.then(function () {
-                return RESTController.request('POST', 'batch', {
-                  requests: (0, _map.default)(batch).call(batch, function (obj) {
-                    return {
-                      method: 'DELETE',
-                      path: getServerUrlPath() + 'classes/' + obj.className + '/' + obj._getId(),
-                      body: {}
-                    };
-                  })
-                }, options).then(function (results) {
-                  for (var i = 0; i < results.length; i++) {
-                    if (results[i] && results[i].hasOwnProperty('error')) {
-                      var err = new _ParseError.default(results[i].error.code, results[i].error.error);
-                      err.object = batch[i];
-                      errors.push(err);
+            case 6:
+              batches = [[]];
+              (0, _forEach.default)(target).call(target, function (obj) {
+                if (!obj.id) {
+                  return;
+                }
+
+                batches[batches.length - 1].push(obj);
+
+                if (batches[batches.length - 1].length >= batchSize) {
+                  batches.push([]);
+                }
+              });
+
+              if (batches[batches.length - 1].length === 0) {
+                // If the last batch is empty, remove it
+                batches.pop();
+              }
+
+              deleteCompleted = _promise.default.resolve();
+              errors = [];
+              (0, _forEach.default)(batches).call(batches, function (batch) {
+                deleteCompleted = deleteCompleted.then(function () {
+                  return RESTController.request('POST', 'batch', {
+                    requests: (0, _map.default)(batch).call(batch, function (obj) {
+                      return {
+                        method: 'DELETE',
+                        path: getServerUrlPath() + 'classes/' + obj.className + '/' + obj._getId(),
+                        body: {}
+                      };
+                    })
+                  }, options).then(function (results) {
+                    for (var i = 0; i < results.length; i++) {
+                      if (results[i] && results[i].hasOwnProperty('error')) {
+                        var err = new _ParseError.default(results[i].error.code, results[i].error.error);
+                        err.object = batch[i];
+                        errors.push(err);
+                      }
                     }
-                  }
+                  });
                 });
               });
-            });
-            return _context11.abrupt("return", deleteCompleted.then(function () {
-              var aggregate, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, object;
+              return _context11.abrupt("return", deleteCompleted.then(
+              /*#__PURE__*/
+              (0, _asyncToGenerator2.default)(
+              /*#__PURE__*/
+              _regenerator.default.mark(function _callee6() {
+                var aggregate, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, object;
 
-              return _regenerator.default.async(function (_context9) {
-                while (1) {
-                  switch (_context9.prev = _context9.next) {
-                    case 0:
-                      if (!errors.length) {
-                        _context9.next = 4;
+                return _regenerator.default.wrap(function (_context9) {
+                  while (1) {
+                    switch (_context9.prev = _context9.next) {
+                      case 0:
+                        if (!errors.length) {
+                          _context9.next = 4;
+                          break;
+                        }
+
+                        aggregate = new _ParseError.default(_ParseError.default.AGGREGATE_ERROR);
+                        aggregate.errors = errors;
+                        return _context9.abrupt("return", _promise.default.reject(aggregate));
+
+                      case 4:
+                        _iteratorNormalCompletion3 = true;
+                        _didIteratorError3 = false;
+                        _iteratorError3 = undefined;
+                        _context9.prev = 7;
+                        _iterator3 = (0, _getIterator2.default)(target);
+
+                      case 9:
+                        if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                          _context9.next = 16;
+                          break;
+                        }
+
+                        object = _step3.value;
+                        _context9.next = 13;
+                        return localDatastore._destroyObjectIfPinned(object);
+
+                      case 13:
+                        _iteratorNormalCompletion3 = true;
+                        _context9.next = 9;
                         break;
-                      }
 
-                      aggregate = new _ParseError.default(_ParseError.default.AGGREGATE_ERROR);
-                      aggregate.errors = errors;
-                      return _context9.abrupt("return", _promise.default.reject(aggregate));
-
-                    case 4:
-                      _iteratorNormalCompletion3 = true;
-                      _didIteratorError3 = false;
-                      _iteratorError3 = undefined;
-                      _context9.prev = 7;
-                      _iterator3 = (0, _getIterator2.default)(target);
-
-                    case 9:
-                      if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                        _context9.next = 16;
+                      case 16:
+                        _context9.next = 22;
                         break;
-                      }
 
-                      object = _step3.value;
-                      _context9.next = 13;
-                      return _regenerator.default.awrap(localDatastore._destroyObjectIfPinned(object));
+                      case 18:
+                        _context9.prev = 18;
+                        _context9.t0 = _context9["catch"](7);
+                        _didIteratorError3 = true;
+                        _iteratorError3 = _context9.t0;
 
-                    case 13:
-                      _iteratorNormalCompletion3 = true;
-                      _context9.next = 9;
-                      break;
+                      case 22:
+                        _context9.prev = 22;
+                        _context9.prev = 23;
 
-                    case 16:
-                      _context9.next = 22;
-                      break;
+                        if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+                          _iterator3.return();
+                        }
 
-                    case 18:
-                      _context9.prev = 18;
-                      _context9.t0 = _context9["catch"](7);
-                      _didIteratorError3 = true;
-                      _iteratorError3 = _context9.t0;
+                      case 25:
+                        _context9.prev = 25;
 
-                    case 22:
-                      _context9.prev = 22;
-                      _context9.prev = 23;
+                        if (!_didIteratorError3) {
+                          _context9.next = 28;
+                          break;
+                        }
 
-                      if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-                        _iterator3.return();
-                      }
+                        throw _iteratorError3;
 
-                    case 25:
-                      _context9.prev = 25;
+                      case 28:
+                        return _context9.finish(25);
 
-                      if (!_didIteratorError3) {
-                        _context9.next = 28;
-                        break;
-                      }
+                      case 29:
+                        return _context9.finish(22);
 
-                      throw _iteratorError3;
+                      case 30:
+                        return _context9.abrupt("return", _promise.default.resolve(target));
 
-                    case 28:
-                      return _context9.finish(25);
-
-                    case 29:
-                      return _context9.finish(22);
-
-                    case 30:
-                      return _context9.abrupt("return", _promise.default.resolve(target));
-
-                    case 31:
-                    case "end":
-                      return _context9.stop();
+                      case 31:
+                      case "end":
+                        return _context9.stop();
+                    }
                   }
-                }
-              }, null, null, [[7, 18, 22, 30], [23,, 25, 29]]);
-            }));
+                }, _callee6, null, [[7, 18, 22, 30], [23,, 25, 29]]);
+              }))));
 
-          case 15:
-            if (!(target instanceof ParseObject)) {
-              _context11.next = 17;
-              break;
-            }
+            case 15:
+              if (!(target instanceof ParseObject)) {
+                _context11.next = 17;
+                break;
+              }
 
-            return _context11.abrupt("return", RESTController.request('DELETE', 'classes/' + target.className + '/' + target._getId(), {}, options).then(function () {
-              return _regenerator.default.async(function (_context10) {
-                while (1) {
-                  switch (_context10.prev = _context10.next) {
-                    case 0:
-                      _context10.next = 2;
-                      return _regenerator.default.awrap(localDatastore._destroyObjectIfPinned(target));
+              return _context11.abrupt("return", RESTController.request('DELETE', 'classes/' + target.className + '/' + target._getId(), {}, options).then(
+              /*#__PURE__*/
+              (0, _asyncToGenerator2.default)(
+              /*#__PURE__*/
+              _regenerator.default.mark(function _callee7() {
+                return _regenerator.default.wrap(function (_context10) {
+                  while (1) {
+                    switch (_context10.prev = _context10.next) {
+                      case 0:
+                        _context10.next = 2;
+                        return localDatastore._destroyObjectIfPinned(target);
 
-                    case 2:
-                      return _context10.abrupt("return", _promise.default.resolve(target));
+                      case 2:
+                        return _context10.abrupt("return", _promise.default.resolve(target));
 
-                    case 3:
-                    case "end":
-                      return _context10.stop();
+                      case 3:
+                      case "end":
+                        return _context10.stop();
+                    }
                   }
-                }
-              });
-            }));
+                }, _callee7);
+              }))));
 
-          case 17:
-            _context11.next = 19;
-            return _regenerator.default.awrap(localDatastore._destroyObjectIfPinned(target));
+            case 17:
+              _context11.next = 19;
+              return localDatastore._destroyObjectIfPinned(target);
 
-          case 19:
-            return _context11.abrupt("return", _promise.default.resolve(target));
+            case 19:
+              return _context11.abrupt("return", _promise.default.resolve(target));
 
-          case 20:
-          case "end":
-            return _context11.stop();
+            case 20:
+            case "end":
+              return _context11.stop();
+          }
         }
-      }
-    });
-  },
+      }, _callee8);
+    }));
+
+    return function () {
+      return _destroy.apply(this, arguments);
+    };
+  }(),
   save: function (target
   /*: ParseObject | Array<ParseObject | ParseFile>*/
   , options
@@ -10108,10 +10427,14 @@ var DefaultController = {
             batchReturned.reject(new _ParseError.default(_ParseError.default.INCORRECT_TYPE, error.message));
           });
           return (0, _promiseUtils.when)(batchTasks);
-        }).then(function () {
+        }).then(
+        /*#__PURE__*/
+        (0, _asyncToGenerator2.default)(
+        /*#__PURE__*/
+        _regenerator.default.mark(function _callee9() {
           var _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, object;
 
-          return _regenerator.default.async(function (_context12) {
+          return _regenerator.default.wrap(function (_context12) {
             while (1) {
               switch (_context12.prev = _context12.next) {
                 case 0:
@@ -10137,11 +10460,11 @@ var DefaultController = {
 
                   object = _step4.value;
                   _context12.next = 11;
-                  return _regenerator.default.awrap(localDatastore._updateLocalIdForObject(mapIdForPin[object.id], object));
+                  return localDatastore._updateLocalIdForObject(mapIdForPin[object.id], object);
 
                 case 11:
                   _context12.next = 13;
-                  return _regenerator.default.awrap(localDatastore._updateObjectIfPinned(object));
+                  return localDatastore._updateObjectIfPinned(object);
 
                 case 13:
                   _iteratorNormalCompletion4 = true;
@@ -10190,8 +10513,8 @@ var DefaultController = {
                   return _context12.stop();
               }
             }
-          }, null, null, [[5, 18, 22, 30], [23,, 25, 29]]);
-        });
+          }, _callee9, null, [[5, 18, 22, 30], [23,, 25, 29]]);
+        })));
       });
     } else if (target instanceof ParseObject) {
       // copying target lets Flow guarantee the pointer isn't modified elsewhere
@@ -10214,17 +10537,21 @@ var DefaultController = {
       };
 
       stateController.pushPendingState(target._getStateIdentifier());
-      return stateController.enqueueTask(target._getStateIdentifier(), task).then(function () {
-        return _regenerator.default.async(function (_context13) {
+      return stateController.enqueueTask(target._getStateIdentifier(), task).then(
+      /*#__PURE__*/
+      (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee10() {
+        return _regenerator.default.wrap(function (_context13) {
           while (1) {
             switch (_context13.prev = _context13.next) {
               case 0:
                 _context13.next = 2;
-                return _regenerator.default.awrap(localDatastore._updateLocalIdForObject(localId, target));
+                return localDatastore._updateLocalIdForObject(localId, target);
 
               case 2:
                 _context13.next = 4;
-                return _regenerator.default.awrap(localDatastore._updateObjectIfPinned(target));
+                return localDatastore._updateObjectIfPinned(target);
 
               case 4:
                 return _context13.abrupt("return", target);
@@ -10234,8 +10561,8 @@ var DefaultController = {
                 return _context13.stop();
             }
           }
-        });
-      }, function (error) {
+        }, _callee10);
+      })), function (error) {
         return _promise.default.reject(error);
       });
     }
@@ -10248,7 +10575,7 @@ _CoreManager.default.setObjectController(DefaultController);
 
 var _default = ParseObject;
 exports.default = _default;
-},{"./CoreManager":4,"./LocalDatastoreUtils":12,"./ParseACL":16,"./ParseError":18,"./ParseFile":19,"./ParseOp":24,"./ParseQuery":26,"./ParseRelation":27,"./SingleInstanceStateController":34,"./UniqueInstanceStateController":38,"./canBeSerialized":40,"./decode":41,"./encode":42,"./escape":44,"./parseDate":46,"./promiseUtils":47,"./unique":48,"./unsavedChildren":49,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/instance/concat":53,"@babel/runtime-corejs3/core-js-stable/instance/find":55,"@babel/runtime-corejs3/core-js-stable/instance/for-each":56,"@babel/runtime-corejs3/core-js-stable/instance/includes":57,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/instance/map":60,"@babel/runtime-corejs3/core-js-stable/json/stringify":67,"@babel/runtime-corejs3/core-js-stable/object/create":70,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/object/freeze":73,"@babel/runtime-corejs3/core-js-stable/object/keys":77,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/core-js/get-iterator":85,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/interopRequireWildcard":111,"@babel/runtime-corejs3/helpers/typeof":122,"@babel/runtime-corejs3/regenerator":125,"uuid/v4":440}],24:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./LocalDatastoreUtils":13,"./ParseACL":17,"./ParseError":19,"./ParseFile":20,"./ParseOp":25,"./ParseQuery":27,"./ParseRelation":28,"./SingleInstanceStateController":35,"./UniqueInstanceStateController":39,"./canBeSerialized":41,"./decode":42,"./encode":43,"./escape":45,"./parseDate":47,"./promiseUtils":48,"./unique":49,"./unsavedChildren":50,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/instance/concat":54,"@babel/runtime-corejs3/core-js-stable/instance/find":56,"@babel/runtime-corejs3/core-js-stable/instance/for-each":57,"@babel/runtime-corejs3/core-js-stable/instance/includes":58,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/instance/map":61,"@babel/runtime-corejs3/core-js-stable/json/stringify":68,"@babel/runtime-corejs3/core-js-stable/object/create":71,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/object/freeze":74,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/core-js/get-iterator":86,"@babel/runtime-corejs3/helpers/asyncToGenerator":105,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/interopRequireWildcard":114,"@babel/runtime-corejs3/helpers/typeof":125,"@babel/runtime-corejs3/regenerator":128,"uuid/v4":457}],25:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -11064,7 +11391,7 @@ function (_Op7) {
 }(Op);
 
 exports.RelationOp = RelationOp;
-},{"./ParseObject":23,"./ParseRelation":27,"./arrayContainsObject":39,"./decode":41,"./encode":42,"./unique":48,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/instance/concat":53,"@babel/runtime-corejs3/core-js-stable/instance/for-each":56,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/instance/map":60,"@babel/runtime-corejs3/core-js-stable/instance/splice":64,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/assertThisInitialized":102,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/getPrototypeOf":108,"@babel/runtime-corejs3/helpers/inherits":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":117}],25:[function(_dereq_,module,exports){
+},{"./ParseObject":24,"./ParseRelation":28,"./arrayContainsObject":40,"./decode":42,"./encode":43,"./unique":49,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/instance/concat":54,"@babel/runtime-corejs3/core-js-stable/instance/for-each":57,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/instance/map":61,"@babel/runtime-corejs3/core-js-stable/instance/splice":65,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/assertThisInitialized":104,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/getPrototypeOf":111,"@babel/runtime-corejs3/helpers/inherits":112,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":120}],26:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -11289,7 +11616,7 @@ function () {
 
 var _default = ParsePolygon;
 exports.default = _default;
-},{"./ParseGeoPoint":20,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],26:[function(_dereq_,module,exports){
+},{"./ParseGeoPoint":21,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],27:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -11302,7 +11629,7 @@ _Object$defineProperty(exports, "__esModule", {
 
 exports.default = void 0;
 
-var _reduce = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/reduce"));
+var _reduce2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/reduce"));
 
 var _typeof2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/typeof"));
 
@@ -11324,9 +11651,11 @@ var _concat = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-sta
 
 var _keys = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/keys"));
 
-var _filter = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/filter"));
+var _filter2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/filter"));
 
-var _map = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/map"));
+var _asyncToGenerator2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/asyncToGenerator"));
+
+var _map2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/map"));
 
 var _classCallCheck2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/classCallCheck"));
 
@@ -11650,7 +11979,7 @@ function () {
     )
     /*: ParseQuery*/
     {
-      var queryJSON = (0, _map.default)(queries).call(queries, function (q) {
+      var queryJSON = (0, _map2.default)(queries).call(queries, function (q) {
         return q.toJSON().where;
       });
       this._where.$or = queryJSON;
@@ -11669,7 +11998,7 @@ function () {
     )
     /*: ParseQuery*/
     {
-      var queryJSON = (0, _map.default)(queries).call(queries, function (q) {
+      var queryJSON = (0, _map2.default)(queries).call(queries, function (q) {
         return q.toJSON().where;
       });
       this._where.$and = queryJSON;
@@ -11688,7 +12017,7 @@ function () {
     )
     /*: ParseQuery*/
     {
-      var queryJSON = (0, _map.default)(queries).call(queries, function (q) {
+      var queryJSON = (0, _map2.default)(queries).call(queries, function (q) {
         return q.toJSON().where;
       });
       this._where.$nor = queryJSON;
@@ -11731,107 +12060,115 @@ function () {
     }
   }, {
     key: "_handleOfflineQuery",
-    value: function (params
-    /*: any*/
-    ) {
-      var _context,
-          _this2 = this;
+    value: function () {
+      var _handleOfflineQuery2 = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee(params
+      /*: any*/
+      ) {
+        var _context,
+            _this2 = this;
 
-      var localDatastore, objects, results, keys, alwaysSelectedKeys, sorts, count, limit;
-      return _regenerator.default.async(function (_context3) {
-        while (1) {
-          switch (_context3.prev = _context3.next) {
-            case 0:
-              _OfflineQuery.default.validateQuery(this);
+        var localDatastore, objects, results, keys, alwaysSelectedKeys, sorts, count, limit;
+        return _regenerator.default.wrap(function (_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                _OfflineQuery.default.validateQuery(this);
 
-              localDatastore = _CoreManager.default.getLocalDatastore();
-              _context3.next = 4;
-              return _regenerator.default.awrap(localDatastore._serializeObjectsFromPinName(this._localDatastorePinName));
+                localDatastore = _CoreManager.default.getLocalDatastore();
+                _context3.next = 4;
+                return localDatastore._serializeObjectsFromPinName(this._localDatastorePinName);
 
-            case 4:
-              objects = _context3.sent;
-              results = (0, _filter.default)(_context = (0, _map.default)(objects).call(objects, function (json, index, arr) {
-                var object = _ParseObject.default.fromJSON(json, false);
+              case 4:
+                objects = _context3.sent;
+                results = (0, _filter2.default)(_context = (0, _map2.default)(objects).call(objects, function (json, index, arr) {
+                  var object = _ParseObject.default.fromJSON(json, false);
 
-                if (json._localId && !json.objectId) {
-                  object._localId = json._localId;
-                }
+                  if (json._localId && !json.objectId) {
+                    object._localId = json._localId;
+                  }
 
-                if (!_OfflineQuery.default.matchesQuery(_this2.className, object, arr, _this2)) {
-                  return null;
-                }
+                  if (!_OfflineQuery.default.matchesQuery(_this2.className, object, arr, _this2)) {
+                    return null;
+                  }
 
-                return object;
-              })).call(_context, function (object) {
-                return object !== null;
-              });
+                  return object;
+                })).call(_context, function (object) {
+                  return object !== null;
+                });
 
-              if ((0, _keys.default)(params)) {
-                keys = (0, _keys.default)(params).split(',');
-                alwaysSelectedKeys = ['className', 'objectId', 'createdAt', 'updatedAt', 'ACL'];
-                keys = (0, _concat.default)(keys).call(keys, alwaysSelectedKeys);
-                results = (0, _map.default)(results).call(results, function (object) {
-                  var _context2;
+                if ((0, _keys.default)(params)) {
+                  keys = (0, _keys.default)(params).split(',');
+                  alwaysSelectedKeys = ['className', 'objectId', 'createdAt', 'updatedAt', 'ACL'];
+                  keys = (0, _concat.default)(keys).call(keys, alwaysSelectedKeys);
+                  results = (0, _map2.default)(results).call(results, function (object) {
+                    var _context2;
 
-                  var json = object._toFullJSON();
+                    var json = object._toFullJSON();
 
-                  (0, _forEach.default)(_context2 = (0, _keys2.default)(json)).call(_context2, function (key) {
-                    if (!(0, _includes.default)(keys).call(keys, key)) {
-                      delete json[key];
-                    }
+                    (0, _forEach.default)(_context2 = (0, _keys2.default)(json)).call(_context2, function (key) {
+                      if (!(0, _includes.default)(keys).call(keys, key)) {
+                        delete json[key];
+                      }
+                    });
+                    return _ParseObject.default.fromJSON(json, false);
                   });
-                  return _ParseObject.default.fromJSON(json, false);
-                });
-              }
-
-              if (params.order) {
-                sorts = params.order.split(',');
-                (0, _sort.default)(results).call(results, function (a, b) {
-                  return handleOfflineSort(a, b, sorts);
-                });
-              } // count total before applying limit/skip
-
-
-              if (params.count) {
-                count = results.length; // total count from response
-              }
-
-              if (params.skip) {
-                if (params.skip >= results.length) {
-                  results = [];
-                } else {
-                  results = (0, _splice.default)(results).call(results, params.skip, results.length);
                 }
-              }
 
-              limit = results.length;
+                if (params.order) {
+                  sorts = params.order.split(',');
+                  (0, _sort.default)(results).call(results, function (a, b) {
+                    return handleOfflineSort(a, b, sorts);
+                  });
+                } // count total before applying limit/skip
 
-              if (params.limit !== 0 && params.limit < results.length) {
-                limit = params.limit;
-              }
 
-              results = (0, _splice.default)(results).call(results, 0, limit);
+                if (params.count) {
+                  count = results.length; // total count from response
+                }
 
-              if (!(typeof count === 'number')) {
-                _context3.next = 15;
-                break;
-              }
+                if (params.skip) {
+                  if (params.skip >= results.length) {
+                    results = [];
+                  } else {
+                    results = (0, _splice.default)(results).call(results, params.skip, results.length);
+                  }
+                }
 
-              return _context3.abrupt("return", {
-                results: results,
-                count: count
-              });
+                limit = results.length;
 
-            case 15:
-              return _context3.abrupt("return", results);
+                if (params.limit !== 0 && params.limit < results.length) {
+                  limit = params.limit;
+                }
 
-            case 16:
-            case "end":
-              return _context3.stop();
+                results = (0, _splice.default)(results).call(results, 0, limit);
+
+                if (!(typeof count === 'number')) {
+                  _context3.next = 15;
+                  break;
+                }
+
+                return _context3.abrupt("return", {
+                  results: results,
+                  count: count
+                });
+
+              case 15:
+                return _context3.abrupt("return", results);
+
+              case 16:
+              case "end":
+                return _context3.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee, this);
+      }));
+
+      return function () {
+        return _handleOfflineQuery2.apply(this, arguments);
+      };
+    }()
     /**
      * Returns a JSON representation of this query.
      * @return {Object} The JSON representation of the query.
@@ -12083,7 +12420,7 @@ function () {
       return (0, _find.default)(controller).call(controller, this.className, this.toJSON(), findOptions).then(function (response) {
         var _context5;
 
-        var results = (0, _map.default)(_context5 = response.results).call(_context5, function (data) {
+        var results = (0, _map2.default)(_context5 = response.results).call(_context5, function (data) {
           // In cases of relations, the server may send back a className
           // on the top level of the payload
           var override = response.className || _this3.className;
@@ -12360,14 +12697,14 @@ function () {
       // This is undocumented, but useful for testing.
 
       query._limit = options.batchSize || 100;
-      query._include = (0, _map.default)(_context6 = this._include).call(_context6, function (i) {
+      query._include = (0, _map2.default)(_context6 = this._include).call(_context6, function (i) {
         return i;
       });
 
       if (this._select) {
         var _context7;
 
-        query._select = (0, _map.default)(_context7 = this._select).call(_context7, function (s) {
+        query._select = (0, _map2.default)(_context7 = this._select).call(_context7, function (s) {
           return s;
         });
       }
@@ -12378,7 +12715,7 @@ function () {
         var val = this._where[_attr];
 
         if ((0, _isArray.default)(val)) {
-          query._where[_attr] = (0, _map.default)(val).call(val, function (v) {
+          query._where[_attr] = (0, _map2.default)(val).call(val, function (v) {
             return v;
           });
         } else if (val && (0, _typeof2.default)(val) === 'object') {
@@ -12451,36 +12788,44 @@ function () {
 
   }, {
     key: "map",
-    value: function (callback
-    /*: (currentObject: ParseObject, index: number, query: ParseQuery) => any*/
-    , options
-    /*:: ?: BatchOptions*/
-    ) {
-      var _this5 = this;
+    value: function () {
+      var _map = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee2(callback
+      /*: (currentObject: ParseObject, index: number, query: ParseQuery) => any*/
+      , options
+      /*:: ?: BatchOptions*/
+      ) {
+        var _this5 = this;
 
-      var array, index;
-      return _regenerator.default.async(function (_context8) {
-        while (1) {
-          switch (_context8.prev = _context8.next) {
-            case 0:
-              array = [];
-              index = 0;
-              _context8.next = 4;
-              return _regenerator.default.awrap(this.each(function (object) {
-                array.push(callback(object, index, _this5));
-                index += 1;
-              }, options));
+        var array, index;
+        return _regenerator.default.wrap(function (_context8) {
+          while (1) {
+            switch (_context8.prev = _context8.next) {
+              case 0:
+                array = [];
+                index = 0;
+                _context8.next = 4;
+                return this.each(function (object) {
+                  array.push(callback(object, index, _this5));
+                  index += 1;
+                }, options);
 
-            case 4:
-              return _context8.abrupt("return", array);
+              case 4:
+                return _context8.abrupt("return", array);
 
-            case 5:
-            case "end":
-              return _context8.stop();
+              case 5:
+              case "end":
+                return _context8.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee2, this);
+      }));
+
+      return function () {
+        return _map.apply(this, arguments);
+      };
+    }()
     /**
      * Iterates over each result of a query, calling a callback for each one. If
      * the callback returns a promise, the iteration will not continue until
@@ -12506,34 +12851,42 @@ function () {
 
   }, {
     key: "reduce",
-    value: function (callback
-    /*: (accumulator: any, currentObject: ParseObject, index: number) => any*/
-    , initialValue
-    /*: any*/
-    , options
-    /*:: ?: BatchOptions*/
-    ) {
-      var objects;
-      return _regenerator.default.async(function (_context9) {
-        while (1) {
-          switch (_context9.prev = _context9.next) {
-            case 0:
-              objects = [];
-              _context9.next = 3;
-              return _regenerator.default.awrap(this.each(function (object) {
-                objects.push(object);
-              }, options));
+    value: function () {
+      var _reduce = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee3(callback
+      /*: (accumulator: any, currentObject: ParseObject, index: number) => any*/
+      , initialValue
+      /*: any*/
+      , options
+      /*:: ?: BatchOptions*/
+      ) {
+        var objects;
+        return _regenerator.default.wrap(function (_context9) {
+          while (1) {
+            switch (_context9.prev = _context9.next) {
+              case 0:
+                objects = [];
+                _context9.next = 3;
+                return this.each(function (object) {
+                  objects.push(object);
+                }, options);
 
-            case 3:
-              return _context9.abrupt("return", (0, _reduce.default)(objects).call(objects, callback, initialValue));
+              case 3:
+                return _context9.abrupt("return", (0, _reduce2.default)(objects).call(objects, callback, initialValue));
 
-            case 4:
-            case "end":
-              return _context9.stop();
+              case 4:
+              case "end":
+                return _context9.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee3, this);
+      }));
+
+      return function () {
+        return _reduce.apply(this, arguments);
+      };
+    }()
     /**
      * Iterates over each result of a query, calling a callback for each one. If
      * the callback returns a promise, the iteration will not continue until
@@ -12559,41 +12912,49 @@ function () {
 
   }, {
     key: "filter",
-    value: function (callback
-    /*: (currentObject: ParseObject, index: number, query: ParseQuery) => boolean*/
-    , options
-    /*:: ?: BatchOptions*/
-    ) {
-      var _this6 = this;
+    value: function () {
+      var _filter = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee4(callback
+      /*: (currentObject: ParseObject, index: number, query: ParseQuery) => boolean*/
+      , options
+      /*:: ?: BatchOptions*/
+      ) {
+        var _this6 = this;
 
-      var array, index;
-      return _regenerator.default.async(function (_context10) {
-        while (1) {
-          switch (_context10.prev = _context10.next) {
-            case 0:
-              array = [];
-              index = 0;
-              _context10.next = 4;
-              return _regenerator.default.awrap(this.each(function (object) {
-                var flag = callback(object, index, _this6);
+        var array, index;
+        return _regenerator.default.wrap(function (_context10) {
+          while (1) {
+            switch (_context10.prev = _context10.next) {
+              case 0:
+                array = [];
+                index = 0;
+                _context10.next = 4;
+                return this.each(function (object) {
+                  var flag = callback(object, index, _this6);
 
-                if (flag) {
-                  array.push(object);
-                }
+                  if (flag) {
+                    array.push(object);
+                  }
 
-                index += 1;
-              }, options));
+                  index += 1;
+                }, options);
 
-            case 4:
-              return _context10.abrupt("return", array);
+              case 4:
+                return _context10.abrupt("return", array);
 
-            case 5:
-            case "end":
-              return _context10.stop();
+              case 5:
+              case "end":
+                return _context10.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee4, this);
+      }));
+
+      return function () {
+        return _filter.apply(this, arguments);
+      };
+    }()
     /** Query Conditions **/
 
     /**
@@ -12814,7 +13175,7 @@ function () {
         values = [values];
       }
 
-      var regexObject = (0, _map.default)(values).call(values, function (value) {
+      var regexObject = (0, _map2.default)(values).call(values, function (value) {
         return {
           '$regex': _this._regexStartWith(value)
         };
@@ -13468,7 +13829,7 @@ function () {
           key = key.join();
         }
 
-        _this8._order = (0, _concat.default)(_context12 = _this8._order).call(_context12, (0, _map.default)(_context13 = key.replace(/\s/g, '').split(',')).call(_context13, function (k) {
+        _this8._order = (0, _concat.default)(_context12 = _this8._order).call(_context12, (0, _map2.default)(_context13 = key.replace(/\s/g, '').split(',')).call(_context13, function (k) {
           return '-' + k;
         }));
       });
@@ -13693,46 +14054,54 @@ function () {
 
   }, {
     key: "subscribe",
-    value: function (sessionToken
-    /*:: ?: string*/
-    ) {
-      var currentUser, liveQueryClient, subscription;
-      return _regenerator.default.async(function (_context17) {
-        while (1) {
-          switch (_context17.prev = _context17.next) {
-            case 0:
-              _context17.next = 2;
-              return _regenerator.default.awrap(_CoreManager.default.getUserController().currentUserAsync());
+    value: function () {
+      var _subscribe = (0, _asyncToGenerator2.default)(
+      /*#__PURE__*/
+      _regenerator.default.mark(function _callee5(sessionToken
+      /*:: ?: string*/
+      ) {
+        var currentUser, liveQueryClient, subscription;
+        return _regenerator.default.wrap(function (_context17) {
+          while (1) {
+            switch (_context17.prev = _context17.next) {
+              case 0:
+                _context17.next = 2;
+                return _CoreManager.default.getUserController().currentUserAsync();
 
-            case 2:
-              currentUser = _context17.sent;
+              case 2:
+                currentUser = _context17.sent;
 
-              if (!sessionToken) {
-                sessionToken = currentUser ? currentUser.getSessionToken() : undefined;
-              }
+                if (!sessionToken) {
+                  sessionToken = currentUser ? currentUser.getSessionToken() : undefined;
+                }
 
-              _context17.next = 6;
-              return _regenerator.default.awrap(_CoreManager.default.getLiveQueryController().getDefaultLiveQueryClient());
+                _context17.next = 6;
+                return _CoreManager.default.getLiveQueryController().getDefaultLiveQueryClient();
 
-            case 6:
-              liveQueryClient = _context17.sent;
+              case 6:
+                liveQueryClient = _context17.sent;
 
-              if (liveQueryClient.shouldOpen()) {
-                liveQueryClient.open();
-              }
+                if (liveQueryClient.shouldOpen()) {
+                  liveQueryClient.open();
+                }
 
-              subscription = liveQueryClient.subscribe(this, sessionToken);
-              return _context17.abrupt("return", subscription.subscribePromise.then(function () {
-                return subscription;
-              }));
+                subscription = liveQueryClient.subscribe(this, sessionToken);
+                return _context17.abrupt("return", subscription.subscribePromise.then(function () {
+                  return subscription;
+                }));
 
-            case 10:
-            case "end":
-              return _context17.stop();
+              case 10:
+              case "end":
+                return _context17.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee5, this);
+      }));
+
+      return function () {
+        return _subscribe.apply(this, arguments);
+      };
+    }()
     /**
      * Constructs a Parse.Query that is the OR of the passed in queries.  For
      * example:
@@ -13811,7 +14180,6 @@ function () {
     }
     /**
      * Cancels the current network request (if any is running).
-     * Note: Support varies based on xmlhttprequest module used. (Will support browser)
      *
      * @return {Parse.Query} Returns the query, so you can chain this call.
      */
@@ -13821,22 +14189,33 @@ function () {
     value: function ()
     /*: ParseQuery*/
     {
+      var _this12 = this;
+
       if (this._xhrRequest.task && typeof this._xhrRequest.task.abort === 'function') {
+        this._xhrRequest.task._aborted = true;
+
         this._xhrRequest.task.abort();
+
+        this._xhrRequest.task = null;
+
+        this._xhrRequest.onchange = function () {};
+
+        return this;
       }
 
-      this._xhrRequest.task = null;
-      return this;
+      return this._xhrRequest.onchange = function () {
+        return _this12.cancel();
+      };
     }
   }, {
     key: "_setRequestTask",
     value: function (options) {
-      var _this12 = this;
+      var _this13 = this;
 
       options.requestTask = function (task) {
-        _this12._xhrRequest.task = task;
+        _this13._xhrRequest.task = task;
 
-        _this12._xhrRequest.onchange();
+        _this13._xhrRequest.onchange();
       };
     }
   }], [{
@@ -13963,7 +14342,7 @@ _CoreManager.default.setQueryController(DefaultController);
 
 var _default = ParseQuery;
 exports.default = _default;
-},{"./CoreManager":4,"./LocalDatastoreUtils":12,"./OfflineQuery":14,"./ParseError":18,"./ParseGeoPoint":20,"./ParseObject":23,"./encode":42,"./promiseUtils":47,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/instance/concat":53,"@babel/runtime-corejs3/core-js-stable/instance/filter":54,"@babel/runtime-corejs3/core-js-stable/instance/find":55,"@babel/runtime-corejs3/core-js-stable/instance/for-each":56,"@babel/runtime-corejs3/core-js-stable/instance/includes":57,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/instance/keys":59,"@babel/runtime-corejs3/core-js-stable/instance/map":60,"@babel/runtime-corejs3/core-js-stable/instance/reduce":61,"@babel/runtime-corejs3/core-js-stable/instance/slice":62,"@babel/runtime-corejs3/core-js-stable/instance/sort":63,"@babel/runtime-corejs3/core-js-stable/instance/splice":64,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/object/keys":77,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122,"@babel/runtime-corejs3/regenerator":125}],27:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./LocalDatastoreUtils":13,"./OfflineQuery":15,"./ParseError":19,"./ParseGeoPoint":21,"./ParseObject":24,"./encode":43,"./promiseUtils":48,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/instance/concat":54,"@babel/runtime-corejs3/core-js-stable/instance/filter":55,"@babel/runtime-corejs3/core-js-stable/instance/find":56,"@babel/runtime-corejs3/core-js-stable/instance/for-each":57,"@babel/runtime-corejs3/core-js-stable/instance/includes":58,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/instance/keys":60,"@babel/runtime-corejs3/core-js-stable/instance/map":61,"@babel/runtime-corejs3/core-js-stable/instance/reduce":62,"@babel/runtime-corejs3/core-js-stable/instance/slice":63,"@babel/runtime-corejs3/core-js-stable/instance/sort":64,"@babel/runtime-corejs3/core-js-stable/instance/splice":65,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/asyncToGenerator":105,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125,"@babel/runtime-corejs3/regenerator":128}],28:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -14174,7 +14553,7 @@ function () {
 
 var _default = ParseRelation;
 exports.default = _default;
-},{"./ParseObject":23,"./ParseOp":24,"./ParseQuery":26,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],28:[function(_dereq_,module,exports){
+},{"./ParseObject":24,"./ParseOp":25,"./ParseQuery":27,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],29:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -14388,7 +14767,7 @@ _ParseObject2.default.registerSubclass('_Role', ParseRole);
 
 var _default = ParseRole;
 exports.default = _default;
-},{"./ParseACL":16,"./ParseError":18,"./ParseObject":23,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/get":107,"@babel/runtime-corejs3/helpers/getPrototypeOf":108,"@babel/runtime-corejs3/helpers/inherits":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":117}],29:[function(_dereq_,module,exports){
+},{"./ParseACL":17,"./ParseError":19,"./ParseObject":24,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/get":110,"@babel/runtime-corejs3/helpers/getPrototypeOf":111,"@babel/runtime-corejs3/helpers/inherits":112,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":120}],30:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -15039,7 +15418,7 @@ _CoreManager.default.setSchemaController(DefaultController);
 
 var _default = ParseSchema;
 exports.default = _default;
-},{"./CoreManager":4,"./ParseObject":23,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],30:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseObject":24,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],31:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -15226,7 +15605,7 @@ _CoreManager.default.setSessionController(DefaultController);
 
 var _default = ParseSession;
 exports.default = _default;
-},{"./CoreManager":4,"./ParseObject":23,"./ParseUser":31,"./isRevocableSession":45,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/getPrototypeOf":108,"@babel/runtime-corejs3/helpers/inherits":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":117,"@babel/runtime-corejs3/helpers/typeof":122}],31:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseObject":24,"./ParseUser":32,"./isRevocableSession":46,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/getPrototypeOf":111,"@babel/runtime-corejs3/helpers/inherits":112,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":120,"@babel/runtime-corejs3/helpers/typeof":125}],32:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -16410,7 +16789,15 @@ var DefaultController = {
     var json = user.toJSON();
     delete json.password;
     json.className = '_User';
-    return _Storage.default.setItemAsync(path, (0, _stringify.default)(json)).then(function () {
+    var userData = (0, _stringify.default)(json);
+
+    if (_CoreManager.default.get('ENCRYPTED_USER')) {
+      var crypto = _CoreManager.default.getCryptoController();
+
+      userData = crypto.encrypt(json, _CoreManager.default.get('ENCRYPTED_KEY'));
+    }
+
+    return _Storage.default.setItemAsync(path, userData).then(function () {
       return user;
     });
   },
@@ -16468,6 +16855,12 @@ var DefaultController = {
       return null;
     }
 
+    if (_CoreManager.default.get('ENCRYPTED_USER')) {
+      var crypto = _CoreManager.default.getCryptoController();
+
+      userData = crypto.decrypt(userData, _CoreManager.default.get('ENCRYPTED_KEY'));
+    }
+
     userData = JSON.parse(userData);
 
     if (!userData.className) {
@@ -16514,6 +16907,12 @@ var DefaultController = {
       if (!userData) {
         currentUserCache = null;
         return _promise.default.resolve(null);
+      }
+
+      if (_CoreManager.default.get('ENCRYPTED_USER')) {
+        var crypto = _CoreManager.default.getCryptoController();
+
+        userData = crypto.decrypt(userData.toString(), _CoreManager.default.get('ENCRYPTED_KEY'));
       }
 
       userData = JSON.parse(userData);
@@ -16774,7 +17173,7 @@ _CoreManager.default.setUserController(DefaultController);
 
 var _default = ParseUser;
 exports.default = _default;
-},{"./AnonymousUtils":2,"./CoreManager":4,"./ParseError":18,"./ParseObject":23,"./ParseSession":30,"./Storage":35,"./isRevocableSession":45,"@babel/runtime-corejs3/core-js-stable/json/stringify":67,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/get":107,"@babel/runtime-corejs3/helpers/getPrototypeOf":108,"@babel/runtime-corejs3/helpers/inherits":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":117,"@babel/runtime-corejs3/helpers/typeof":122}],32:[function(_dereq_,module,exports){
+},{"./AnonymousUtils":2,"./CoreManager":4,"./ParseError":19,"./ParseObject":24,"./ParseSession":31,"./Storage":36,"./isRevocableSession":46,"@babel/runtime-corejs3/core-js-stable/json/stringify":68,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/get":110,"@babel/runtime-corejs3/helpers/getPrototypeOf":111,"@babel/runtime-corejs3/helpers/inherits":112,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":120,"@babel/runtime-corejs3/helpers/typeof":125}],33:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -16881,7 +17280,7 @@ var DefaultController = {
 };
 
 _CoreManager.default.setPushController(DefaultController);
-},{"./CoreManager":4,"./ParseQuery":26,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],33:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseQuery":27,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],34:[function(_dereq_,module,exports){
 (function (process){
 "use strict";
 
@@ -16983,10 +17382,6 @@ function ajaxIE9(method
   return new _promise.default(function (resolve, reject) {
     var xdr = new XDomainRequest();
 
-    if (options && typeof options.requestTask === 'function') {
-      options.requestTask(xdr);
-    }
-
     xdr.onload = function () {
       var response;
 
@@ -17022,6 +17417,10 @@ function ajaxIE9(method
 
     xdr.open(method, url);
     xdr.send(data);
+
+    if (options && typeof options.requestTask === 'function') {
+      options.requestTask(xdr);
+    }
   });
 }
 
@@ -17056,15 +17455,10 @@ var RESTController = {
       }
 
       var handled = false;
-      var aborted = false;
       var xhr = new XHR();
 
-      if (options && typeof options.requestTask === 'function') {
-        options.requestTask(xhr);
-      }
-
       xhr.onreadystatechange = function () {
-        if (xhr.readyState !== 4 || handled) {
+        if (xhr.readyState !== 4 || handled || xhr._aborted) {
           return;
         }
 
@@ -17094,12 +17488,6 @@ var RESTController = {
               xhr: xhr
             });
           }
-        } else if (aborted && xhr.status === 0) {
-          promise.resolve({
-            response: {},
-            status: 0,
-            xhr: xhr
-          });
         } else if (xhr.status >= 500 || xhr.status === 0) {
           // retry on 5XX or node-xmlhttprequest error
           if (++attempts < _CoreManager.default.get('REQUEST_ATTEMPT_LIMIT')) {
@@ -17137,28 +17525,14 @@ var RESTController = {
         headers[key] = customHeaders[key];
       }
 
-      if (options && typeof options.progress === 'function') {
-        if (xhr.upload) {
-          xhr.upload.addEventListener('progress', function (oEvent) {
-            if (oEvent.lengthComputable) {
-              options.progress(oEvent.loaded / oEvent.total);
-            } else {
-              options.progress(null);
-            }
-          });
-        } else if (xhr.addEventListener) {
-          xhr.addEventListener('progress', function (oEvent) {
-            if (oEvent.lengthComputable) {
-              options.progress(oEvent.loaded / oEvent.total);
-            } else {
-              options.progress(null);
-            }
-          });
+      xhr.onprogress = function (event) {
+        if (options && typeof options.progress === 'function') {
+          if (event.lengthComputable) {
+            options.progress(event.loaded / event.total, event.loaded, event.total);
+          } else {
+            options.progress(null);
+          }
         }
-      }
-
-      xhr.onabort = function () {
-        aborted = true;
       };
 
       xhr.open(method, url, true);
@@ -17167,7 +17541,21 @@ var RESTController = {
         xhr.setRequestHeader(h, headers[h]);
       }
 
+      xhr.onabort = function () {
+        promise.resolve({
+          response: {
+            results: []
+          },
+          status: 0,
+          xhr: xhr
+        });
+      };
+
       xhr.send(data);
+
+      if (options && typeof options.requestTask === 'function') {
+        options.requestTask(xhr);
+      }
     };
 
     dispatch();
@@ -17309,7 +17697,7 @@ var RESTController = {
 };
 module.exports = RESTController;
 }).call(this,_dereq_('_process'))
-},{"./CoreManager":4,"./ParseError":18,"@babel/runtime-corejs3/core-js-stable/instance/filter":54,"@babel/runtime-corejs3/core-js-stable/instance/for-each":56,"@babel/runtime-corejs3/core-js-stable/instance/includes":57,"@babel/runtime-corejs3/core-js-stable/json/stringify":67,"@babel/runtime-corejs3/core-js-stable/object/define-properties":71,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor":74,"@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors":75,"@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols":76,"@babel/runtime-corejs3/core-js-stable/object/keys":77,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/core-js-stable/set-timeout":80,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122,"_process":126}],34:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./ParseError":19,"@babel/runtime-corejs3/core-js-stable/instance/filter":55,"@babel/runtime-corejs3/core-js-stable/instance/for-each":57,"@babel/runtime-corejs3/core-js-stable/instance/includes":58,"@babel/runtime-corejs3/core-js-stable/json/stringify":68,"@babel/runtime-corejs3/core-js-stable/object/define-properties":72,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor":75,"@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors":76,"@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols":77,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/core-js-stable/set-timeout":81,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125,"_process":129}],35:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireWildcard = _dereq_("@babel/runtime-corejs3/helpers/interopRequireWildcard");
@@ -17551,7 +17939,7 @@ function duplicateState(source
 ) {
   dest.id = source.id;
 }
-},{"./ObjectStateMutations":13,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireWildcard":111}],35:[function(_dereq_,module,exports){
+},{"./ObjectStateMutations":14,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireWildcard":114}],36:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -17713,7 +18101,7 @@ var Storage = {
 module.exports = Storage;
 
 _CoreManager.default.setStorageController(_dereq_('./StorageController.browser'));
-},{"./CoreManager":4,"./StorageController.browser":36,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],36:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./StorageController.browser":37,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],37:[function(_dereq_,module,exports){
 "use strict";
 /**
  * Copyright (c) 2015-present, Parse, LLC.
@@ -17768,7 +18156,7 @@ var StorageController = {
   }
 };
 module.exports = StorageController;
-},{}],37:[function(_dereq_,module,exports){
+},{}],38:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -17867,7 +18255,7 @@ function () {
 }();
 
 module.exports = TaskQueue;
-},{"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/classCallCheck":103,"@babel/runtime-corejs3/helpers/createClass":105,"@babel/runtime-corejs3/helpers/defineProperty":106,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],38:[function(_dereq_,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/classCallCheck":106,"@babel/runtime-corejs3/helpers/createClass":108,"@babel/runtime-corejs3/helpers/defineProperty":109,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],39:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireWildcard = _dereq_("@babel/runtime-corejs3/helpers/interopRequireWildcard");
@@ -18126,7 +18514,7 @@ function duplicateState(source
 function clearAllState() {
   objectState = new _weakMap.default();
 }
-},{"./ObjectStateMutations":13,"./TaskQueue":37,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/weak-map":82,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/interopRequireWildcard":111}],39:[function(_dereq_,module,exports){
+},{"./ObjectStateMutations":14,"./TaskQueue":38,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/weak-map":83,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/interopRequireWildcard":114}],40:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -18173,7 +18561,7 @@ function arrayContainsObject(array
 
   return false;
 }
-},{"./ParseObject":23,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],40:[function(_dereq_,module,exports){
+},{"./ParseObject":24,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],41:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -18272,7 +18660,7 @@ function canBeSerializedHelper(value
 
   return true;
 }
-},{"./ParseFile":19,"./ParseObject":23,"./ParseRelation":27,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],41:[function(_dereq_,module,exports){
+},{"./ParseFile":20,"./ParseObject":24,"./ParseRelation":28,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],42:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -18380,7 +18768,7 @@ function decode(value
 
   return copy;
 }
-},{"./ParseACL":16,"./ParseFile":19,"./ParseGeoPoint":20,"./ParseObject":23,"./ParseOp":24,"./ParsePolygon":25,"./ParseRelation":27,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/instance/for-each":56,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],42:[function(_dereq_,module,exports){
+},{"./ParseACL":17,"./ParseFile":20,"./ParseGeoPoint":21,"./ParseObject":24,"./ParseOp":25,"./ParsePolygon":26,"./ParseRelation":28,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/instance/for-each":57,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],43:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -18519,7 +18907,7 @@ function _default(value
 {
   return encode(value, !!disallowObjects, !!forcePointers, seen || []);
 }
-},{"./ParseACL":16,"./ParseFile":19,"./ParseGeoPoint":20,"./ParseObject":23,"./ParseOp":24,"./ParsePolygon":25,"./ParseRelation":27,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/instance/concat":53,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/instance/map":60,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/object/keys":77,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],43:[function(_dereq_,module,exports){
+},{"./ParseACL":17,"./ParseFile":20,"./ParseGeoPoint":21,"./ParseObject":24,"./ParseOp":25,"./ParsePolygon":26,"./ParseRelation":28,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/instance/concat":54,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/instance/map":61,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],44:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -18613,7 +19001,7 @@ function equals(a, b) {
 
   return true;
 }
-},{"./ParseACL":16,"./ParseFile":19,"./ParseGeoPoint":20,"./ParseObject":23,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/object/keys":77,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],44:[function(_dereq_,module,exports){
+},{"./ParseACL":17,"./ParseFile":20,"./ParseGeoPoint":21,"./ParseObject":24,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/object/keys":78,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],45:[function(_dereq_,module,exports){
 "use strict";
 
 var _Object$defineProperty = _dereq_("@babel/runtime-corejs3/core-js-stable/object/define-property");
@@ -18652,7 +19040,7 @@ function escape(str
     return encoded[char];
   });
 }
-},{"@babel/runtime-corejs3/core-js-stable/object/define-property":72}],45:[function(_dereq_,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/object/define-property":73}],46:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -18685,7 +19073,7 @@ function isRevocableSession(token
 {
   return (0, _indexOf.default)(token).call(token, 'r:') > -1;
 }
-},{"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],46:[function(_dereq_,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],47:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -18732,7 +19120,7 @@ function parseDate(iso8601
   var milli = (0, _parseInt2.default)(match[8]) || 0;
   return new Date(Date.UTC(year, month, day, hour, minute, second, milli));
 }
-},{"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/parse-int":78,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],47:[function(_dereq_,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/parse-int":79,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],48:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -18831,7 +19219,7 @@ function continueWhile(test, emitter) {
 
   return _promise.default.resolve();
 }
-},{"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/core-js-stable/promise":79,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],48:[function(_dereq_,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/core-js-stable/promise":80,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],49:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -18884,7 +19272,7 @@ function unique
   });
   return uniques;
 }
-},{"./ParseObject":23,"./arrayContainsObject":39,"@babel/runtime-corejs3/core-js-stable/instance/for-each":56,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110}],49:[function(_dereq_,module,exports){
+},{"./ParseObject":24,"./arrayContainsObject":40,"@babel/runtime-corejs3/core-js-stable/instance/for-each":57,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113}],50:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -19021,107 +19409,109 @@ function traverse(obj
     }
   }
 }
-},{"./ParseFile":19,"./ParseObject":23,"./ParseRelation":27,"@babel/runtime-corejs3/core-js-stable/array/is-array":51,"@babel/runtime-corejs3/core-js-stable/instance/concat":53,"@babel/runtime-corejs3/core-js-stable/instance/for-each":56,"@babel/runtime-corejs3/core-js-stable/instance/index-of":58,"@babel/runtime-corejs3/core-js-stable/object/define-property":72,"@babel/runtime-corejs3/helpers/interopRequireDefault":110,"@babel/runtime-corejs3/helpers/typeof":122}],50:[function(_dereq_,module,exports){
+},{"./ParseFile":20,"./ParseObject":24,"./ParseRelation":28,"@babel/runtime-corejs3/core-js-stable/array/is-array":52,"@babel/runtime-corejs3/core-js-stable/instance/concat":54,"@babel/runtime-corejs3/core-js-stable/instance/for-each":57,"@babel/runtime-corejs3/core-js-stable/instance/index-of":59,"@babel/runtime-corejs3/core-js-stable/object/define-property":73,"@babel/runtime-corejs3/helpers/interopRequireDefault":113,"@babel/runtime-corejs3/helpers/typeof":125}],51:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/array/from");
-},{"core-js-pure/stable/array/from":401}],51:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/array/from":409}],52:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/array/is-array");
-},{"core-js-pure/stable/array/is-array":402}],52:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/array/is-array":410}],53:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/bind");
-},{"core-js-pure/stable/instance/bind":406}],53:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/bind":414}],54:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/concat");
-},{"core-js-pure/stable/instance/concat":407}],54:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/concat":415}],55:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/filter");
-},{"core-js-pure/stable/instance/filter":408}],55:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/filter":416}],56:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/find");
-},{"core-js-pure/stable/instance/find":409}],56:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/find":417}],57:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/for-each");
-},{"core-js-pure/stable/instance/for-each":410}],57:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/for-each":418}],58:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/includes");
-},{"core-js-pure/stable/instance/includes":411}],58:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/includes":419}],59:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/index-of");
-},{"core-js-pure/stable/instance/index-of":412}],59:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/index-of":420}],60:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/keys");
-},{"core-js-pure/stable/instance/keys":413}],60:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/keys":421}],61:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/map");
-},{"core-js-pure/stable/instance/map":414}],61:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/map":422}],62:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/reduce");
-},{"core-js-pure/stable/instance/reduce":415}],62:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/reduce":423}],63:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/slice");
-},{"core-js-pure/stable/instance/slice":416}],63:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/slice":424}],64:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/sort");
-},{"core-js-pure/stable/instance/sort":417}],64:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/sort":425}],65:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/splice");
-},{"core-js-pure/stable/instance/splice":418}],65:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/splice":426}],66:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/starts-with");
-},{"core-js-pure/stable/instance/starts-with":419}],66:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/starts-with":427}],67:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/instance/values");
-},{"core-js-pure/stable/instance/values":420}],67:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/instance/values":428}],68:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/json/stringify");
-},{"core-js-pure/stable/json/stringify":421}],68:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/json/stringify":429}],69:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/map");
-},{"core-js-pure/stable/map":422}],69:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/map":430}],70:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/object/assign");
-},{"core-js-pure/stable/object/assign":423}],70:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/object/assign":431}],71:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/object/create");
-},{"core-js-pure/stable/object/create":424}],71:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/object/create":432}],72:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/object/define-properties");
-},{"core-js-pure/stable/object/define-properties":425}],72:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/object/define-properties":433}],73:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/object/define-property");
-},{"core-js-pure/stable/object/define-property":426}],73:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/object/define-property":434}],74:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/object/freeze");
-},{"core-js-pure/stable/object/freeze":427}],74:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/object/freeze":435}],75:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/object/get-own-property-descriptor");
-},{"core-js-pure/stable/object/get-own-property-descriptor":428}],75:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/object/get-own-property-descriptor":436}],76:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/object/get-own-property-descriptors");
-},{"core-js-pure/stable/object/get-own-property-descriptors":429}],76:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/object/get-own-property-descriptors":437}],77:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/object/get-own-property-symbols");
-},{"core-js-pure/stable/object/get-own-property-symbols":430}],77:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/object/get-own-property-symbols":438}],78:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/object/keys");
-},{"core-js-pure/stable/object/keys":431}],78:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/object/keys":439}],79:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/parse-int");
-},{"core-js-pure/stable/parse-int":432}],79:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/parse-int":440}],80:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/promise");
-},{"core-js-pure/stable/promise":433}],80:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/promise":441}],81:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/set-timeout");
-},{"core-js-pure/stable/set-timeout":434}],81:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/set-timeout":442}],82:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/set");
-},{"core-js-pure/stable/set":435}],82:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/set":443}],83:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/stable/weak-map");
-},{"core-js-pure/stable/weak-map":436}],83:[function(_dereq_,module,exports){
+},{"core-js-pure/stable/weak-map":444}],84:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/array/from");
-},{"core-js-pure/features/array/from":178}],84:[function(_dereq_,module,exports){
+},{"core-js-pure/features/array/from":181}],85:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/array/is-array");
-},{"core-js-pure/features/array/is-array":179}],85:[function(_dereq_,module,exports){
+},{"core-js-pure/features/array/is-array":182}],86:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/get-iterator");
-},{"core-js-pure/features/get-iterator":180}],86:[function(_dereq_,module,exports){
+},{"core-js-pure/features/get-iterator":183}],87:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/instance/bind");
-},{"core-js-pure/features/instance/bind":181}],87:[function(_dereq_,module,exports){
+},{"core-js-pure/features/instance/bind":184}],88:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/instance/index-of");
-},{"core-js-pure/features/instance/index-of":182}],88:[function(_dereq_,module,exports){
+},{"core-js-pure/features/instance/index-of":185}],89:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/is-iterable");
-},{"core-js-pure/features/is-iterable":183}],89:[function(_dereq_,module,exports){
+},{"core-js-pure/features/is-iterable":186}],90:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/map");
-},{"core-js-pure/features/map":184}],90:[function(_dereq_,module,exports){
+},{"core-js-pure/features/map":187}],91:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/object/create");
-},{"core-js-pure/features/object/create":185}],91:[function(_dereq_,module,exports){
+},{"core-js-pure/features/object/create":188}],92:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/object/define-property");
-},{"core-js-pure/features/object/define-property":186}],92:[function(_dereq_,module,exports){
+},{"core-js-pure/features/object/define-property":189}],93:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/object/get-own-property-descriptor");
-},{"core-js-pure/features/object/get-own-property-descriptor":187}],93:[function(_dereq_,module,exports){
+},{"core-js-pure/features/object/get-own-property-descriptor":190}],94:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/object/get-prototype-of");
-},{"core-js-pure/features/object/get-prototype-of":188}],94:[function(_dereq_,module,exports){
+},{"core-js-pure/features/object/get-prototype-of":191}],95:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/object/set-prototype-of");
-},{"core-js-pure/features/object/set-prototype-of":189}],95:[function(_dereq_,module,exports){
+},{"core-js-pure/features/object/set-prototype-of":192}],96:[function(_dereq_,module,exports){
+module.exports = _dereq_("core-js-pure/features/promise");
+},{"core-js-pure/features/promise":193}],97:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/reflect/construct");
-},{"core-js-pure/features/reflect/construct":190}],96:[function(_dereq_,module,exports){
+},{"core-js-pure/features/reflect/construct":194}],98:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/reflect/get");
-},{"core-js-pure/features/reflect/get":191}],97:[function(_dereq_,module,exports){
+},{"core-js-pure/features/reflect/get":195}],99:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/symbol");
-},{"core-js-pure/features/symbol":192}],98:[function(_dereq_,module,exports){
+},{"core-js-pure/features/symbol":196}],100:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/symbol/iterator");
-},{"core-js-pure/features/symbol/iterator":193}],99:[function(_dereq_,module,exports){
+},{"core-js-pure/features/symbol/iterator":197}],101:[function(_dereq_,module,exports){
 module.exports = _dereq_("core-js-pure/features/weak-map");
-},{"core-js-pure/features/weak-map":194}],100:[function(_dereq_,module,exports){
+},{"core-js-pure/features/weak-map":198}],102:[function(_dereq_,module,exports){
 var _Array$isArray = _dereq_("../core-js/array/is-array");
 
 function _arrayWithHoles(arr) {
@@ -19129,7 +19519,7 @@ function _arrayWithHoles(arr) {
 }
 
 module.exports = _arrayWithHoles;
-},{"../core-js/array/is-array":84}],101:[function(_dereq_,module,exports){
+},{"../core-js/array/is-array":85}],103:[function(_dereq_,module,exports){
 var _Array$isArray = _dereq_("../core-js/array/is-array");
 
 function _arrayWithoutHoles(arr) {
@@ -19143,7 +19533,7 @@ function _arrayWithoutHoles(arr) {
 }
 
 module.exports = _arrayWithoutHoles;
-},{"../core-js/array/is-array":84}],102:[function(_dereq_,module,exports){
+},{"../core-js/array/is-array":85}],104:[function(_dereq_,module,exports){
 function _assertThisInitialized(self) {
   if (self === void 0) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -19153,7 +19543,47 @@ function _assertThisInitialized(self) {
 }
 
 module.exports = _assertThisInitialized;
-},{}],103:[function(_dereq_,module,exports){
+},{}],105:[function(_dereq_,module,exports){
+var _Promise = _dereq_("../core-js/promise");
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+  try {
+    var info = gen[key](arg);
+    var value = info.value;
+  } catch (error) {
+    reject(error);
+    return;
+  }
+
+  if (info.done) {
+    resolve(value);
+  } else {
+    _Promise.resolve(value).then(_next, _throw);
+  }
+}
+
+function _asyncToGenerator(fn) {
+  return function () {
+    var self = this,
+        args = arguments;
+    return new _Promise(function (resolve, reject) {
+      var gen = fn.apply(self, args);
+
+      function _next(value) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+      }
+
+      function _throw(err) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+      }
+
+      _next(undefined);
+    });
+  };
+}
+
+module.exports = _asyncToGenerator;
+},{"../core-js/promise":96}],106:[function(_dereq_,module,exports){
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -19161,7 +19591,7 @@ function _classCallCheck(instance, Constructor) {
 }
 
 module.exports = _classCallCheck;
-},{}],104:[function(_dereq_,module,exports){
+},{}],107:[function(_dereq_,module,exports){
 var _bindInstanceProperty = _dereq_("../core-js/instance/bind");
 
 var _Reflect$construct = _dereq_("../core-js/reflect/construct");
@@ -19201,7 +19631,7 @@ function _construct(Parent, args, Class) {
 }
 
 module.exports = _construct;
-},{"../core-js/instance/bind":86,"../core-js/reflect/construct":95,"./setPrototypeOf":118}],105:[function(_dereq_,module,exports){
+},{"../core-js/instance/bind":87,"../core-js/reflect/construct":97,"./setPrototypeOf":121}],108:[function(_dereq_,module,exports){
 var _Object$defineProperty = _dereq_("../core-js/object/define-property");
 
 function _defineProperties(target, props) {
@@ -19222,7 +19652,7 @@ function _createClass(Constructor, protoProps, staticProps) {
 }
 
 module.exports = _createClass;
-},{"../core-js/object/define-property":91}],106:[function(_dereq_,module,exports){
+},{"../core-js/object/define-property":92}],109:[function(_dereq_,module,exports){
 var _Object$defineProperty = _dereq_("../core-js/object/define-property");
 
 function _defineProperty(obj, key, value) {
@@ -19241,7 +19671,7 @@ function _defineProperty(obj, key, value) {
 }
 
 module.exports = _defineProperty;
-},{"../core-js/object/define-property":91}],107:[function(_dereq_,module,exports){
+},{"../core-js/object/define-property":92}],110:[function(_dereq_,module,exports){
 var _Object$getOwnPropertyDescriptor = _dereq_("../core-js/object/get-own-property-descriptor");
 
 var _Reflect$get = _dereq_("../core-js/reflect/get");
@@ -19270,7 +19700,7 @@ function _get(target, property, receiver) {
 }
 
 module.exports = _get;
-},{"../core-js/object/get-own-property-descriptor":92,"../core-js/reflect/get":96,"./superPropBase":120}],108:[function(_dereq_,module,exports){
+},{"../core-js/object/get-own-property-descriptor":93,"../core-js/reflect/get":98,"./superPropBase":123}],111:[function(_dereq_,module,exports){
 var _Object$getPrototypeOf = _dereq_("../core-js/object/get-prototype-of");
 
 var _Object$setPrototypeOf = _dereq_("../core-js/object/set-prototype-of");
@@ -19283,7 +19713,7 @@ function _getPrototypeOf(o) {
 }
 
 module.exports = _getPrototypeOf;
-},{"../core-js/object/get-prototype-of":93,"../core-js/object/set-prototype-of":94}],109:[function(_dereq_,module,exports){
+},{"../core-js/object/get-prototype-of":94,"../core-js/object/set-prototype-of":95}],112:[function(_dereq_,module,exports){
 var _Object$create = _dereq_("../core-js/object/create");
 
 var setPrototypeOf = _dereq_("./setPrototypeOf");
@@ -19304,7 +19734,7 @@ function _inherits(subClass, superClass) {
 }
 
 module.exports = _inherits;
-},{"../core-js/object/create":90,"./setPrototypeOf":118}],110:[function(_dereq_,module,exports){
+},{"../core-js/object/create":91,"./setPrototypeOf":121}],113:[function(_dereq_,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
     "default": obj
@@ -19312,7 +19742,7 @@ function _interopRequireDefault(obj) {
 }
 
 module.exports = _interopRequireDefault;
-},{}],111:[function(_dereq_,module,exports){
+},{}],114:[function(_dereq_,module,exports){
 var _Object$getOwnPropertyDescriptor = _dereq_("../core-js/object/get-own-property-descriptor");
 
 var _Object$defineProperty = _dereq_("../core-js/object/define-property");
@@ -19374,7 +19804,7 @@ function _interopRequireWildcard(obj) {
 }
 
 module.exports = _interopRequireWildcard;
-},{"../core-js/object/define-property":91,"../core-js/object/get-own-property-descriptor":92,"../core-js/weak-map":99,"../helpers/typeof":122}],112:[function(_dereq_,module,exports){
+},{"../core-js/object/define-property":92,"../core-js/object/get-own-property-descriptor":93,"../core-js/weak-map":101,"../helpers/typeof":125}],115:[function(_dereq_,module,exports){
 var _indexOfInstanceProperty = _dereq_("../core-js/instance/index-of");
 
 function _isNativeFunction(fn) {
@@ -19384,7 +19814,7 @@ function _isNativeFunction(fn) {
 }
 
 module.exports = _isNativeFunction;
-},{"../core-js/instance/index-of":87}],113:[function(_dereq_,module,exports){
+},{"../core-js/instance/index-of":88}],116:[function(_dereq_,module,exports){
 var _Array$from = _dereq_("../core-js/array/from");
 
 var _isIterable = _dereq_("../core-js/is-iterable");
@@ -19394,7 +19824,7 @@ function _iterableToArray(iter) {
 }
 
 module.exports = _iterableToArray;
-},{"../core-js/array/from":83,"../core-js/is-iterable":88}],114:[function(_dereq_,module,exports){
+},{"../core-js/array/from":84,"../core-js/is-iterable":89}],117:[function(_dereq_,module,exports){
 var _getIterator = _dereq_("../core-js/get-iterator");
 
 var _isIterable = _dereq_("../core-js/is-iterable");
@@ -19430,19 +19860,19 @@ function _iterableToArrayLimit(arr, i) {
 }
 
 module.exports = _iterableToArrayLimit;
-},{"../core-js/get-iterator":85,"../core-js/is-iterable":88}],115:[function(_dereq_,module,exports){
+},{"../core-js/get-iterator":86,"../core-js/is-iterable":89}],118:[function(_dereq_,module,exports){
 function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance");
 }
 
 module.exports = _nonIterableRest;
-},{}],116:[function(_dereq_,module,exports){
+},{}],119:[function(_dereq_,module,exports){
 function _nonIterableSpread() {
   throw new TypeError("Invalid attempt to spread non-iterable instance");
 }
 
 module.exports = _nonIterableSpread;
-},{}],117:[function(_dereq_,module,exports){
+},{}],120:[function(_dereq_,module,exports){
 var _typeof = _dereq_("../helpers/typeof");
 
 var assertThisInitialized = _dereq_("./assertThisInitialized");
@@ -19456,7 +19886,7 @@ function _possibleConstructorReturn(self, call) {
 }
 
 module.exports = _possibleConstructorReturn;
-},{"../helpers/typeof":122,"./assertThisInitialized":102}],118:[function(_dereq_,module,exports){
+},{"../helpers/typeof":125,"./assertThisInitialized":104}],121:[function(_dereq_,module,exports){
 var _Object$setPrototypeOf = _dereq_("../core-js/object/set-prototype-of");
 
 function _setPrototypeOf(o, p) {
@@ -19469,7 +19899,7 @@ function _setPrototypeOf(o, p) {
 }
 
 module.exports = _setPrototypeOf;
-},{"../core-js/object/set-prototype-of":94}],119:[function(_dereq_,module,exports){
+},{"../core-js/object/set-prototype-of":95}],122:[function(_dereq_,module,exports){
 var arrayWithHoles = _dereq_("./arrayWithHoles");
 
 var iterableToArrayLimit = _dereq_("./iterableToArrayLimit");
@@ -19481,7 +19911,7 @@ function _slicedToArray(arr, i) {
 }
 
 module.exports = _slicedToArray;
-},{"./arrayWithHoles":100,"./iterableToArrayLimit":114,"./nonIterableRest":115}],120:[function(_dereq_,module,exports){
+},{"./arrayWithHoles":102,"./iterableToArrayLimit":117,"./nonIterableRest":118}],123:[function(_dereq_,module,exports){
 var getPrototypeOf = _dereq_("./getPrototypeOf");
 
 function _superPropBase(object, property) {
@@ -19494,7 +19924,7 @@ function _superPropBase(object, property) {
 }
 
 module.exports = _superPropBase;
-},{"./getPrototypeOf":108}],121:[function(_dereq_,module,exports){
+},{"./getPrototypeOf":111}],124:[function(_dereq_,module,exports){
 var arrayWithoutHoles = _dereq_("./arrayWithoutHoles");
 
 var iterableToArray = _dereq_("./iterableToArray");
@@ -19506,21 +19936,19 @@ function _toConsumableArray(arr) {
 }
 
 module.exports = _toConsumableArray;
-},{"./arrayWithoutHoles":101,"./iterableToArray":113,"./nonIterableSpread":116}],122:[function(_dereq_,module,exports){
+},{"./arrayWithoutHoles":103,"./iterableToArray":116,"./nonIterableSpread":119}],125:[function(_dereq_,module,exports){
 var _Symbol$iterator = _dereq_("../core-js/symbol/iterator");
 
 var _Symbol = _dereq_("../core-js/symbol");
 
-function _typeof2(obj) { if (typeof _Symbol === "function" && typeof _Symbol$iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof _Symbol === "function" && obj.constructor === _Symbol && obj !== _Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
-
 function _typeof(obj) {
-  if (typeof _Symbol === "function" && _typeof2(_Symbol$iterator) === "symbol") {
+  if (typeof _Symbol === "function" && typeof _Symbol$iterator === "symbol") {
     module.exports = _typeof = function _typeof(obj) {
-      return _typeof2(obj);
+      return typeof obj;
     };
   } else {
     module.exports = _typeof = function _typeof(obj) {
-      return obj && typeof _Symbol === "function" && obj.constructor === _Symbol && obj !== _Symbol.prototype ? "symbol" : _typeof2(obj);
+      return obj && typeof _Symbol === "function" && obj.constructor === _Symbol && obj !== _Symbol.prototype ? "symbol" : typeof obj;
     };
   }
 
@@ -19528,7 +19956,7 @@ function _typeof(obj) {
 }
 
 module.exports = _typeof;
-},{"../core-js/symbol":97,"../core-js/symbol/iterator":98}],123:[function(_dereq_,module,exports){
+},{"../core-js/symbol":99,"../core-js/symbol/iterator":100}],126:[function(_dereq_,module,exports){
 var _Object$create = _dereq_("../core-js/object/create");
 
 var _Map = _dereq_("../core-js/map");
@@ -19576,7 +20004,7 @@ function _wrapNativeSuper(Class) {
 }
 
 module.exports = _wrapNativeSuper;
-},{"../core-js/map":89,"../core-js/object/create":90,"./construct":104,"./getPrototypeOf":108,"./isNativeFunction":112,"./setPrototypeOf":118}],124:[function(_dereq_,module,exports){
+},{"../core-js/map":90,"../core-js/object/create":91,"./construct":107,"./getPrototypeOf":111,"./isNativeFunction":115,"./setPrototypeOf":121}],127:[function(_dereq_,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -20304,109 +20732,109 @@ try {
   Function("r", "regeneratorRuntime = r")(runtime);
 }
 
-},{}],125:[function(_dereq_,module,exports){
+},{}],128:[function(_dereq_,module,exports){
 module.exports = _dereq_("regenerator-runtime");
 
-},{"regenerator-runtime":124}],126:[function(_dereq_,module,exports){
+},{"regenerator-runtime":127}],129:[function(_dereq_,module,exports){
 
-},{}],127:[function(_dereq_,module,exports){
+},{}],130:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.string.iterator');
 _dereq_('../../modules/es.array.from');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Array.from;
 
-},{"../../internals/path":283,"../../modules/es.array.from":319,"../../modules/es.string.iterator":353}],128:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.array.from":323,"../../modules/es.string.iterator":357}],131:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.array.is-array');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Array.isArray;
 
-},{"../../internals/path":283,"../../modules/es.array.is-array":322}],129:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.array.is-array":326}],132:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.concat');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').concat;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.concat":315}],130:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.concat":319}],133:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.filter');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').filter;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.filter":316}],131:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.filter":320}],134:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.find');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').find;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.find":317}],132:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.find":321}],135:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.for-each');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').forEach;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.for-each":318}],133:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.for-each":322}],136:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.includes');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').includes;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.includes":320}],134:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.includes":324}],137:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.index-of');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').indexOf;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.index-of":321}],135:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.index-of":325}],138:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.iterator');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').keys;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.iterator":323}],136:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.iterator":327}],139:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.map');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').map;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.map":324}],137:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.map":328}],140:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.reduce');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').reduce;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.reduce":325}],138:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.reduce":329}],141:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.slice');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').slice;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.slice":326}],139:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.slice":330}],142:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.sort');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').sort;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.sort":327}],140:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.sort":331}],143:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.splice');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').splice;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.splice":328}],141:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.splice":332}],144:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.array.iterator');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Array').values;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.array.iterator":323}],142:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.array.iterator":327}],145:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.function.bind');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('Function').bind;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.function.bind":329}],143:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.function.bind":333}],146:[function(_dereq_,module,exports){
 var bind = _dereq_('../function/virtual/bind');
 
 var FunctionPrototype = Function.prototype;
@@ -20416,7 +20844,7 @@ module.exports = function (it) {
   return it === FunctionPrototype || (it instanceof Function && own === FunctionPrototype.bind) ? bind : own;
 };
 
-},{"../function/virtual/bind":142}],144:[function(_dereq_,module,exports){
+},{"../function/virtual/bind":145}],147:[function(_dereq_,module,exports){
 var concat = _dereq_('../array/virtual/concat');
 
 var ArrayPrototype = Array.prototype;
@@ -20426,7 +20854,7 @@ module.exports = function (it) {
   return it === ArrayPrototype || (it instanceof Array && own === ArrayPrototype.concat) ? concat : own;
 };
 
-},{"../array/virtual/concat":129}],145:[function(_dereq_,module,exports){
+},{"../array/virtual/concat":132}],148:[function(_dereq_,module,exports){
 var filter = _dereq_('../array/virtual/filter');
 
 var ArrayPrototype = Array.prototype;
@@ -20436,7 +20864,7 @@ module.exports = function (it) {
   return it === ArrayPrototype || (it instanceof Array && own === ArrayPrototype.filter) ? filter : own;
 };
 
-},{"../array/virtual/filter":130}],146:[function(_dereq_,module,exports){
+},{"../array/virtual/filter":133}],149:[function(_dereq_,module,exports){
 var find = _dereq_('../array/virtual/find');
 
 var ArrayPrototype = Array.prototype;
@@ -20446,7 +20874,7 @@ module.exports = function (it) {
   return it === ArrayPrototype || (it instanceof Array && own === ArrayPrototype.find) ? find : own;
 };
 
-},{"../array/virtual/find":131}],147:[function(_dereq_,module,exports){
+},{"../array/virtual/find":134}],150:[function(_dereq_,module,exports){
 var arrayIncludes = _dereq_('../array/virtual/includes');
 var stringIncludes = _dereq_('../string/virtual/includes');
 
@@ -20461,7 +20889,7 @@ module.exports = function (it) {
   } return own;
 };
 
-},{"../array/virtual/includes":133,"../string/virtual/includes":173}],148:[function(_dereq_,module,exports){
+},{"../array/virtual/includes":136,"../string/virtual/includes":176}],151:[function(_dereq_,module,exports){
 var indexOf = _dereq_('../array/virtual/index-of');
 
 var ArrayPrototype = Array.prototype;
@@ -20471,7 +20899,7 @@ module.exports = function (it) {
   return it === ArrayPrototype || (it instanceof Array && own === ArrayPrototype.indexOf) ? indexOf : own;
 };
 
-},{"../array/virtual/index-of":134}],149:[function(_dereq_,module,exports){
+},{"../array/virtual/index-of":137}],152:[function(_dereq_,module,exports){
 var map = _dereq_('../array/virtual/map');
 
 var ArrayPrototype = Array.prototype;
@@ -20481,7 +20909,7 @@ module.exports = function (it) {
   return it === ArrayPrototype || (it instanceof Array && own === ArrayPrototype.map) ? map : own;
 };
 
-},{"../array/virtual/map":136}],150:[function(_dereq_,module,exports){
+},{"../array/virtual/map":139}],153:[function(_dereq_,module,exports){
 var reduce = _dereq_('../array/virtual/reduce');
 
 var ArrayPrototype = Array.prototype;
@@ -20491,7 +20919,7 @@ module.exports = function (it) {
   return it === ArrayPrototype || (it instanceof Array && own === ArrayPrototype.reduce) ? reduce : own;
 };
 
-},{"../array/virtual/reduce":137}],151:[function(_dereq_,module,exports){
+},{"../array/virtual/reduce":140}],154:[function(_dereq_,module,exports){
 var slice = _dereq_('../array/virtual/slice');
 
 var ArrayPrototype = Array.prototype;
@@ -20501,7 +20929,7 @@ module.exports = function (it) {
   return it === ArrayPrototype || (it instanceof Array && own === ArrayPrototype.slice) ? slice : own;
 };
 
-},{"../array/virtual/slice":138}],152:[function(_dereq_,module,exports){
+},{"../array/virtual/slice":141}],155:[function(_dereq_,module,exports){
 var sort = _dereq_('../array/virtual/sort');
 
 var ArrayPrototype = Array.prototype;
@@ -20511,7 +20939,7 @@ module.exports = function (it) {
   return it === ArrayPrototype || (it instanceof Array && own === ArrayPrototype.sort) ? sort : own;
 };
 
-},{"../array/virtual/sort":139}],153:[function(_dereq_,module,exports){
+},{"../array/virtual/sort":142}],156:[function(_dereq_,module,exports){
 var splice = _dereq_('../array/virtual/splice');
 
 var ArrayPrototype = Array.prototype;
@@ -20521,7 +20949,7 @@ module.exports = function (it) {
   return it === ArrayPrototype || (it instanceof Array && own === ArrayPrototype.splice) ? splice : own;
 };
 
-},{"../array/virtual/splice":140}],154:[function(_dereq_,module,exports){
+},{"../array/virtual/splice":143}],157:[function(_dereq_,module,exports){
 var startsWith = _dereq_('../string/virtual/starts-with');
 
 var StringPrototype = String.prototype;
@@ -20532,7 +20960,7 @@ module.exports = function (it) {
     || (it instanceof String && own === StringPrototype.startsWith) ? startsWith : own;
 };
 
-},{"../string/virtual/starts-with":174}],155:[function(_dereq_,module,exports){
+},{"../string/virtual/starts-with":177}],158:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.json.stringify');
 var core = _dereq_('../../internals/path');
 
@@ -20543,7 +20971,7 @@ module.exports = function stringify(it, replacer, space) {
   return core.JSON.stringify.apply(null, arguments);
 };
 
-},{"../../internals/path":283,"../../modules/es.json.stringify":330}],156:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.json.stringify":334}],159:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.map');
 _dereq_('../../modules/es.object.to-string');
 _dereq_('../../modules/es.string.iterator');
@@ -20552,13 +20980,13 @@ var path = _dereq_('../../internals/path');
 
 module.exports = path.Map;
 
-},{"../../internals/path":283,"../../modules/es.map":332,"../../modules/es.object.to-string":344,"../../modules/es.string.iterator":353,"../../modules/web.dom-collections.iterator":399}],157:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.map":336,"../../modules/es.object.to-string":348,"../../modules/es.string.iterator":357,"../../modules/web.dom-collections.iterator":407}],160:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.assign');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Object.assign;
 
-},{"../../internals/path":283,"../../modules/es.object.assign":334}],158:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.assign":338}],161:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.create');
 var path = _dereq_('../../internals/path');
 
@@ -20568,7 +20996,7 @@ module.exports = function create(P, D) {
   return Object.create(P, D);
 };
 
-},{"../../internals/path":283,"../../modules/es.object.create":335}],159:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.create":339}],162:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.define-properties');
 var path = _dereq_('../../internals/path');
 
@@ -20580,7 +21008,7 @@ var defineProperties = module.exports = function defineProperties(T, D) {
 
 if (Object.defineProperties.sham) defineProperties.sham = true;
 
-},{"../../internals/path":283,"../../modules/es.object.define-properties":336}],160:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.define-properties":340}],163:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.define-property');
 var path = _dereq_('../../internals/path');
 
@@ -20592,13 +21020,13 @@ var defineProperty = module.exports = function defineProperty(it, key, desc) {
 
 if (Object.defineProperty.sham) defineProperty.sham = true;
 
-},{"../../internals/path":283,"../../modules/es.object.define-property":337}],161:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.define-property":341}],164:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.freeze');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Object.freeze;
 
-},{"../../internals/path":283,"../../modules/es.object.freeze":338}],162:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.freeze":342}],165:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.get-own-property-descriptor');
 var path = _dereq_('../../internals/path');
 
@@ -20610,43 +21038,43 @@ var getOwnPropertyDescriptor = module.exports = function getOwnPropertyDescripto
 
 if (Object.getOwnPropertyDescriptor.sham) getOwnPropertyDescriptor.sham = true;
 
-},{"../../internals/path":283,"../../modules/es.object.get-own-property-descriptor":339}],163:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.get-own-property-descriptor":343}],166:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.get-own-property-descriptors');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Object.getOwnPropertyDescriptors;
 
-},{"../../internals/path":283,"../../modules/es.object.get-own-property-descriptors":340}],164:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.get-own-property-descriptors":344}],167:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.symbol');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Object.getOwnPropertySymbols;
 
-},{"../../internals/path":283,"../../modules/es.symbol":360}],165:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.symbol":364}],168:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.get-prototype-of');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Object.getPrototypeOf;
 
-},{"../../internals/path":283,"../../modules/es.object.get-prototype-of":341}],166:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.get-prototype-of":345}],169:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.keys');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Object.keys;
 
-},{"../../internals/path":283,"../../modules/es.object.keys":342}],167:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.keys":346}],170:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.set-prototype-of');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Object.setPrototypeOf;
 
-},{"../../internals/path":283,"../../modules/es.object.set-prototype-of":343}],168:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.set-prototype-of":347}],171:[function(_dereq_,module,exports){
 _dereq_('../modules/es.parse-int');
 var path = _dereq_('../internals/path');
 
 module.exports = path.parseInt;
 
-},{"../internals/path":283,"../modules/es.parse-int":345}],169:[function(_dereq_,module,exports){
+},{"../internals/path":287,"../modules/es.parse-int":349}],172:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.to-string');
 _dereq_('../../modules/es.string.iterator');
 _dereq_('../../modules/web.dom-collections.iterator');
@@ -20657,19 +21085,19 @@ var path = _dereq_('../../internals/path');
 
 module.exports = path.Promise;
 
-},{"../../internals/path":283,"../../modules/es.object.to-string":344,"../../modules/es.promise":348,"../../modules/es.promise.all-settled":346,"../../modules/es.promise.finally":347,"../../modules/es.string.iterator":353,"../../modules/web.dom-collections.iterator":399}],170:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.to-string":348,"../../modules/es.promise":352,"../../modules/es.promise.all-settled":350,"../../modules/es.promise.finally":351,"../../modules/es.string.iterator":357,"../../modules/web.dom-collections.iterator":407}],173:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.reflect.construct');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Reflect.construct;
 
-},{"../../internals/path":283,"../../modules/es.reflect.construct":349}],171:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.reflect.construct":353}],174:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.reflect.get');
 var path = _dereq_('../../internals/path');
 
 module.exports = path.Reflect.get;
 
-},{"../../internals/path":283,"../../modules/es.reflect.get":350}],172:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.reflect.get":354}],175:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.set');
 _dereq_('../../modules/es.object.to-string');
 _dereq_('../../modules/es.string.iterator');
@@ -20678,19 +21106,19 @@ var path = _dereq_('../../internals/path');
 
 module.exports = path.Set;
 
-},{"../../internals/path":283,"../../modules/es.object.to-string":344,"../../modules/es.set":351,"../../modules/es.string.iterator":353,"../../modules/web.dom-collections.iterator":399}],173:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.to-string":348,"../../modules/es.set":355,"../../modules/es.string.iterator":357,"../../modules/web.dom-collections.iterator":407}],176:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.string.includes');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('String').includes;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.string.includes":352}],174:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.string.includes":356}],177:[function(_dereq_,module,exports){
 _dereq_('../../../modules/es.string.starts-with');
 var entryVirtual = _dereq_('../../../internals/entry-virtual');
 
 module.exports = entryVirtual('String').startsWith;
 
-},{"../../../internals/entry-virtual":229,"../../../modules/es.string.starts-with":354}],175:[function(_dereq_,module,exports){
+},{"../../../internals/entry-virtual":233,"../../../modules/es.string.starts-with":358}],178:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.array.concat');
 _dereq_('../../modules/es.object.to-string');
 _dereq_('../../modules/es.symbol');
@@ -20714,7 +21142,7 @@ var path = _dereq_('../../internals/path');
 
 module.exports = path.Symbol;
 
-},{"../../internals/path":283,"../../modules/es.array.concat":315,"../../modules/es.json.to-string-tag":331,"../../modules/es.math.to-string-tag":333,"../../modules/es.object.to-string":344,"../../modules/es.symbol":360,"../../modules/es.symbol.async-iterator":355,"../../modules/es.symbol.description":356,"../../modules/es.symbol.has-instance":357,"../../modules/es.symbol.is-concat-spreadable":358,"../../modules/es.symbol.iterator":359,"../../modules/es.symbol.match":362,"../../modules/es.symbol.match-all":361,"../../modules/es.symbol.replace":363,"../../modules/es.symbol.search":364,"../../modules/es.symbol.species":365,"../../modules/es.symbol.split":366,"../../modules/es.symbol.to-primitive":367,"../../modules/es.symbol.to-string-tag":368,"../../modules/es.symbol.unscopables":369}],176:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.array.concat":319,"../../modules/es.json.to-string-tag":335,"../../modules/es.math.to-string-tag":337,"../../modules/es.object.to-string":348,"../../modules/es.symbol":364,"../../modules/es.symbol.async-iterator":359,"../../modules/es.symbol.description":360,"../../modules/es.symbol.has-instance":361,"../../modules/es.symbol.is-concat-spreadable":362,"../../modules/es.symbol.iterator":363,"../../modules/es.symbol.match":366,"../../modules/es.symbol.match-all":365,"../../modules/es.symbol.replace":367,"../../modules/es.symbol.search":368,"../../modules/es.symbol.species":369,"../../modules/es.symbol.split":370,"../../modules/es.symbol.to-primitive":371,"../../modules/es.symbol.to-string-tag":372,"../../modules/es.symbol.unscopables":373}],179:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.symbol.iterator');
 _dereq_('../../modules/es.string.iterator');
 _dereq_('../../modules/web.dom-collections.iterator');
@@ -20722,7 +21150,7 @@ var WrappedWellKnownSymbolModule = _dereq_('../../internals/wrapped-well-known-s
 
 module.exports = WrappedWellKnownSymbolModule.f('iterator');
 
-},{"../../internals/wrapped-well-known-symbol":314,"../../modules/es.string.iterator":353,"../../modules/es.symbol.iterator":359,"../../modules/web.dom-collections.iterator":399}],177:[function(_dereq_,module,exports){
+},{"../../internals/wrapped-well-known-symbol":318,"../../modules/es.string.iterator":357,"../../modules/es.symbol.iterator":363,"../../modules/web.dom-collections.iterator":407}],180:[function(_dereq_,module,exports){
 _dereq_('../../modules/es.object.to-string');
 _dereq_('../../modules/es.weak-map');
 _dereq_('../../modules/web.dom-collections.iterator');
@@ -20730,41 +21158,41 @@ var path = _dereq_('../../internals/path');
 
 module.exports = path.WeakMap;
 
-},{"../../internals/path":283,"../../modules/es.object.to-string":344,"../../modules/es.weak-map":370,"../../modules/web.dom-collections.iterator":399}],178:[function(_dereq_,module,exports){
+},{"../../internals/path":287,"../../modules/es.object.to-string":348,"../../modules/es.weak-map":374,"../../modules/web.dom-collections.iterator":407}],181:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/array/from');
 
 module.exports = parent;
 
-},{"../../es/array/from":127}],179:[function(_dereq_,module,exports){
+},{"../../es/array/from":130}],182:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/array/is-array');
 
 module.exports = parent;
 
-},{"../../es/array/is-array":128}],180:[function(_dereq_,module,exports){
+},{"../../es/array/is-array":131}],183:[function(_dereq_,module,exports){
 _dereq_('../modules/web.dom-collections.iterator');
 _dereq_('../modules/es.string.iterator');
 var getIterator = _dereq_('../internals/get-iterator');
 
 module.exports = getIterator;
 
-},{"../internals/get-iterator":237,"../modules/es.string.iterator":353,"../modules/web.dom-collections.iterator":399}],181:[function(_dereq_,module,exports){
+},{"../internals/get-iterator":241,"../modules/es.string.iterator":357,"../modules/web.dom-collections.iterator":407}],184:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/bind');
 
 module.exports = parent;
 
-},{"../../es/instance/bind":143}],182:[function(_dereq_,module,exports){
+},{"../../es/instance/bind":146}],185:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/index-of');
 
 module.exports = parent;
 
-},{"../../es/instance/index-of":148}],183:[function(_dereq_,module,exports){
+},{"../../es/instance/index-of":151}],186:[function(_dereq_,module,exports){
 _dereq_('../modules/web.dom-collections.iterator');
 _dereq_('../modules/es.string.iterator');
 var isIterable = _dereq_('../internals/is-iterable');
 
 module.exports = isIterable;
 
-},{"../internals/is-iterable":253,"../modules/es.string.iterator":353,"../modules/web.dom-collections.iterator":399}],184:[function(_dereq_,module,exports){
+},{"../internals/is-iterable":257,"../modules/es.string.iterator":357,"../modules/web.dom-collections.iterator":407}],187:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/map');
 _dereq_('../../modules/esnext.map.from');
 _dereq_('../../modules/esnext.map.of');
@@ -20789,42 +21217,52 @@ _dereq_('../../modules/esnext.map.update-or-insert');
 
 module.exports = parent;
 
-},{"../../es/map":156,"../../modules/esnext.map.delete-all":371,"../../modules/esnext.map.every":372,"../../modules/esnext.map.filter":373,"../../modules/esnext.map.find":375,"../../modules/esnext.map.find-key":374,"../../modules/esnext.map.from":376,"../../modules/esnext.map.group-by":377,"../../modules/esnext.map.includes":378,"../../modules/esnext.map.key-by":379,"../../modules/esnext.map.key-of":380,"../../modules/esnext.map.map-keys":381,"../../modules/esnext.map.map-values":382,"../../modules/esnext.map.merge":383,"../../modules/esnext.map.of":384,"../../modules/esnext.map.reduce":385,"../../modules/esnext.map.some":386,"../../modules/esnext.map.update":388,"../../modules/esnext.map.update-or-insert":387,"../../modules/esnext.map.upsert":389}],185:[function(_dereq_,module,exports){
+},{"../../es/map":159,"../../modules/esnext.map.delete-all":376,"../../modules/esnext.map.every":377,"../../modules/esnext.map.filter":378,"../../modules/esnext.map.find":380,"../../modules/esnext.map.find-key":379,"../../modules/esnext.map.from":381,"../../modules/esnext.map.group-by":382,"../../modules/esnext.map.includes":383,"../../modules/esnext.map.key-by":384,"../../modules/esnext.map.key-of":385,"../../modules/esnext.map.map-keys":386,"../../modules/esnext.map.map-values":387,"../../modules/esnext.map.merge":388,"../../modules/esnext.map.of":389,"../../modules/esnext.map.reduce":390,"../../modules/esnext.map.some":391,"../../modules/esnext.map.update":393,"../../modules/esnext.map.update-or-insert":392,"../../modules/esnext.map.upsert":394}],188:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/create');
 
 module.exports = parent;
 
-},{"../../es/object/create":158}],186:[function(_dereq_,module,exports){
+},{"../../es/object/create":161}],189:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/define-property');
 
 module.exports = parent;
 
-},{"../../es/object/define-property":160}],187:[function(_dereq_,module,exports){
+},{"../../es/object/define-property":163}],190:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/get-own-property-descriptor');
 
 module.exports = parent;
 
-},{"../../es/object/get-own-property-descriptor":162}],188:[function(_dereq_,module,exports){
+},{"../../es/object/get-own-property-descriptor":165}],191:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/get-prototype-of');
 
 module.exports = parent;
 
-},{"../../es/object/get-prototype-of":165}],189:[function(_dereq_,module,exports){
+},{"../../es/object/get-prototype-of":168}],192:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/set-prototype-of');
 
 module.exports = parent;
 
-},{"../../es/object/set-prototype-of":167}],190:[function(_dereq_,module,exports){
+},{"../../es/object/set-prototype-of":170}],193:[function(_dereq_,module,exports){
+var parent = _dereq_('../../es/promise');
+_dereq_('../../modules/esnext.aggregate-error');
+// TODO: Remove from `core-js@4`
+_dereq_('../../modules/esnext.promise.all-settled');
+_dereq_('../../modules/esnext.promise.try');
+_dereq_('../../modules/esnext.promise.any');
+
+module.exports = parent;
+
+},{"../../es/promise":172,"../../modules/esnext.aggregate-error":375,"../../modules/esnext.promise.all-settled":395,"../../modules/esnext.promise.any":396,"../../modules/esnext.promise.try":397}],194:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/reflect/construct');
 
 module.exports = parent;
 
-},{"../../es/reflect/construct":170}],191:[function(_dereq_,module,exports){
+},{"../../es/reflect/construct":173}],195:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/reflect/get');
 
 module.exports = parent;
 
-},{"../../es/reflect/get":171}],192:[function(_dereq_,module,exports){
+},{"../../es/reflect/get":174}],196:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/symbol');
 _dereq_('../../modules/esnext.symbol.async-dispose');
 _dereq_('../../modules/esnext.symbol.dispose');
@@ -20835,12 +21273,12 @@ _dereq_('../../modules/esnext.symbol.replace-all');
 
 module.exports = parent;
 
-},{"../../es/symbol":175,"../../modules/esnext.symbol.async-dispose":390,"../../modules/esnext.symbol.dispose":391,"../../modules/esnext.symbol.observable":392,"../../modules/esnext.symbol.pattern-match":393,"../../modules/esnext.symbol.replace-all":394}],193:[function(_dereq_,module,exports){
+},{"../../es/symbol":178,"../../modules/esnext.symbol.async-dispose":398,"../../modules/esnext.symbol.dispose":399,"../../modules/esnext.symbol.observable":400,"../../modules/esnext.symbol.pattern-match":401,"../../modules/esnext.symbol.replace-all":402}],197:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/symbol/iterator');
 
 module.exports = parent;
 
-},{"../../es/symbol/iterator":176}],194:[function(_dereq_,module,exports){
+},{"../../es/symbol/iterator":179}],198:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/weak-map');
 _dereq_('../../modules/esnext.weak-map.from');
 _dereq_('../../modules/esnext.weak-map.of');
@@ -20849,14 +21287,14 @@ _dereq_('../../modules/esnext.weak-map.upsert');
 
 module.exports = parent;
 
-},{"../../es/weak-map":177,"../../modules/esnext.weak-map.delete-all":395,"../../modules/esnext.weak-map.from":396,"../../modules/esnext.weak-map.of":397,"../../modules/esnext.weak-map.upsert":398}],195:[function(_dereq_,module,exports){
+},{"../../es/weak-map":180,"../../modules/esnext.weak-map.delete-all":403,"../../modules/esnext.weak-map.from":404,"../../modules/esnext.weak-map.of":405,"../../modules/esnext.weak-map.upsert":406}],199:[function(_dereq_,module,exports){
 module.exports = function (it) {
   if (typeof it != 'function') {
     throw TypeError(String(it) + ' is not a function');
   } return it;
 };
 
-},{}],196:[function(_dereq_,module,exports){
+},{}],200:[function(_dereq_,module,exports){
 var isObject = _dereq_('../internals/is-object');
 
 module.exports = function (it) {
@@ -20865,17 +21303,17 @@ module.exports = function (it) {
   } return it;
 };
 
-},{"../internals/is-object":254}],197:[function(_dereq_,module,exports){
+},{"../internals/is-object":258}],201:[function(_dereq_,module,exports){
 module.exports = function () { /* empty */ };
 
-},{}],198:[function(_dereq_,module,exports){
+},{}],202:[function(_dereq_,module,exports){
 module.exports = function (it, Constructor, name) {
   if (!(it instanceof Constructor)) {
     throw TypeError('Incorrect ' + (name ? name + ' ' : '') + 'invocation');
   } return it;
 };
 
-},{}],199:[function(_dereq_,module,exports){
+},{}],203:[function(_dereq_,module,exports){
 var isObject = _dereq_('../internals/is-object');
 
 module.exports = function (it) {
@@ -20884,7 +21322,7 @@ module.exports = function (it) {
   } return it;
 };
 
-},{"../internals/is-object":254}],200:[function(_dereq_,module,exports){
+},{"../internals/is-object":258}],204:[function(_dereq_,module,exports){
 'use strict';
 var $forEach = _dereq_('../internals/array-iteration').forEach;
 var sloppyArrayMethod = _dereq_('../internals/sloppy-array-method');
@@ -20895,7 +21333,7 @@ module.exports = sloppyArrayMethod('forEach') ? function forEach(callbackfn /* ,
   return $forEach(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
 } : [].forEach;
 
-},{"../internals/array-iteration":203,"../internals/sloppy-array-method":296}],201:[function(_dereq_,module,exports){
+},{"../internals/array-iteration":207,"../internals/sloppy-array-method":300}],205:[function(_dereq_,module,exports){
 'use strict';
 var bind = _dereq_('../internals/bind-context');
 var toObject = _dereq_('../internals/to-object');
@@ -20939,7 +21377,7 @@ module.exports = function from(arrayLike /* , mapfn = undefined, thisArg = undef
   return result;
 };
 
-},{"../internals/bind-context":207,"../internals/call-with-safe-iteration-closing":208,"../internals/create-property":223,"../internals/get-iterator-method":236,"../internals/is-array-iterator-method":249,"../internals/to-length":304,"../internals/to-object":305}],202:[function(_dereq_,module,exports){
+},{"../internals/bind-context":211,"../internals/call-with-safe-iteration-closing":212,"../internals/create-property":227,"../internals/get-iterator-method":240,"../internals/is-array-iterator-method":253,"../internals/to-length":308,"../internals/to-object":309}],206:[function(_dereq_,module,exports){
 var toIndexedObject = _dereq_('../internals/to-indexed-object');
 var toLength = _dereq_('../internals/to-length');
 var toAbsoluteIndex = _dereq_('../internals/to-absolute-index');
@@ -20973,7 +21411,7 @@ module.exports = {
   indexOf: createMethod(false)
 };
 
-},{"../internals/to-absolute-index":301,"../internals/to-indexed-object":302,"../internals/to-length":304}],203:[function(_dereq_,module,exports){
+},{"../internals/to-absolute-index":305,"../internals/to-indexed-object":306,"../internals/to-length":308}],207:[function(_dereq_,module,exports){
 var bind = _dereq_('../internals/bind-context');
 var IndexedObject = _dereq_('../internals/indexed-object');
 var toObject = _dereq_('../internals/to-object');
@@ -21040,7 +21478,7 @@ module.exports = {
   findIndex: createMethod(6)
 };
 
-},{"../internals/array-species-create":206,"../internals/bind-context":207,"../internals/indexed-object":245,"../internals/to-length":304,"../internals/to-object":305}],204:[function(_dereq_,module,exports){
+},{"../internals/array-species-create":210,"../internals/bind-context":211,"../internals/indexed-object":249,"../internals/to-length":308,"../internals/to-object":309}],208:[function(_dereq_,module,exports){
 var fails = _dereq_('../internals/fails');
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
 var V8_VERSION = _dereq_('../internals/v8-version');
@@ -21061,7 +21499,7 @@ module.exports = function (METHOD_NAME) {
   });
 };
 
-},{"../internals/fails":232,"../internals/v8-version":311,"../internals/well-known-symbol":312}],205:[function(_dereq_,module,exports){
+},{"../internals/fails":236,"../internals/v8-version":315,"../internals/well-known-symbol":316}],209:[function(_dereq_,module,exports){
 var aFunction = _dereq_('../internals/a-function');
 var toObject = _dereq_('../internals/to-object');
 var IndexedObject = _dereq_('../internals/indexed-object');
@@ -21103,7 +21541,7 @@ module.exports = {
   right: createMethod(true)
 };
 
-},{"../internals/a-function":195,"../internals/indexed-object":245,"../internals/to-length":304,"../internals/to-object":305}],206:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/indexed-object":249,"../internals/to-length":308,"../internals/to-object":309}],210:[function(_dereq_,module,exports){
 var isObject = _dereq_('../internals/is-object');
 var isArray = _dereq_('../internals/is-array');
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
@@ -21125,7 +21563,7 @@ module.exports = function (originalArray, length) {
   } return new (C === undefined ? Array : C)(length === 0 ? 0 : length);
 };
 
-},{"../internals/is-array":250,"../internals/is-object":254,"../internals/well-known-symbol":312}],207:[function(_dereq_,module,exports){
+},{"../internals/is-array":254,"../internals/is-object":258,"../internals/well-known-symbol":316}],211:[function(_dereq_,module,exports){
 var aFunction = _dereq_('../internals/a-function');
 
 // optional / simple context binding
@@ -21151,7 +21589,7 @@ module.exports = function (fn, that, length) {
   };
 };
 
-},{"../internals/a-function":195}],208:[function(_dereq_,module,exports){
+},{"../internals/a-function":199}],212:[function(_dereq_,module,exports){
 var anObject = _dereq_('../internals/an-object');
 
 // call something on iterator step with safe closing on error
@@ -21166,7 +21604,7 @@ module.exports = function (iterator, fn, value, ENTRIES) {
   }
 };
 
-},{"../internals/an-object":199}],209:[function(_dereq_,module,exports){
+},{"../internals/an-object":203}],213:[function(_dereq_,module,exports){
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
 
 var ITERATOR = wellKnownSymbol('iterator');
@@ -21206,14 +21644,14 @@ module.exports = function (exec, SKIP_CLOSING) {
   return ITERATION_SUPPORT;
 };
 
-},{"../internals/well-known-symbol":312}],210:[function(_dereq_,module,exports){
+},{"../internals/well-known-symbol":316}],214:[function(_dereq_,module,exports){
 var toString = {}.toString;
 
 module.exports = function (it) {
   return toString.call(it).slice(8, -1);
 };
 
-},{}],211:[function(_dereq_,module,exports){
+},{}],215:[function(_dereq_,module,exports){
 var TO_STRING_TAG_SUPPORT = _dereq_('../internals/to-string-tag-support');
 var classofRaw = _dereq_('../internals/classof-raw');
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
@@ -21241,7 +21679,7 @@ module.exports = TO_STRING_TAG_SUPPORT ? classofRaw : function (it) {
     : (result = classofRaw(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : result;
 };
 
-},{"../internals/classof-raw":210,"../internals/to-string-tag-support":307,"../internals/well-known-symbol":312}],212:[function(_dereq_,module,exports){
+},{"../internals/classof-raw":214,"../internals/to-string-tag-support":311,"../internals/well-known-symbol":316}],216:[function(_dereq_,module,exports){
 'use strict';
 var anObject = _dereq_('../internals/an-object');
 var aFunction = _dereq_('../internals/a-function');
@@ -21259,7 +21697,7 @@ module.exports = function (/* ...elements */) {
   return !!allDeleted;
 };
 
-},{"../internals/a-function":195,"../internals/an-object":199}],213:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/an-object":203}],217:[function(_dereq_,module,exports){
 'use strict';
 // https://tc39.github.io/proposal-setmap-offrom/
 var aFunction = _dereq_('../internals/a-function');
@@ -21287,7 +21725,7 @@ module.exports = function from(source /* , mapFn, thisArg */) {
   return new this(A);
 };
 
-},{"../internals/a-function":195,"../internals/bind-context":207,"../internals/iterate":257}],214:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/bind-context":211,"../internals/iterate":261}],218:[function(_dereq_,module,exports){
 'use strict';
 // https://tc39.github.io/proposal-setmap-offrom/
 module.exports = function of() {
@@ -21297,7 +21735,7 @@ module.exports = function of() {
   return new this(A);
 };
 
-},{}],215:[function(_dereq_,module,exports){
+},{}],219:[function(_dereq_,module,exports){
 'use strict';
 var defineProperty = _dereq_('../internals/object-define-property').f;
 var create = _dereq_('../internals/object-create');
@@ -21485,7 +21923,7 @@ module.exports = {
   }
 };
 
-},{"../internals/an-instance":198,"../internals/bind-context":207,"../internals/define-iterator":224,"../internals/descriptors":226,"../internals/internal-metadata":247,"../internals/internal-state":248,"../internals/iterate":257,"../internals/object-create":268,"../internals/object-define-property":270,"../internals/redefine-all":286,"../internals/set-species":291}],216:[function(_dereq_,module,exports){
+},{"../internals/an-instance":202,"../internals/bind-context":211,"../internals/define-iterator":228,"../internals/descriptors":230,"../internals/internal-metadata":251,"../internals/internal-state":252,"../internals/iterate":261,"../internals/object-create":272,"../internals/object-define-property":274,"../internals/redefine-all":290,"../internals/set-species":295}],220:[function(_dereq_,module,exports){
 'use strict';
 var redefineAll = _dereq_('../internals/redefine-all');
 var getWeakData = _dereq_('../internals/internal-metadata').getWeakData;
@@ -21608,7 +22046,7 @@ module.exports = {
   }
 };
 
-},{"../internals/an-instance":198,"../internals/an-object":199,"../internals/array-iteration":203,"../internals/has":240,"../internals/internal-metadata":247,"../internals/internal-state":248,"../internals/is-object":254,"../internals/iterate":257,"../internals/redefine-all":286}],217:[function(_dereq_,module,exports){
+},{"../internals/an-instance":202,"../internals/an-object":203,"../internals/array-iteration":207,"../internals/has":244,"../internals/internal-metadata":251,"../internals/internal-state":252,"../internals/is-object":258,"../internals/iterate":261,"../internals/redefine-all":290}],221:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('./export');
 var global = _dereq_('../internals/global');
@@ -21683,7 +22121,7 @@ module.exports = function (CONSTRUCTOR_NAME, wrapper, common) {
   return Constructor;
 };
 
-},{"../internals/an-instance":198,"../internals/array-iteration":203,"../internals/create-non-enumerable-property":221,"../internals/descriptors":226,"../internals/fails":232,"../internals/global":239,"../internals/internal-metadata":247,"../internals/internal-state":248,"../internals/is-object":254,"../internals/iterate":257,"../internals/object-define-property":270,"../internals/set-to-string-tag":292,"./export":231}],218:[function(_dereq_,module,exports){
+},{"../internals/an-instance":202,"../internals/array-iteration":207,"../internals/create-non-enumerable-property":225,"../internals/descriptors":230,"../internals/fails":236,"../internals/global":243,"../internals/internal-metadata":251,"../internals/internal-state":252,"../internals/is-object":258,"../internals/iterate":261,"../internals/object-define-property":274,"../internals/set-to-string-tag":296,"./export":235}],222:[function(_dereq_,module,exports){
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
 
 var MATCH = wellKnownSymbol('match');
@@ -21700,7 +22138,7 @@ module.exports = function (METHOD_NAME) {
   } return false;
 };
 
-},{"../internals/well-known-symbol":312}],219:[function(_dereq_,module,exports){
+},{"../internals/well-known-symbol":316}],223:[function(_dereq_,module,exports){
 var fails = _dereq_('../internals/fails');
 
 module.exports = !fails(function () {
@@ -21709,7 +22147,7 @@ module.exports = !fails(function () {
   return Object.getPrototypeOf(new F()) !== F.prototype;
 });
 
-},{"../internals/fails":232}],220:[function(_dereq_,module,exports){
+},{"../internals/fails":236}],224:[function(_dereq_,module,exports){
 'use strict';
 var IteratorPrototype = _dereq_('../internals/iterators-core').IteratorPrototype;
 var create = _dereq_('../internals/object-create');
@@ -21727,7 +22165,7 @@ module.exports = function (IteratorConstructor, NAME, next) {
   return IteratorConstructor;
 };
 
-},{"../internals/create-property-descriptor":222,"../internals/iterators":259,"../internals/iterators-core":258,"../internals/object-create":268,"../internals/set-to-string-tag":292}],221:[function(_dereq_,module,exports){
+},{"../internals/create-property-descriptor":226,"../internals/iterators":263,"../internals/iterators-core":262,"../internals/object-create":272,"../internals/set-to-string-tag":296}],225:[function(_dereq_,module,exports){
 var DESCRIPTORS = _dereq_('../internals/descriptors');
 var definePropertyModule = _dereq_('../internals/object-define-property');
 var createPropertyDescriptor = _dereq_('../internals/create-property-descriptor');
@@ -21739,7 +22177,7 @@ module.exports = DESCRIPTORS ? function (object, key, value) {
   return object;
 };
 
-},{"../internals/create-property-descriptor":222,"../internals/descriptors":226,"../internals/object-define-property":270}],222:[function(_dereq_,module,exports){
+},{"../internals/create-property-descriptor":226,"../internals/descriptors":230,"../internals/object-define-property":274}],226:[function(_dereq_,module,exports){
 module.exports = function (bitmap, value) {
   return {
     enumerable: !(bitmap & 1),
@@ -21749,7 +22187,7 @@ module.exports = function (bitmap, value) {
   };
 };
 
-},{}],223:[function(_dereq_,module,exports){
+},{}],227:[function(_dereq_,module,exports){
 'use strict';
 var toPrimitive = _dereq_('../internals/to-primitive');
 var definePropertyModule = _dereq_('../internals/object-define-property');
@@ -21761,7 +22199,7 @@ module.exports = function (object, key, value) {
   else object[propertyKey] = value;
 };
 
-},{"../internals/create-property-descriptor":222,"../internals/object-define-property":270,"../internals/to-primitive":306}],224:[function(_dereq_,module,exports){
+},{"../internals/create-property-descriptor":226,"../internals/object-define-property":274,"../internals/to-primitive":310}],228:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var createIteratorConstructor = _dereq_('../internals/create-iterator-constructor');
@@ -21853,7 +22291,7 @@ module.exports = function (Iterable, NAME, IteratorConstructor, next, DEFAULT, I
   return methods;
 };
 
-},{"../internals/create-iterator-constructor":220,"../internals/create-non-enumerable-property":221,"../internals/export":231,"../internals/is-pure":255,"../internals/iterators":259,"../internals/iterators-core":258,"../internals/object-get-prototype-of":275,"../internals/object-set-prototype-of":279,"../internals/redefine":287,"../internals/set-to-string-tag":292,"../internals/well-known-symbol":312}],225:[function(_dereq_,module,exports){
+},{"../internals/create-iterator-constructor":224,"../internals/create-non-enumerable-property":225,"../internals/export":235,"../internals/is-pure":259,"../internals/iterators":263,"../internals/iterators-core":262,"../internals/object-get-prototype-of":279,"../internals/object-set-prototype-of":283,"../internals/redefine":291,"../internals/set-to-string-tag":296,"../internals/well-known-symbol":316}],229:[function(_dereq_,module,exports){
 var path = _dereq_('../internals/path');
 var has = _dereq_('../internals/has');
 var wrappedWellKnownSymbolModule = _dereq_('../internals/wrapped-well-known-symbol');
@@ -21866,7 +22304,7 @@ module.exports = function (NAME) {
   });
 };
 
-},{"../internals/has":240,"../internals/object-define-property":270,"../internals/path":283,"../internals/wrapped-well-known-symbol":314}],226:[function(_dereq_,module,exports){
+},{"../internals/has":244,"../internals/object-define-property":274,"../internals/path":287,"../internals/wrapped-well-known-symbol":318}],230:[function(_dereq_,module,exports){
 var fails = _dereq_('../internals/fails');
 
 // Thank's IE8 for his funny defineProperty
@@ -21874,7 +22312,7 @@ module.exports = !fails(function () {
   return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
 });
 
-},{"../internals/fails":232}],227:[function(_dereq_,module,exports){
+},{"../internals/fails":236}],231:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 var isObject = _dereq_('../internals/is-object');
 
@@ -21886,7 +22324,7 @@ module.exports = function (it) {
   return EXISTS ? document.createElement(it) : {};
 };
 
-},{"../internals/global":239,"../internals/is-object":254}],228:[function(_dereq_,module,exports){
+},{"../internals/global":243,"../internals/is-object":258}],232:[function(_dereq_,module,exports){
 // iterable DOM collections
 // flag - `iterable` interface - 'entries', 'keys', 'values', 'forEach' methods
 module.exports = {
@@ -21923,14 +22361,14 @@ module.exports = {
   TouchList: 0
 };
 
-},{}],229:[function(_dereq_,module,exports){
+},{}],233:[function(_dereq_,module,exports){
 var path = _dereq_('../internals/path');
 
 module.exports = function (CONSTRUCTOR) {
   return path[CONSTRUCTOR + 'Prototype'];
 };
 
-},{"../internals/path":283}],230:[function(_dereq_,module,exports){
+},{"../internals/path":287}],234:[function(_dereq_,module,exports){
 // IE8- don't enum bug keys
 module.exports = [
   'constructor',
@@ -21942,7 +22380,7 @@ module.exports = [
   'valueOf'
 ];
 
-},{}],231:[function(_dereq_,module,exports){
+},{}],235:[function(_dereq_,module,exports){
 'use strict';
 var global = _dereq_('../internals/global');
 var getOwnPropertyDescriptor = _dereq_('../internals/object-get-own-property-descriptor').f;
@@ -22042,7 +22480,7 @@ module.exports = function (options, source) {
   }
 };
 
-},{"../internals/bind-context":207,"../internals/create-non-enumerable-property":221,"../internals/global":239,"../internals/has":240,"../internals/is-forced":251,"../internals/object-get-own-property-descriptor":271,"../internals/path":283}],232:[function(_dereq_,module,exports){
+},{"../internals/bind-context":211,"../internals/create-non-enumerable-property":225,"../internals/global":243,"../internals/has":244,"../internals/is-forced":255,"../internals/object-get-own-property-descriptor":275,"../internals/path":287}],236:[function(_dereq_,module,exports){
 module.exports = function (exec) {
   try {
     return !!exec();
@@ -22051,14 +22489,14 @@ module.exports = function (exec) {
   }
 };
 
-},{}],233:[function(_dereq_,module,exports){
+},{}],237:[function(_dereq_,module,exports){
 var fails = _dereq_('../internals/fails');
 
 module.exports = !fails(function () {
   return Object.isExtensible(Object.preventExtensions({}));
 });
 
-},{"../internals/fails":232}],234:[function(_dereq_,module,exports){
+},{"../internals/fails":236}],238:[function(_dereq_,module,exports){
 'use strict';
 var aFunction = _dereq_('../internals/a-function');
 var isObject = _dereq_('../internals/is-object');
@@ -22087,7 +22525,7 @@ module.exports = Function.bind || function bind(that /* , ...args */) {
   return boundFunction;
 };
 
-},{"../internals/a-function":195,"../internals/is-object":254}],235:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/is-object":258}],239:[function(_dereq_,module,exports){
 var path = _dereq_('../internals/path');
 var global = _dereq_('../internals/global');
 
@@ -22100,7 +22538,7 @@ module.exports = function (namespace, method) {
     : path[namespace] && path[namespace][method] || global[namespace] && global[namespace][method];
 };
 
-},{"../internals/global":239,"../internals/path":283}],236:[function(_dereq_,module,exports){
+},{"../internals/global":243,"../internals/path":287}],240:[function(_dereq_,module,exports){
 var classof = _dereq_('../internals/classof');
 var Iterators = _dereq_('../internals/iterators');
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
@@ -22113,7 +22551,7 @@ module.exports = function (it) {
     || Iterators[classof(it)];
 };
 
-},{"../internals/classof":211,"../internals/iterators":259,"../internals/well-known-symbol":312}],237:[function(_dereq_,module,exports){
+},{"../internals/classof":215,"../internals/iterators":263,"../internals/well-known-symbol":316}],241:[function(_dereq_,module,exports){
 var anObject = _dereq_('../internals/an-object');
 var getIteratorMethod = _dereq_('../internals/get-iterator-method');
 
@@ -22124,7 +22562,7 @@ module.exports = function (it) {
   } return anObject(iteratorMethod.call(it));
 };
 
-},{"../internals/an-object":199,"../internals/get-iterator-method":236}],238:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/get-iterator-method":240}],242:[function(_dereq_,module,exports){
 var IS_PURE = _dereq_('../internals/is-pure');
 var getIterator = _dereq_('../internals/get-iterator');
 
@@ -22133,7 +22571,7 @@ module.exports = IS_PURE ? getIterator : function (it) {
   return Map.prototype.entries.call(it);
 };
 
-},{"../internals/get-iterator":237,"../internals/is-pure":255}],239:[function(_dereq_,module,exports){
+},{"../internals/get-iterator":241,"../internals/is-pure":259}],243:[function(_dereq_,module,exports){
 (function (global){
 var check = function (it) {
   return it && it.Math == Math && it;
@@ -22150,17 +22588,17 @@ module.exports =
   Function('return this')();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],240:[function(_dereq_,module,exports){
+},{}],244:[function(_dereq_,module,exports){
 var hasOwnProperty = {}.hasOwnProperty;
 
 module.exports = function (it, key) {
   return hasOwnProperty.call(it, key);
 };
 
-},{}],241:[function(_dereq_,module,exports){
+},{}],245:[function(_dereq_,module,exports){
 module.exports = {};
 
-},{}],242:[function(_dereq_,module,exports){
+},{}],246:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 
 module.exports = function (a, b) {
@@ -22170,12 +22608,12 @@ module.exports = function (a, b) {
   }
 };
 
-},{"../internals/global":239}],243:[function(_dereq_,module,exports){
+},{"../internals/global":243}],247:[function(_dereq_,module,exports){
 var getBuiltIn = _dereq_('../internals/get-built-in');
 
 module.exports = getBuiltIn('document', 'documentElement');
 
-},{"../internals/get-built-in":235}],244:[function(_dereq_,module,exports){
+},{"../internals/get-built-in":239}],248:[function(_dereq_,module,exports){
 var DESCRIPTORS = _dereq_('../internals/descriptors');
 var fails = _dereq_('../internals/fails');
 var createElement = _dereq_('../internals/document-create-element');
@@ -22187,7 +22625,7 @@ module.exports = !DESCRIPTORS && !fails(function () {
   }).a != 7;
 });
 
-},{"../internals/descriptors":226,"../internals/document-create-element":227,"../internals/fails":232}],245:[function(_dereq_,module,exports){
+},{"../internals/descriptors":230,"../internals/document-create-element":231,"../internals/fails":236}],249:[function(_dereq_,module,exports){
 var fails = _dereq_('../internals/fails');
 var classof = _dereq_('../internals/classof-raw');
 
@@ -22202,7 +22640,7 @@ module.exports = fails(function () {
   return classof(it) == 'String' ? split.call(it, '') : Object(it);
 } : Object;
 
-},{"../internals/classof-raw":210,"../internals/fails":232}],246:[function(_dereq_,module,exports){
+},{"../internals/classof-raw":214,"../internals/fails":236}],250:[function(_dereq_,module,exports){
 var shared = _dereq_('../internals/shared');
 
 var functionToString = Function.toString;
@@ -22211,7 +22649,7 @@ module.exports = shared('inspectSource', function (it) {
   return functionToString.call(it);
 });
 
-},{"../internals/shared":295}],247:[function(_dereq_,module,exports){
+},{"../internals/shared":299}],251:[function(_dereq_,module,exports){
 var hiddenKeys = _dereq_('../internals/hidden-keys');
 var isObject = _dereq_('../internals/is-object');
 var has = _dereq_('../internals/has');
@@ -22274,7 +22712,7 @@ var meta = module.exports = {
 
 hiddenKeys[METADATA] = true;
 
-},{"../internals/freezing":233,"../internals/has":240,"../internals/hidden-keys":241,"../internals/is-object":254,"../internals/object-define-property":270,"../internals/uid":308}],248:[function(_dereq_,module,exports){
+},{"../internals/freezing":237,"../internals/has":244,"../internals/hidden-keys":245,"../internals/is-object":258,"../internals/object-define-property":274,"../internals/uid":312}],252:[function(_dereq_,module,exports){
 var NATIVE_WEAK_MAP = _dereq_('../internals/native-weak-map');
 var global = _dereq_('../internals/global');
 var isObject = _dereq_('../internals/is-object');
@@ -22337,7 +22775,7 @@ module.exports = {
   getterFor: getterFor
 };
 
-},{"../internals/create-non-enumerable-property":221,"../internals/global":239,"../internals/has":240,"../internals/hidden-keys":241,"../internals/is-object":254,"../internals/native-weak-map":264,"../internals/shared-key":293}],249:[function(_dereq_,module,exports){
+},{"../internals/create-non-enumerable-property":225,"../internals/global":243,"../internals/has":244,"../internals/hidden-keys":245,"../internals/is-object":258,"../internals/native-weak-map":268,"../internals/shared-key":297}],253:[function(_dereq_,module,exports){
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
 var Iterators = _dereq_('../internals/iterators');
 
@@ -22349,7 +22787,7 @@ module.exports = function (it) {
   return it !== undefined && (Iterators.Array === it || ArrayPrototype[ITERATOR] === it);
 };
 
-},{"../internals/iterators":259,"../internals/well-known-symbol":312}],250:[function(_dereq_,module,exports){
+},{"../internals/iterators":263,"../internals/well-known-symbol":316}],254:[function(_dereq_,module,exports){
 var classof = _dereq_('../internals/classof-raw');
 
 // `IsArray` abstract operation
@@ -22358,7 +22796,7 @@ module.exports = Array.isArray || function isArray(arg) {
   return classof(arg) == 'Array';
 };
 
-},{"../internals/classof-raw":210}],251:[function(_dereq_,module,exports){
+},{"../internals/classof-raw":214}],255:[function(_dereq_,module,exports){
 var fails = _dereq_('../internals/fails');
 
 var replacement = /#|\.prototype\./;
@@ -22381,12 +22819,12 @@ var POLYFILL = isForced.POLYFILL = 'P';
 
 module.exports = isForced;
 
-},{"../internals/fails":232}],252:[function(_dereq_,module,exports){
+},{"../internals/fails":236}],256:[function(_dereq_,module,exports){
 var userAgent = _dereq_('../internals/user-agent');
 
 module.exports = /(iphone|ipod|ipad).*applewebkit/i.test(userAgent);
 
-},{"../internals/user-agent":310}],253:[function(_dereq_,module,exports){
+},{"../internals/user-agent":314}],257:[function(_dereq_,module,exports){
 var classof = _dereq_('../internals/classof');
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
 var Iterators = _dereq_('../internals/iterators');
@@ -22401,15 +22839,15 @@ module.exports = function (it) {
     || Iterators.hasOwnProperty(classof(O));
 };
 
-},{"../internals/classof":211,"../internals/iterators":259,"../internals/well-known-symbol":312}],254:[function(_dereq_,module,exports){
+},{"../internals/classof":215,"../internals/iterators":263,"../internals/well-known-symbol":316}],258:[function(_dereq_,module,exports){
 module.exports = function (it) {
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
 
-},{}],255:[function(_dereq_,module,exports){
+},{}],259:[function(_dereq_,module,exports){
 module.exports = true;
 
-},{}],256:[function(_dereq_,module,exports){
+},{}],260:[function(_dereq_,module,exports){
 var isObject = _dereq_('../internals/is-object');
 var classof = _dereq_('../internals/classof-raw');
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
@@ -22423,7 +22861,7 @@ module.exports = function (it) {
   return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : classof(it) == 'RegExp');
 };
 
-},{"../internals/classof-raw":210,"../internals/is-object":254,"../internals/well-known-symbol":312}],257:[function(_dereq_,module,exports){
+},{"../internals/classof-raw":214,"../internals/is-object":258,"../internals/well-known-symbol":316}],261:[function(_dereq_,module,exports){
 var anObject = _dereq_('../internals/an-object');
 var isArrayIteratorMethod = _dereq_('../internals/is-array-iterator-method');
 var toLength = _dereq_('../internals/to-length');
@@ -22468,7 +22906,7 @@ iterate.stop = function (result) {
   return new Result(true, result);
 };
 
-},{"../internals/an-object":199,"../internals/bind-context":207,"../internals/call-with-safe-iteration-closing":208,"../internals/get-iterator-method":236,"../internals/is-array-iterator-method":249,"../internals/to-length":304}],258:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/bind-context":211,"../internals/call-with-safe-iteration-closing":212,"../internals/get-iterator-method":240,"../internals/is-array-iterator-method":253,"../internals/to-length":308}],262:[function(_dereq_,module,exports){
 'use strict';
 var getPrototypeOf = _dereq_('../internals/object-get-prototype-of');
 var createNonEnumerableProperty = _dereq_('../internals/create-non-enumerable-property');
@@ -22507,9 +22945,9 @@ module.exports = {
   BUGGY_SAFARI_ITERATORS: BUGGY_SAFARI_ITERATORS
 };
 
-},{"../internals/create-non-enumerable-property":221,"../internals/has":240,"../internals/is-pure":255,"../internals/object-get-prototype-of":275,"../internals/well-known-symbol":312}],259:[function(_dereq_,module,exports){
-arguments[4][241][0].apply(exports,arguments)
-},{"dup":241}],260:[function(_dereq_,module,exports){
+},{"../internals/create-non-enumerable-property":225,"../internals/has":244,"../internals/is-pure":259,"../internals/object-get-prototype-of":279,"../internals/well-known-symbol":316}],263:[function(_dereq_,module,exports){
+arguments[4][245][0].apply(exports,arguments)
+},{"dup":245}],264:[function(_dereq_,module,exports){
 'use strict';
 var anObject = _dereq_('../internals/an-object');
 
@@ -22534,7 +22972,7 @@ module.exports = function upsert(key, updateFn /* , insertFn */) {
   } return value;
 };
 
-},{"../internals/an-object":199}],261:[function(_dereq_,module,exports){
+},{"../internals/an-object":203}],265:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 var getOwnPropertyDescriptor = _dereq_('../internals/object-get-own-property-descriptor').f;
 var classof = _dereq_('../internals/classof-raw');
@@ -22614,12 +23052,12 @@ module.exports = queueMicrotask || function (fn) {
   } last = task;
 };
 
-},{"../internals/classof-raw":210,"../internals/global":239,"../internals/is-ios":252,"../internals/object-get-own-property-descriptor":271,"../internals/task":300}],262:[function(_dereq_,module,exports){
+},{"../internals/classof-raw":214,"../internals/global":243,"../internals/is-ios":256,"../internals/object-get-own-property-descriptor":275,"../internals/task":304}],266:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 
 module.exports = global.Promise;
 
-},{"../internals/global":239}],263:[function(_dereq_,module,exports){
+},{"../internals/global":243}],267:[function(_dereq_,module,exports){
 var fails = _dereq_('../internals/fails');
 
 module.exports = !!Object.getOwnPropertySymbols && !fails(function () {
@@ -22628,7 +23066,7 @@ module.exports = !!Object.getOwnPropertySymbols && !fails(function () {
   return !String(Symbol());
 });
 
-},{"../internals/fails":232}],264:[function(_dereq_,module,exports){
+},{"../internals/fails":236}],268:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 var inspectSource = _dereq_('../internals/inspect-source');
 
@@ -22636,7 +23074,7 @@ var WeakMap = global.WeakMap;
 
 module.exports = typeof WeakMap === 'function' && /native code/.test(inspectSource(WeakMap));
 
-},{"../internals/global":239,"../internals/inspect-source":246}],265:[function(_dereq_,module,exports){
+},{"../internals/global":243,"../internals/inspect-source":250}],269:[function(_dereq_,module,exports){
 'use strict';
 var aFunction = _dereq_('../internals/a-function');
 
@@ -22656,7 +23094,7 @@ module.exports.f = function (C) {
   return new PromiseCapability(C);
 };
 
-},{"../internals/a-function":195}],266:[function(_dereq_,module,exports){
+},{"../internals/a-function":199}],270:[function(_dereq_,module,exports){
 var isRegExp = _dereq_('../internals/is-regexp');
 
 module.exports = function (it) {
@@ -22665,7 +23103,7 @@ module.exports = function (it) {
   } return it;
 };
 
-},{"../internals/is-regexp":256}],267:[function(_dereq_,module,exports){
+},{"../internals/is-regexp":260}],271:[function(_dereq_,module,exports){
 'use strict';
 var DESCRIPTORS = _dereq_('../internals/descriptors');
 var fails = _dereq_('../internals/fails');
@@ -22719,7 +23157,7 @@ module.exports = !nativeAssign || fails(function () {
   } return T;
 } : nativeAssign;
 
-},{"../internals/descriptors":226,"../internals/fails":232,"../internals/indexed-object":245,"../internals/object-get-own-property-symbols":274,"../internals/object-keys":277,"../internals/object-property-is-enumerable":278,"../internals/to-object":305}],268:[function(_dereq_,module,exports){
+},{"../internals/descriptors":230,"../internals/fails":236,"../internals/indexed-object":249,"../internals/object-get-own-property-symbols":278,"../internals/object-keys":281,"../internals/object-property-is-enumerable":282,"../internals/to-object":309}],272:[function(_dereq_,module,exports){
 var anObject = _dereq_('../internals/an-object');
 var defineProperties = _dereq_('../internals/object-define-properties');
 var enumBugKeys = _dereq_('../internals/enum-bug-keys');
@@ -22770,7 +23208,7 @@ module.exports = Object.create || function create(O, Properties) {
 
 hiddenKeys[IE_PROTO] = true;
 
-},{"../internals/an-object":199,"../internals/document-create-element":227,"../internals/enum-bug-keys":230,"../internals/hidden-keys":241,"../internals/html":243,"../internals/object-define-properties":269,"../internals/shared-key":293}],269:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/document-create-element":231,"../internals/enum-bug-keys":234,"../internals/hidden-keys":245,"../internals/html":247,"../internals/object-define-properties":273,"../internals/shared-key":297}],273:[function(_dereq_,module,exports){
 var DESCRIPTORS = _dereq_('../internals/descriptors');
 var definePropertyModule = _dereq_('../internals/object-define-property');
 var anObject = _dereq_('../internals/an-object');
@@ -22788,7 +23226,7 @@ module.exports = DESCRIPTORS ? Object.defineProperties : function defineProperti
   return O;
 };
 
-},{"../internals/an-object":199,"../internals/descriptors":226,"../internals/object-define-property":270,"../internals/object-keys":277}],270:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/descriptors":230,"../internals/object-define-property":274,"../internals/object-keys":281}],274:[function(_dereq_,module,exports){
 var DESCRIPTORS = _dereq_('../internals/descriptors');
 var IE8_DOM_DEFINE = _dereq_('../internals/ie8-dom-define');
 var anObject = _dereq_('../internals/an-object');
@@ -22810,7 +23248,7 @@ exports.f = DESCRIPTORS ? nativeDefineProperty : function defineProperty(O, P, A
   return O;
 };
 
-},{"../internals/an-object":199,"../internals/descriptors":226,"../internals/ie8-dom-define":244,"../internals/to-primitive":306}],271:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/descriptors":230,"../internals/ie8-dom-define":248,"../internals/to-primitive":310}],275:[function(_dereq_,module,exports){
 var DESCRIPTORS = _dereq_('../internals/descriptors');
 var propertyIsEnumerableModule = _dereq_('../internals/object-property-is-enumerable');
 var createPropertyDescriptor = _dereq_('../internals/create-property-descriptor');
@@ -22832,7 +23270,7 @@ exports.f = DESCRIPTORS ? nativeGetOwnPropertyDescriptor : function getOwnProper
   if (has(O, P)) return createPropertyDescriptor(!propertyIsEnumerableModule.f.call(O, P), O[P]);
 };
 
-},{"../internals/create-property-descriptor":222,"../internals/descriptors":226,"../internals/has":240,"../internals/ie8-dom-define":244,"../internals/object-property-is-enumerable":278,"../internals/to-indexed-object":302,"../internals/to-primitive":306}],272:[function(_dereq_,module,exports){
+},{"../internals/create-property-descriptor":226,"../internals/descriptors":230,"../internals/has":244,"../internals/ie8-dom-define":248,"../internals/object-property-is-enumerable":282,"../internals/to-indexed-object":306,"../internals/to-primitive":310}],276:[function(_dereq_,module,exports){
 var toIndexedObject = _dereq_('../internals/to-indexed-object');
 var nativeGetOwnPropertyNames = _dereq_('../internals/object-get-own-property-names').f;
 
@@ -22856,7 +23294,7 @@ module.exports.f = function getOwnPropertyNames(it) {
     : nativeGetOwnPropertyNames(toIndexedObject(it));
 };
 
-},{"../internals/object-get-own-property-names":273,"../internals/to-indexed-object":302}],273:[function(_dereq_,module,exports){
+},{"../internals/object-get-own-property-names":277,"../internals/to-indexed-object":306}],277:[function(_dereq_,module,exports){
 var internalObjectKeys = _dereq_('../internals/object-keys-internal');
 var enumBugKeys = _dereq_('../internals/enum-bug-keys');
 
@@ -22868,10 +23306,10 @@ exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return internalObjectKeys(O, hiddenKeys);
 };
 
-},{"../internals/enum-bug-keys":230,"../internals/object-keys-internal":276}],274:[function(_dereq_,module,exports){
+},{"../internals/enum-bug-keys":234,"../internals/object-keys-internal":280}],278:[function(_dereq_,module,exports){
 exports.f = Object.getOwnPropertySymbols;
 
-},{}],275:[function(_dereq_,module,exports){
+},{}],279:[function(_dereq_,module,exports){
 var has = _dereq_('../internals/has');
 var toObject = _dereq_('../internals/to-object');
 var sharedKey = _dereq_('../internals/shared-key');
@@ -22890,7 +23328,7 @@ module.exports = CORRECT_PROTOTYPE_GETTER ? Object.getPrototypeOf : function (O)
   } return O instanceof Object ? ObjectPrototype : null;
 };
 
-},{"../internals/correct-prototype-getter":219,"../internals/has":240,"../internals/shared-key":293,"../internals/to-object":305}],276:[function(_dereq_,module,exports){
+},{"../internals/correct-prototype-getter":223,"../internals/has":244,"../internals/shared-key":297,"../internals/to-object":309}],280:[function(_dereq_,module,exports){
 var has = _dereq_('../internals/has');
 var toIndexedObject = _dereq_('../internals/to-indexed-object');
 var indexOf = _dereq_('../internals/array-includes').indexOf;
@@ -22909,7 +23347,7 @@ module.exports = function (object, names) {
   return result;
 };
 
-},{"../internals/array-includes":202,"../internals/has":240,"../internals/hidden-keys":241,"../internals/to-indexed-object":302}],277:[function(_dereq_,module,exports){
+},{"../internals/array-includes":206,"../internals/has":244,"../internals/hidden-keys":245,"../internals/to-indexed-object":306}],281:[function(_dereq_,module,exports){
 var internalObjectKeys = _dereq_('../internals/object-keys-internal');
 var enumBugKeys = _dereq_('../internals/enum-bug-keys');
 
@@ -22919,7 +23357,7 @@ module.exports = Object.keys || function keys(O) {
   return internalObjectKeys(O, enumBugKeys);
 };
 
-},{"../internals/enum-bug-keys":230,"../internals/object-keys-internal":276}],278:[function(_dereq_,module,exports){
+},{"../internals/enum-bug-keys":234,"../internals/object-keys-internal":280}],282:[function(_dereq_,module,exports){
 'use strict';
 var nativePropertyIsEnumerable = {}.propertyIsEnumerable;
 var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
@@ -22934,7 +23372,7 @@ exports.f = NASHORN_BUG ? function propertyIsEnumerable(V) {
   return !!descriptor && descriptor.enumerable;
 } : nativePropertyIsEnumerable;
 
-},{}],279:[function(_dereq_,module,exports){
+},{}],283:[function(_dereq_,module,exports){
 var anObject = _dereq_('../internals/an-object');
 var aPossiblePrototype = _dereq_('../internals/a-possible-prototype');
 
@@ -22960,7 +23398,7 @@ module.exports = Object.setPrototypeOf || ('__proto__' in {} ? function () {
   };
 }() : undefined);
 
-},{"../internals/a-possible-prototype":196,"../internals/an-object":199}],280:[function(_dereq_,module,exports){
+},{"../internals/a-possible-prototype":200,"../internals/an-object":203}],284:[function(_dereq_,module,exports){
 'use strict';
 var TO_STRING_TAG_SUPPORT = _dereq_('../internals/to-string-tag-support');
 var classof = _dereq_('../internals/classof');
@@ -22971,7 +23409,7 @@ module.exports = TO_STRING_TAG_SUPPORT ? {}.toString : function toString() {
   return '[object ' + classof(this) + ']';
 };
 
-},{"../internals/classof":211,"../internals/to-string-tag-support":307}],281:[function(_dereq_,module,exports){
+},{"../internals/classof":215,"../internals/to-string-tag-support":311}],285:[function(_dereq_,module,exports){
 var getBuiltIn = _dereq_('../internals/get-built-in');
 var getOwnPropertyNamesModule = _dereq_('../internals/object-get-own-property-names');
 var getOwnPropertySymbolsModule = _dereq_('../internals/object-get-own-property-symbols');
@@ -22984,7 +23422,7 @@ module.exports = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
   return getOwnPropertySymbols ? keys.concat(getOwnPropertySymbols(it)) : keys;
 };
 
-},{"../internals/an-object":199,"../internals/get-built-in":235,"../internals/object-get-own-property-names":273,"../internals/object-get-own-property-symbols":274}],282:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/get-built-in":239,"../internals/object-get-own-property-names":277,"../internals/object-get-own-property-symbols":278}],286:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 var trim = _dereq_('../internals/string-trim').trim;
 var whitespaces = _dereq_('../internals/whitespaces');
@@ -23000,9 +23438,9 @@ module.exports = FORCED ? function parseInt(string, radix) {
   return nativeParseInt(S, (radix >>> 0) || (hex.test(S) ? 16 : 10));
 } : nativeParseInt;
 
-},{"../internals/global":239,"../internals/string-trim":299,"../internals/whitespaces":313}],283:[function(_dereq_,module,exports){
-arguments[4][241][0].apply(exports,arguments)
-},{"dup":241}],284:[function(_dereq_,module,exports){
+},{"../internals/global":243,"../internals/string-trim":303,"../internals/whitespaces":317}],287:[function(_dereq_,module,exports){
+arguments[4][245][0].apply(exports,arguments)
+},{"dup":245}],288:[function(_dereq_,module,exports){
 module.exports = function (exec) {
   try {
     return { error: false, value: exec() };
@@ -23011,7 +23449,7 @@ module.exports = function (exec) {
   }
 };
 
-},{}],285:[function(_dereq_,module,exports){
+},{}],289:[function(_dereq_,module,exports){
 var anObject = _dereq_('../internals/an-object');
 var isObject = _dereq_('../internals/is-object');
 var newPromiseCapability = _dereq_('../internals/new-promise-capability');
@@ -23025,7 +23463,7 @@ module.exports = function (C, x) {
   return promiseCapability.promise;
 };
 
-},{"../internals/an-object":199,"../internals/is-object":254,"../internals/new-promise-capability":265}],286:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/is-object":258,"../internals/new-promise-capability":269}],290:[function(_dereq_,module,exports){
 var redefine = _dereq_('../internals/redefine');
 
 module.exports = function (target, src, options) {
@@ -23035,7 +23473,7 @@ module.exports = function (target, src, options) {
   } return target;
 };
 
-},{"../internals/redefine":287}],287:[function(_dereq_,module,exports){
+},{"../internals/redefine":291}],291:[function(_dereq_,module,exports){
 var createNonEnumerableProperty = _dereq_('../internals/create-non-enumerable-property');
 
 module.exports = function (target, key, value, options) {
@@ -23043,7 +23481,7 @@ module.exports = function (target, key, value, options) {
   else createNonEnumerableProperty(target, key, value);
 };
 
-},{"../internals/create-non-enumerable-property":221}],288:[function(_dereq_,module,exports){
+},{"../internals/create-non-enumerable-property":225}],292:[function(_dereq_,module,exports){
 // `RequireObjectCoercible` abstract operation
 // https://tc39.github.io/ecma262/#sec-requireobjectcoercible
 module.exports = function (it) {
@@ -23051,7 +23489,7 @@ module.exports = function (it) {
   return it;
 };
 
-},{}],289:[function(_dereq_,module,exports){
+},{}],293:[function(_dereq_,module,exports){
 // `SameValueZero` abstract operation
 // https://tc39.github.io/ecma262/#sec-samevaluezero
 module.exports = function (x, y) {
@@ -23059,7 +23497,7 @@ module.exports = function (x, y) {
   return x === y || x != x && y != y;
 };
 
-},{}],290:[function(_dereq_,module,exports){
+},{}],294:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 var createNonEnumerableProperty = _dereq_('../internals/create-non-enumerable-property');
 
@@ -23071,7 +23509,7 @@ module.exports = function (key, value) {
   } return value;
 };
 
-},{"../internals/create-non-enumerable-property":221,"../internals/global":239}],291:[function(_dereq_,module,exports){
+},{"../internals/create-non-enumerable-property":225,"../internals/global":243}],295:[function(_dereq_,module,exports){
 'use strict';
 var getBuiltIn = _dereq_('../internals/get-built-in');
 var definePropertyModule = _dereq_('../internals/object-define-property');
@@ -23092,7 +23530,7 @@ module.exports = function (CONSTRUCTOR_NAME) {
   }
 };
 
-},{"../internals/descriptors":226,"../internals/get-built-in":235,"../internals/object-define-property":270,"../internals/well-known-symbol":312}],292:[function(_dereq_,module,exports){
+},{"../internals/descriptors":230,"../internals/get-built-in":239,"../internals/object-define-property":274,"../internals/well-known-symbol":316}],296:[function(_dereq_,module,exports){
 var TO_STRING_TAG_SUPPORT = _dereq_('../internals/to-string-tag-support');
 var defineProperty = _dereq_('../internals/object-define-property').f;
 var createNonEnumerableProperty = _dereq_('../internals/create-non-enumerable-property');
@@ -23114,7 +23552,7 @@ module.exports = function (it, TAG, STATIC, SET_METHOD) {
   }
 };
 
-},{"../internals/create-non-enumerable-property":221,"../internals/has":240,"../internals/object-define-property":270,"../internals/object-to-string":280,"../internals/to-string-tag-support":307,"../internals/well-known-symbol":312}],293:[function(_dereq_,module,exports){
+},{"../internals/create-non-enumerable-property":225,"../internals/has":244,"../internals/object-define-property":274,"../internals/object-to-string":284,"../internals/to-string-tag-support":311,"../internals/well-known-symbol":316}],297:[function(_dereq_,module,exports){
 var shared = _dereq_('../internals/shared');
 var uid = _dereq_('../internals/uid');
 
@@ -23124,7 +23562,7 @@ module.exports = function (key) {
   return keys[key] || (keys[key] = uid(key));
 };
 
-},{"../internals/shared":295,"../internals/uid":308}],294:[function(_dereq_,module,exports){
+},{"../internals/shared":299,"../internals/uid":312}],298:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 var setGlobal = _dereq_('../internals/set-global');
 
@@ -23133,7 +23571,7 @@ var store = global[SHARED] || setGlobal(SHARED, {});
 
 module.exports = store;
 
-},{"../internals/global":239,"../internals/set-global":290}],295:[function(_dereq_,module,exports){
+},{"../internals/global":243,"../internals/set-global":294}],299:[function(_dereq_,module,exports){
 var IS_PURE = _dereq_('../internals/is-pure');
 var store = _dereq_('../internals/shared-store');
 
@@ -23145,7 +23583,7 @@ var store = _dereq_('../internals/shared-store');
   copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
 });
 
-},{"../internals/is-pure":255,"../internals/shared-store":294}],296:[function(_dereq_,module,exports){
+},{"../internals/is-pure":259,"../internals/shared-store":298}],300:[function(_dereq_,module,exports){
 'use strict';
 var fails = _dereq_('../internals/fails');
 
@@ -23157,7 +23595,7 @@ module.exports = function (METHOD_NAME, argument) {
   });
 };
 
-},{"../internals/fails":232}],297:[function(_dereq_,module,exports){
+},{"../internals/fails":236}],301:[function(_dereq_,module,exports){
 var anObject = _dereq_('../internals/an-object');
 var aFunction = _dereq_('../internals/a-function');
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
@@ -23172,7 +23610,7 @@ module.exports = function (O, defaultConstructor) {
   return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? defaultConstructor : aFunction(S);
 };
 
-},{"../internals/a-function":195,"../internals/an-object":199,"../internals/well-known-symbol":312}],298:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/an-object":203,"../internals/well-known-symbol":316}],302:[function(_dereq_,module,exports){
 var toInteger = _dereq_('../internals/to-integer');
 var requireObjectCoercible = _dereq_('../internals/require-object-coercible');
 
@@ -23201,7 +23639,7 @@ module.exports = {
   charAt: createMethod(true)
 };
 
-},{"../internals/require-object-coercible":288,"../internals/to-integer":303}],299:[function(_dereq_,module,exports){
+},{"../internals/require-object-coercible":292,"../internals/to-integer":307}],303:[function(_dereq_,module,exports){
 var requireObjectCoercible = _dereq_('../internals/require-object-coercible');
 var whitespaces = _dereq_('../internals/whitespaces');
 
@@ -23231,7 +23669,7 @@ module.exports = {
   trim: createMethod(3)
 };
 
-},{"../internals/require-object-coercible":288,"../internals/whitespaces":313}],300:[function(_dereq_,module,exports){
+},{"../internals/require-object-coercible":292,"../internals/whitespaces":317}],304:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 var fails = _dereq_('../internals/fails');
 var classof = _dereq_('../internals/classof-raw');
@@ -23334,7 +23772,7 @@ module.exports = {
   clear: clear
 };
 
-},{"../internals/bind-context":207,"../internals/classof-raw":210,"../internals/document-create-element":227,"../internals/fails":232,"../internals/global":239,"../internals/html":243,"../internals/is-ios":252}],301:[function(_dereq_,module,exports){
+},{"../internals/bind-context":211,"../internals/classof-raw":214,"../internals/document-create-element":231,"../internals/fails":236,"../internals/global":243,"../internals/html":247,"../internals/is-ios":256}],305:[function(_dereq_,module,exports){
 var toInteger = _dereq_('../internals/to-integer');
 
 var max = Math.max;
@@ -23348,7 +23786,7 @@ module.exports = function (index, length) {
   return integer < 0 ? max(integer + length, 0) : min(integer, length);
 };
 
-},{"../internals/to-integer":303}],302:[function(_dereq_,module,exports){
+},{"../internals/to-integer":307}],306:[function(_dereq_,module,exports){
 // toObject with fallback for non-array-like ES3 strings
 var IndexedObject = _dereq_('../internals/indexed-object');
 var requireObjectCoercible = _dereq_('../internals/require-object-coercible');
@@ -23357,7 +23795,7 @@ module.exports = function (it) {
   return IndexedObject(requireObjectCoercible(it));
 };
 
-},{"../internals/indexed-object":245,"../internals/require-object-coercible":288}],303:[function(_dereq_,module,exports){
+},{"../internals/indexed-object":249,"../internals/require-object-coercible":292}],307:[function(_dereq_,module,exports){
 var ceil = Math.ceil;
 var floor = Math.floor;
 
@@ -23367,7 +23805,7 @@ module.exports = function (argument) {
   return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor : ceil)(argument);
 };
 
-},{}],304:[function(_dereq_,module,exports){
+},{}],308:[function(_dereq_,module,exports){
 var toInteger = _dereq_('../internals/to-integer');
 
 var min = Math.min;
@@ -23378,7 +23816,7 @@ module.exports = function (argument) {
   return argument > 0 ? min(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
 };
 
-},{"../internals/to-integer":303}],305:[function(_dereq_,module,exports){
+},{"../internals/to-integer":307}],309:[function(_dereq_,module,exports){
 var requireObjectCoercible = _dereq_('../internals/require-object-coercible');
 
 // `ToObject` abstract operation
@@ -23387,7 +23825,7 @@ module.exports = function (argument) {
   return Object(requireObjectCoercible(argument));
 };
 
-},{"../internals/require-object-coercible":288}],306:[function(_dereq_,module,exports){
+},{"../internals/require-object-coercible":292}],310:[function(_dereq_,module,exports){
 var isObject = _dereq_('../internals/is-object');
 
 // `ToPrimitive` abstract operation
@@ -23403,7 +23841,7 @@ module.exports = function (input, PREFERRED_STRING) {
   throw TypeError("Can't convert object to primitive value");
 };
 
-},{"../internals/is-object":254}],307:[function(_dereq_,module,exports){
+},{"../internals/is-object":258}],311:[function(_dereq_,module,exports){
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
@@ -23413,7 +23851,7 @@ test[TO_STRING_TAG] = 'z';
 
 module.exports = String(test) === '[object z]';
 
-},{"../internals/well-known-symbol":312}],308:[function(_dereq_,module,exports){
+},{"../internals/well-known-symbol":316}],312:[function(_dereq_,module,exports){
 var id = 0;
 var postfix = Math.random();
 
@@ -23421,7 +23859,7 @@ module.exports = function (key) {
   return 'Symbol(' + String(key === undefined ? '' : key) + ')_' + (++id + postfix).toString(36);
 };
 
-},{}],309:[function(_dereq_,module,exports){
+},{}],313:[function(_dereq_,module,exports){
 var NATIVE_SYMBOL = _dereq_('../internals/native-symbol');
 
 module.exports = NATIVE_SYMBOL
@@ -23430,12 +23868,12 @@ module.exports = NATIVE_SYMBOL
   // eslint-disable-next-line no-undef
   && typeof Symbol() == 'symbol';
 
-},{"../internals/native-symbol":263}],310:[function(_dereq_,module,exports){
+},{"../internals/native-symbol":267}],314:[function(_dereq_,module,exports){
 var getBuiltIn = _dereq_('../internals/get-built-in');
 
 module.exports = getBuiltIn('navigator', 'userAgent') || '';
 
-},{"../internals/get-built-in":235}],311:[function(_dereq_,module,exports){
+},{"../internals/get-built-in":239}],315:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 var userAgent = _dereq_('../internals/user-agent');
 
@@ -23457,7 +23895,7 @@ if (v8) {
 
 module.exports = version && +version;
 
-},{"../internals/global":239,"../internals/user-agent":310}],312:[function(_dereq_,module,exports){
+},{"../internals/global":243,"../internals/user-agent":314}],316:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 var shared = _dereq_('../internals/shared');
 var has = _dereq_('../internals/has');
@@ -23476,17 +23914,17 @@ module.exports = function (name) {
   } return WellKnownSymbolsStore[name];
 };
 
-},{"../internals/global":239,"../internals/has":240,"../internals/native-symbol":263,"../internals/shared":295,"../internals/uid":308,"../internals/use-symbol-as-uid":309}],313:[function(_dereq_,module,exports){
+},{"../internals/global":243,"../internals/has":244,"../internals/native-symbol":267,"../internals/shared":299,"../internals/uid":312,"../internals/use-symbol-as-uid":313}],317:[function(_dereq_,module,exports){
 // a string of all valid unicode whitespaces
 // eslint-disable-next-line max-len
 module.exports = '\u0009\u000A\u000B\u000C\u000D\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF';
 
-},{}],314:[function(_dereq_,module,exports){
+},{}],318:[function(_dereq_,module,exports){
 var wellKnownSymbol = _dereq_('../internals/well-known-symbol');
 
 exports.f = wellKnownSymbol;
 
-},{"../internals/well-known-symbol":312}],315:[function(_dereq_,module,exports){
+},{"../internals/well-known-symbol":316}],319:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var fails = _dereq_('../internals/fails');
@@ -23548,7 +23986,7 @@ $({ target: 'Array', proto: true, forced: FORCED }, {
   }
 });
 
-},{"../internals/array-method-has-species-support":204,"../internals/array-species-create":206,"../internals/create-property":223,"../internals/export":231,"../internals/fails":232,"../internals/is-array":250,"../internals/is-object":254,"../internals/to-length":304,"../internals/to-object":305,"../internals/v8-version":311,"../internals/well-known-symbol":312}],316:[function(_dereq_,module,exports){
+},{"../internals/array-method-has-species-support":208,"../internals/array-species-create":210,"../internals/create-property":227,"../internals/export":235,"../internals/fails":236,"../internals/is-array":254,"../internals/is-object":258,"../internals/to-length":308,"../internals/to-object":309,"../internals/v8-version":315,"../internals/well-known-symbol":316}],320:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var $filter = _dereq_('../internals/array-iteration').filter;
@@ -23570,7 +24008,7 @@ $({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT || !USES_TO_LENGT
   }
 });
 
-},{"../internals/array-iteration":203,"../internals/array-method-has-species-support":204,"../internals/export":231,"../internals/fails":232}],317:[function(_dereq_,module,exports){
+},{"../internals/array-iteration":207,"../internals/array-method-has-species-support":208,"../internals/export":235,"../internals/fails":236}],321:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var $find = _dereq_('../internals/array-iteration').find;
@@ -23593,7 +24031,7 @@ $({ target: 'Array', proto: true, forced: SKIPS_HOLES }, {
 // https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
 addToUnscopables(FIND);
 
-},{"../internals/add-to-unscopables":197,"../internals/array-iteration":203,"../internals/export":231}],318:[function(_dereq_,module,exports){
+},{"../internals/add-to-unscopables":201,"../internals/array-iteration":207,"../internals/export":235}],322:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var forEach = _dereq_('../internals/array-for-each');
@@ -23604,7 +24042,7 @@ $({ target: 'Array', proto: true, forced: [].forEach != forEach }, {
   forEach: forEach
 });
 
-},{"../internals/array-for-each":200,"../internals/export":231}],319:[function(_dereq_,module,exports){
+},{"../internals/array-for-each":204,"../internals/export":235}],323:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var from = _dereq_('../internals/array-from');
 var checkCorrectnessOfIteration = _dereq_('../internals/check-correctness-of-iteration');
@@ -23619,7 +24057,7 @@ $({ target: 'Array', stat: true, forced: INCORRECT_ITERATION }, {
   from: from
 });
 
-},{"../internals/array-from":201,"../internals/check-correctness-of-iteration":209,"../internals/export":231}],320:[function(_dereq_,module,exports){
+},{"../internals/array-from":205,"../internals/check-correctness-of-iteration":213,"../internals/export":235}],324:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var $includes = _dereq_('../internals/array-includes').includes;
@@ -23636,7 +24074,7 @@ $({ target: 'Array', proto: true }, {
 // https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
 addToUnscopables('includes');
 
-},{"../internals/add-to-unscopables":197,"../internals/array-includes":202,"../internals/export":231}],321:[function(_dereq_,module,exports){
+},{"../internals/add-to-unscopables":201,"../internals/array-includes":206,"../internals/export":235}],325:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var $indexOf = _dereq_('../internals/array-includes').indexOf;
@@ -23658,7 +24096,7 @@ $({ target: 'Array', proto: true, forced: NEGATIVE_ZERO || SLOPPY_METHOD }, {
   }
 });
 
-},{"../internals/array-includes":202,"../internals/export":231,"../internals/sloppy-array-method":296}],322:[function(_dereq_,module,exports){
+},{"../internals/array-includes":206,"../internals/export":235,"../internals/sloppy-array-method":300}],326:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var isArray = _dereq_('../internals/is-array');
 
@@ -23668,7 +24106,7 @@ $({ target: 'Array', stat: true }, {
   isArray: isArray
 });
 
-},{"../internals/export":231,"../internals/is-array":250}],323:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/is-array":254}],327:[function(_dereq_,module,exports){
 'use strict';
 var toIndexedObject = _dereq_('../internals/to-indexed-object');
 var addToUnscopables = _dereq_('../internals/add-to-unscopables');
@@ -23723,7 +24161,7 @@ addToUnscopables('keys');
 addToUnscopables('values');
 addToUnscopables('entries');
 
-},{"../internals/add-to-unscopables":197,"../internals/define-iterator":224,"../internals/internal-state":248,"../internals/iterators":259,"../internals/to-indexed-object":302}],324:[function(_dereq_,module,exports){
+},{"../internals/add-to-unscopables":201,"../internals/define-iterator":228,"../internals/internal-state":252,"../internals/iterators":263,"../internals/to-indexed-object":306}],328:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var $map = _dereq_('../internals/array-iteration').map;
@@ -23745,7 +24183,7 @@ $({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT || !USES_TO_LENGT
   }
 });
 
-},{"../internals/array-iteration":203,"../internals/array-method-has-species-support":204,"../internals/export":231,"../internals/fails":232}],325:[function(_dereq_,module,exports){
+},{"../internals/array-iteration":207,"../internals/array-method-has-species-support":208,"../internals/export":235,"../internals/fails":236}],329:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var $reduce = _dereq_('../internals/array-reduce').left;
@@ -23759,7 +24197,7 @@ $({ target: 'Array', proto: true, forced: sloppyArrayMethod('reduce') }, {
   }
 });
 
-},{"../internals/array-reduce":205,"../internals/export":231,"../internals/sloppy-array-method":296}],326:[function(_dereq_,module,exports){
+},{"../internals/array-reduce":209,"../internals/export":235,"../internals/sloppy-array-method":300}],330:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var isObject = _dereq_('../internals/is-object');
@@ -23806,7 +24244,7 @@ $({ target: 'Array', proto: true, forced: !arrayMethodHasSpeciesSupport('slice')
   }
 });
 
-},{"../internals/array-method-has-species-support":204,"../internals/create-property":223,"../internals/export":231,"../internals/is-array":250,"../internals/is-object":254,"../internals/to-absolute-index":301,"../internals/to-indexed-object":302,"../internals/to-length":304,"../internals/well-known-symbol":312}],327:[function(_dereq_,module,exports){
+},{"../internals/array-method-has-species-support":208,"../internals/create-property":227,"../internals/export":235,"../internals/is-array":254,"../internals/is-object":258,"../internals/to-absolute-index":305,"../internals/to-indexed-object":306,"../internals/to-length":308,"../internals/well-known-symbol":316}],331:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var aFunction = _dereq_('../internals/a-function');
@@ -23840,7 +24278,7 @@ $({ target: 'Array', proto: true, forced: FORCED }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/export":231,"../internals/fails":232,"../internals/sloppy-array-method":296,"../internals/to-object":305}],328:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/export":235,"../internals/fails":236,"../internals/sloppy-array-method":300,"../internals/to-object":309}],332:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var toAbsoluteIndex = _dereq_('../internals/to-absolute-index');
@@ -23908,7 +24346,7 @@ $({ target: 'Array', proto: true, forced: !arrayMethodHasSpeciesSupport('splice'
   }
 });
 
-},{"../internals/array-method-has-species-support":204,"../internals/array-species-create":206,"../internals/create-property":223,"../internals/export":231,"../internals/to-absolute-index":301,"../internals/to-integer":303,"../internals/to-length":304,"../internals/to-object":305}],329:[function(_dereq_,module,exports){
+},{"../internals/array-method-has-species-support":208,"../internals/array-species-create":210,"../internals/create-property":227,"../internals/export":235,"../internals/to-absolute-index":305,"../internals/to-integer":307,"../internals/to-length":308,"../internals/to-object":309}],333:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var bind = _dereq_('../internals/function-bind');
 
@@ -23918,7 +24356,7 @@ $({ target: 'Function', proto: true }, {
   bind: bind
 });
 
-},{"../internals/export":231,"../internals/function-bind":234}],330:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/function-bind":238}],334:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var getBuiltIn = _dereq_('../internals/get-built-in');
 var fails = _dereq_('../internals/fails');
@@ -23952,7 +24390,7 @@ if ($stringify) {
   });
 }
 
-},{"../internals/export":231,"../internals/fails":232,"../internals/get-built-in":235}],331:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/fails":236,"../internals/get-built-in":239}],335:[function(_dereq_,module,exports){
 var global = _dereq_('../internals/global');
 var setToStringTag = _dereq_('../internals/set-to-string-tag');
 
@@ -23960,7 +24398,7 @@ var setToStringTag = _dereq_('../internals/set-to-string-tag');
 // https://tc39.github.io/ecma262/#sec-json-@@tostringtag
 setToStringTag(global.JSON, 'JSON', true);
 
-},{"../internals/global":239,"../internals/set-to-string-tag":292}],332:[function(_dereq_,module,exports){
+},{"../internals/global":243,"../internals/set-to-string-tag":296}],336:[function(_dereq_,module,exports){
 'use strict';
 var collection = _dereq_('../internals/collection');
 var collectionStrong = _dereq_('../internals/collection-strong');
@@ -23971,14 +24409,14 @@ module.exports = collection('Map', function (init) {
   return function Map() { return init(this, arguments.length ? arguments[0] : undefined); };
 }, collectionStrong);
 
-},{"../internals/collection":217,"../internals/collection-strong":215}],333:[function(_dereq_,module,exports){
+},{"../internals/collection":221,"../internals/collection-strong":219}],337:[function(_dereq_,module,exports){
 var setToStringTag = _dereq_('../internals/set-to-string-tag');
 
 // Math[@@toStringTag] property
 // https://tc39.github.io/ecma262/#sec-math-@@tostringtag
 setToStringTag(Math, 'Math', true);
 
-},{"../internals/set-to-string-tag":292}],334:[function(_dereq_,module,exports){
+},{"../internals/set-to-string-tag":296}],338:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var assign = _dereq_('../internals/object-assign');
 
@@ -23988,7 +24426,7 @@ $({ target: 'Object', stat: true, forced: Object.assign !== assign }, {
   assign: assign
 });
 
-},{"../internals/export":231,"../internals/object-assign":267}],335:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/object-assign":271}],339:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var DESCRIPTORS = _dereq_('../internals/descriptors');
 var create = _dereq_('../internals/object-create');
@@ -23999,7 +24437,7 @@ $({ target: 'Object', stat: true, sham: !DESCRIPTORS }, {
   create: create
 });
 
-},{"../internals/descriptors":226,"../internals/export":231,"../internals/object-create":268}],336:[function(_dereq_,module,exports){
+},{"../internals/descriptors":230,"../internals/export":235,"../internals/object-create":272}],340:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var DESCRIPTORS = _dereq_('../internals/descriptors');
 var defineProperties = _dereq_('../internals/object-define-properties');
@@ -24010,7 +24448,7 @@ $({ target: 'Object', stat: true, forced: !DESCRIPTORS, sham: !DESCRIPTORS }, {
   defineProperties: defineProperties
 });
 
-},{"../internals/descriptors":226,"../internals/export":231,"../internals/object-define-properties":269}],337:[function(_dereq_,module,exports){
+},{"../internals/descriptors":230,"../internals/export":235,"../internals/object-define-properties":273}],341:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var DESCRIPTORS = _dereq_('../internals/descriptors');
 var objectDefinePropertyModile = _dereq_('../internals/object-define-property');
@@ -24021,7 +24459,7 @@ $({ target: 'Object', stat: true, forced: !DESCRIPTORS, sham: !DESCRIPTORS }, {
   defineProperty: objectDefinePropertyModile.f
 });
 
-},{"../internals/descriptors":226,"../internals/export":231,"../internals/object-define-property":270}],338:[function(_dereq_,module,exports){
+},{"../internals/descriptors":230,"../internals/export":235,"../internals/object-define-property":274}],342:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var FREEZING = _dereq_('../internals/freezing');
 var fails = _dereq_('../internals/fails');
@@ -24039,7 +24477,7 @@ $({ target: 'Object', stat: true, forced: FAILS_ON_PRIMITIVES, sham: !FREEZING }
   }
 });
 
-},{"../internals/export":231,"../internals/fails":232,"../internals/freezing":233,"../internals/internal-metadata":247,"../internals/is-object":254}],339:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/fails":236,"../internals/freezing":237,"../internals/internal-metadata":251,"../internals/is-object":258}],343:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var fails = _dereq_('../internals/fails');
 var toIndexedObject = _dereq_('../internals/to-indexed-object');
@@ -24057,7 +24495,7 @@ $({ target: 'Object', stat: true, forced: FORCED, sham: !DESCRIPTORS }, {
   }
 });
 
-},{"../internals/descriptors":226,"../internals/export":231,"../internals/fails":232,"../internals/object-get-own-property-descriptor":271,"../internals/to-indexed-object":302}],340:[function(_dereq_,module,exports){
+},{"../internals/descriptors":230,"../internals/export":235,"../internals/fails":236,"../internals/object-get-own-property-descriptor":275,"../internals/to-indexed-object":306}],344:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var DESCRIPTORS = _dereq_('../internals/descriptors');
 var ownKeys = _dereq_('../internals/own-keys');
@@ -24083,7 +24521,7 @@ $({ target: 'Object', stat: true, sham: !DESCRIPTORS }, {
   }
 });
 
-},{"../internals/create-property":223,"../internals/descriptors":226,"../internals/export":231,"../internals/object-get-own-property-descriptor":271,"../internals/own-keys":281,"../internals/to-indexed-object":302}],341:[function(_dereq_,module,exports){
+},{"../internals/create-property":227,"../internals/descriptors":230,"../internals/export":235,"../internals/object-get-own-property-descriptor":275,"../internals/own-keys":285,"../internals/to-indexed-object":306}],345:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var fails = _dereq_('../internals/fails');
 var toObject = _dereq_('../internals/to-object');
@@ -24101,7 +24539,7 @@ $({ target: 'Object', stat: true, forced: FAILS_ON_PRIMITIVES, sham: !CORRECT_PR
 });
 
 
-},{"../internals/correct-prototype-getter":219,"../internals/export":231,"../internals/fails":232,"../internals/object-get-prototype-of":275,"../internals/to-object":305}],342:[function(_dereq_,module,exports){
+},{"../internals/correct-prototype-getter":223,"../internals/export":235,"../internals/fails":236,"../internals/object-get-prototype-of":279,"../internals/to-object":309}],346:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var toObject = _dereq_('../internals/to-object');
 var nativeKeys = _dereq_('../internals/object-keys');
@@ -24117,7 +24555,7 @@ $({ target: 'Object', stat: true, forced: FAILS_ON_PRIMITIVES }, {
   }
 });
 
-},{"../internals/export":231,"../internals/fails":232,"../internals/object-keys":277,"../internals/to-object":305}],343:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/fails":236,"../internals/object-keys":281,"../internals/to-object":309}],347:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var setPrototypeOf = _dereq_('../internals/object-set-prototype-of');
 
@@ -24127,10 +24565,10 @@ $({ target: 'Object', stat: true }, {
   setPrototypeOf: setPrototypeOf
 });
 
-},{"../internals/export":231,"../internals/object-set-prototype-of":279}],344:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/object-set-prototype-of":283}],348:[function(_dereq_,module,exports){
 // empty
 
-},{}],345:[function(_dereq_,module,exports){
+},{}],349:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var parseIntImplementation = _dereq_('../internals/parse-int');
 
@@ -24140,7 +24578,7 @@ $({ global: true, forced: parseInt != parseIntImplementation }, {
   parseInt: parseIntImplementation
 });
 
-},{"../internals/export":231,"../internals/parse-int":282}],346:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/parse-int":286}],350:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var aFunction = _dereq_('../internals/a-function');
@@ -24185,7 +24623,7 @@ $({ target: 'Promise', stat: true }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/export":231,"../internals/iterate":257,"../internals/new-promise-capability":265,"../internals/perform":284}],347:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/export":235,"../internals/iterate":261,"../internals/new-promise-capability":269,"../internals/perform":288}],351:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -24223,7 +24661,7 @@ if (!IS_PURE && typeof NativePromise == 'function' && !NativePromise.prototype['
   redefine(NativePromise.prototype, 'finally', getBuiltIn('Promise').prototype['finally']);
 }
 
-},{"../internals/export":231,"../internals/fails":232,"../internals/get-built-in":235,"../internals/is-pure":255,"../internals/native-promise-constructor":262,"../internals/promise-resolve":285,"../internals/redefine":287,"../internals/species-constructor":297}],348:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/fails":236,"../internals/get-built-in":239,"../internals/is-pure":259,"../internals/native-promise-constructor":266,"../internals/promise-resolve":289,"../internals/redefine":291,"../internals/species-constructor":301}],352:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -24604,7 +25042,7 @@ $({ target: PROMISE, stat: true, forced: INCORRECT_ITERATION }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/an-instance":198,"../internals/check-correctness-of-iteration":209,"../internals/classof-raw":210,"../internals/export":231,"../internals/get-built-in":235,"../internals/global":239,"../internals/host-report-errors":242,"../internals/inspect-source":246,"../internals/internal-state":248,"../internals/is-forced":251,"../internals/is-object":254,"../internals/is-pure":255,"../internals/iterate":257,"../internals/microtask":261,"../internals/native-promise-constructor":262,"../internals/new-promise-capability":265,"../internals/perform":284,"../internals/promise-resolve":285,"../internals/redefine":287,"../internals/redefine-all":286,"../internals/set-species":291,"../internals/set-to-string-tag":292,"../internals/species-constructor":297,"../internals/task":300,"../internals/v8-version":311,"../internals/well-known-symbol":312}],349:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/an-instance":202,"../internals/check-correctness-of-iteration":213,"../internals/classof-raw":214,"../internals/export":235,"../internals/get-built-in":239,"../internals/global":243,"../internals/host-report-errors":246,"../internals/inspect-source":250,"../internals/internal-state":252,"../internals/is-forced":255,"../internals/is-object":258,"../internals/is-pure":259,"../internals/iterate":261,"../internals/microtask":265,"../internals/native-promise-constructor":266,"../internals/new-promise-capability":269,"../internals/perform":288,"../internals/promise-resolve":289,"../internals/redefine":291,"../internals/redefine-all":290,"../internals/set-species":295,"../internals/set-to-string-tag":296,"../internals/species-constructor":301,"../internals/task":304,"../internals/v8-version":315,"../internals/well-known-symbol":316}],353:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var getBuiltIn = _dereq_('../internals/get-built-in');
 var aFunction = _dereq_('../internals/a-function');
@@ -24657,7 +25095,7 @@ $({ target: 'Reflect', stat: true, forced: FORCED, sham: FORCED }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/an-object":199,"../internals/export":231,"../internals/fails":232,"../internals/function-bind":234,"../internals/get-built-in":235,"../internals/is-object":254,"../internals/object-create":268}],350:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/an-object":203,"../internals/export":235,"../internals/fails":236,"../internals/function-bind":238,"../internals/get-built-in":239,"../internals/is-object":258,"../internals/object-create":272}],354:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var isObject = _dereq_('../internals/is-object');
 var anObject = _dereq_('../internals/an-object');
@@ -24683,7 +25121,7 @@ $({ target: 'Reflect', stat: true }, {
   get: get
 });
 
-},{"../internals/an-object":199,"../internals/export":231,"../internals/has":240,"../internals/is-object":254,"../internals/object-get-own-property-descriptor":271,"../internals/object-get-prototype-of":275}],351:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/export":235,"../internals/has":244,"../internals/is-object":258,"../internals/object-get-own-property-descriptor":275,"../internals/object-get-prototype-of":279}],355:[function(_dereq_,module,exports){
 'use strict';
 var collection = _dereq_('../internals/collection');
 var collectionStrong = _dereq_('../internals/collection-strong');
@@ -24694,7 +25132,7 @@ module.exports = collection('Set', function (init) {
   return function Set() { return init(this, arguments.length ? arguments[0] : undefined); };
 }, collectionStrong);
 
-},{"../internals/collection":217,"../internals/collection-strong":215}],352:[function(_dereq_,module,exports){
+},{"../internals/collection":221,"../internals/collection-strong":219}],356:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var notARegExp = _dereq_('../internals/not-a-regexp');
@@ -24710,7 +25148,7 @@ $({ target: 'String', proto: true, forced: !correctIsRegExpLogic('includes') }, 
   }
 });
 
-},{"../internals/correct-is-regexp-logic":218,"../internals/export":231,"../internals/not-a-regexp":266,"../internals/require-object-coercible":288}],353:[function(_dereq_,module,exports){
+},{"../internals/correct-is-regexp-logic":222,"../internals/export":235,"../internals/not-a-regexp":270,"../internals/require-object-coercible":292}],357:[function(_dereq_,module,exports){
 'use strict';
 var charAt = _dereq_('../internals/string-multibyte').charAt;
 var InternalStateModule = _dereq_('../internals/internal-state');
@@ -24741,7 +25179,7 @@ defineIterator(String, 'String', function (iterated) {
   return { value: point, done: false };
 });
 
-},{"../internals/define-iterator":224,"../internals/internal-state":248,"../internals/string-multibyte":298}],354:[function(_dereq_,module,exports){
+},{"../internals/define-iterator":228,"../internals/internal-state":252,"../internals/string-multibyte":302}],358:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var getOwnPropertyDescriptor = _dereq_('../internals/object-get-own-property-descriptor').f;
@@ -24775,37 +25213,37 @@ $({ target: 'String', proto: true, forced: !MDN_POLYFILL_BUG && !CORRECT_IS_REGE
   }
 });
 
-},{"../internals/correct-is-regexp-logic":218,"../internals/export":231,"../internals/is-pure":255,"../internals/not-a-regexp":266,"../internals/object-get-own-property-descriptor":271,"../internals/require-object-coercible":288,"../internals/to-length":304}],355:[function(_dereq_,module,exports){
+},{"../internals/correct-is-regexp-logic":222,"../internals/export":235,"../internals/is-pure":259,"../internals/not-a-regexp":270,"../internals/object-get-own-property-descriptor":275,"../internals/require-object-coercible":292,"../internals/to-length":308}],359:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.asyncIterator` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.asynciterator
 defineWellKnownSymbol('asyncIterator');
 
-},{"../internals/define-well-known-symbol":225}],356:[function(_dereq_,module,exports){
-arguments[4][344][0].apply(exports,arguments)
-},{"dup":344}],357:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],360:[function(_dereq_,module,exports){
+arguments[4][348][0].apply(exports,arguments)
+},{"dup":348}],361:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.hasInstance` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.hasinstance
 defineWellKnownSymbol('hasInstance');
 
-},{"../internals/define-well-known-symbol":225}],358:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],362:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.isConcatSpreadable` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.isconcatspreadable
 defineWellKnownSymbol('isConcatSpreadable');
 
-},{"../internals/define-well-known-symbol":225}],359:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],363:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.iterator` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.iterator
 defineWellKnownSymbol('iterator');
 
-},{"../internals/define-well-known-symbol":225}],360:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],364:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var global = _dereq_('../internals/global');
@@ -25116,69 +25554,69 @@ setToStringTag($Symbol, SYMBOL);
 
 hiddenKeys[HIDDEN] = true;
 
-},{"../internals/an-object":199,"../internals/array-iteration":203,"../internals/create-non-enumerable-property":221,"../internals/create-property-descriptor":222,"../internals/define-well-known-symbol":225,"../internals/descriptors":226,"../internals/export":231,"../internals/fails":232,"../internals/get-built-in":235,"../internals/global":239,"../internals/has":240,"../internals/hidden-keys":241,"../internals/internal-state":248,"../internals/is-array":250,"../internals/is-object":254,"../internals/is-pure":255,"../internals/native-symbol":263,"../internals/object-create":268,"../internals/object-define-property":270,"../internals/object-get-own-property-descriptor":271,"../internals/object-get-own-property-names":273,"../internals/object-get-own-property-names-external":272,"../internals/object-get-own-property-symbols":274,"../internals/object-keys":277,"../internals/object-property-is-enumerable":278,"../internals/redefine":287,"../internals/set-to-string-tag":292,"../internals/shared":295,"../internals/shared-key":293,"../internals/to-indexed-object":302,"../internals/to-object":305,"../internals/to-primitive":306,"../internals/uid":308,"../internals/use-symbol-as-uid":309,"../internals/well-known-symbol":312,"../internals/wrapped-well-known-symbol":314}],361:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/array-iteration":207,"../internals/create-non-enumerable-property":225,"../internals/create-property-descriptor":226,"../internals/define-well-known-symbol":229,"../internals/descriptors":230,"../internals/export":235,"../internals/fails":236,"../internals/get-built-in":239,"../internals/global":243,"../internals/has":244,"../internals/hidden-keys":245,"../internals/internal-state":252,"../internals/is-array":254,"../internals/is-object":258,"../internals/is-pure":259,"../internals/native-symbol":267,"../internals/object-create":272,"../internals/object-define-property":274,"../internals/object-get-own-property-descriptor":275,"../internals/object-get-own-property-names":277,"../internals/object-get-own-property-names-external":276,"../internals/object-get-own-property-symbols":278,"../internals/object-keys":281,"../internals/object-property-is-enumerable":282,"../internals/redefine":291,"../internals/set-to-string-tag":296,"../internals/shared":299,"../internals/shared-key":297,"../internals/to-indexed-object":306,"../internals/to-object":309,"../internals/to-primitive":310,"../internals/uid":312,"../internals/use-symbol-as-uid":313,"../internals/well-known-symbol":316,"../internals/wrapped-well-known-symbol":318}],365:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.matchAll` well-known symbol
 defineWellKnownSymbol('matchAll');
 
-},{"../internals/define-well-known-symbol":225}],362:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],366:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.match` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.match
 defineWellKnownSymbol('match');
 
-},{"../internals/define-well-known-symbol":225}],363:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],367:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.replace` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.replace
 defineWellKnownSymbol('replace');
 
-},{"../internals/define-well-known-symbol":225}],364:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],368:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.search` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.search
 defineWellKnownSymbol('search');
 
-},{"../internals/define-well-known-symbol":225}],365:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],369:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.species` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.species
 defineWellKnownSymbol('species');
 
-},{"../internals/define-well-known-symbol":225}],366:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],370:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.split` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.split
 defineWellKnownSymbol('split');
 
-},{"../internals/define-well-known-symbol":225}],367:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],371:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.toPrimitive` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.toprimitive
 defineWellKnownSymbol('toPrimitive');
 
-},{"../internals/define-well-known-symbol":225}],368:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],372:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.toStringTag` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.tostringtag
 defineWellKnownSymbol('toStringTag');
 
-},{"../internals/define-well-known-symbol":225}],369:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],373:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.unscopables` well-known symbol
 // https://tc39.github.io/ecma262/#sec-symbol.unscopables
 defineWellKnownSymbol('unscopables');
 
-},{"../internals/define-well-known-symbol":225}],370:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],374:[function(_dereq_,module,exports){
 'use strict';
 var global = _dereq_('../internals/global');
 var redefineAll = _dereq_('../internals/redefine-all');
@@ -25247,7 +25685,54 @@ if (NATIVE_WEAK_MAP && IS_IE11) {
   });
 }
 
-},{"../internals/collection":217,"../internals/collection-weak":216,"../internals/global":239,"../internals/internal-metadata":247,"../internals/internal-state":248,"../internals/is-object":254,"../internals/native-weak-map":264,"../internals/redefine-all":286}],371:[function(_dereq_,module,exports){
+},{"../internals/collection":221,"../internals/collection-weak":220,"../internals/global":243,"../internals/internal-metadata":251,"../internals/internal-state":252,"../internals/is-object":258,"../internals/native-weak-map":268,"../internals/redefine-all":290}],375:[function(_dereq_,module,exports){
+'use strict';
+var $ = _dereq_('../internals/export');
+var DESCRIPTORS = _dereq_('../internals/descriptors');
+var getPrototypeOf = _dereq_('../internals/object-get-prototype-of');
+var setPrototypeOf = _dereq_('../internals/object-set-prototype-of');
+var create = _dereq_('../internals/object-create');
+var defineProperty = _dereq_('../internals/object-define-property');
+var createPropertyDescriptor = _dereq_('../internals/create-property-descriptor');
+var iterate = _dereq_('../internals/iterate');
+var createNonEnumerableProperty = _dereq_('../internals/create-non-enumerable-property');
+var InternalStateModule = _dereq_('../internals/internal-state');
+
+var setInternalState = InternalStateModule.set;
+var getInternalAggregateErrorState = InternalStateModule.getterFor('AggregateError');
+
+var $AggregateError = function AggregateError(errors, message) {
+  var that = this;
+  if (!(that instanceof $AggregateError)) return new $AggregateError(errors, message);
+  if (setPrototypeOf) {
+    that = setPrototypeOf(new Error(message), getPrototypeOf(that));
+  }
+  var errorsArray = [];
+  iterate(errors, errorsArray.push, errorsArray);
+  if (DESCRIPTORS) setInternalState(that, { errors: errorsArray, type: 'AggregateError' });
+  else that.errors = errorsArray;
+  if (message !== undefined) createNonEnumerableProperty(that, 'message', String(message));
+  return that;
+};
+
+$AggregateError.prototype = create(Error.prototype, {
+  constructor: createPropertyDescriptor(5, $AggregateError),
+  message: createPropertyDescriptor(5, ''),
+  name: createPropertyDescriptor(5, 'AggregateError')
+});
+
+if (DESCRIPTORS) defineProperty.f($AggregateError.prototype, 'errors', {
+  get: function () {
+    return getInternalAggregateErrorState(this).errors;
+  },
+  configurable: true
+});
+
+$({ global: true }, {
+  AggregateError: $AggregateError
+});
+
+},{"../internals/create-non-enumerable-property":225,"../internals/create-property-descriptor":226,"../internals/descriptors":230,"../internals/export":235,"../internals/internal-state":252,"../internals/iterate":261,"../internals/object-create":272,"../internals/object-define-property":274,"../internals/object-get-prototype-of":279,"../internals/object-set-prototype-of":283}],376:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25261,7 +25746,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/collection-delete-all":212,"../internals/export":231,"../internals/is-pure":255}],372:[function(_dereq_,module,exports){
+},{"../internals/collection-delete-all":216,"../internals/export":235,"../internals/is-pure":259}],377:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25283,7 +25768,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/an-object":199,"../internals/bind-context":207,"../internals/export":231,"../internals/get-map-iterator":238,"../internals/is-pure":255,"../internals/iterate":257}],373:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/bind-context":211,"../internals/export":235,"../internals/get-map-iterator":242,"../internals/is-pure":259,"../internals/iterate":261}],378:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25311,7 +25796,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/an-object":199,"../internals/bind-context":207,"../internals/export":231,"../internals/get-built-in":235,"../internals/get-map-iterator":238,"../internals/is-pure":255,"../internals/iterate":257,"../internals/species-constructor":297}],374:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/an-object":203,"../internals/bind-context":211,"../internals/export":235,"../internals/get-built-in":239,"../internals/get-map-iterator":242,"../internals/is-pure":259,"../internals/iterate":261,"../internals/species-constructor":301}],379:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25333,7 +25818,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/an-object":199,"../internals/bind-context":207,"../internals/export":231,"../internals/get-map-iterator":238,"../internals/is-pure":255,"../internals/iterate":257}],375:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/bind-context":211,"../internals/export":235,"../internals/get-map-iterator":242,"../internals/is-pure":259,"../internals/iterate":261}],380:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25355,7 +25840,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/an-object":199,"../internals/bind-context":207,"../internals/export":231,"../internals/get-map-iterator":238,"../internals/is-pure":255,"../internals/iterate":257}],376:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/bind-context":211,"../internals/export":235,"../internals/get-map-iterator":242,"../internals/is-pure":259,"../internals/iterate":261}],381:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var from = _dereq_('../internals/collection-from');
 
@@ -25365,7 +25850,7 @@ $({ target: 'Map', stat: true }, {
   from: from
 });
 
-},{"../internals/collection-from":213,"../internals/export":231}],377:[function(_dereq_,module,exports){
+},{"../internals/collection-from":217,"../internals/export":235}],382:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var iterate = _dereq_('../internals/iterate');
@@ -25389,7 +25874,7 @@ $({ target: 'Map', stat: true }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/export":231,"../internals/iterate":257}],378:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/export":235,"../internals/iterate":261}],383:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25408,7 +25893,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/an-object":199,"../internals/export":231,"../internals/get-map-iterator":238,"../internals/is-pure":255,"../internals/iterate":257,"../internals/same-value-zero":289}],379:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/export":235,"../internals/get-map-iterator":242,"../internals/is-pure":259,"../internals/iterate":261,"../internals/same-value-zero":293}],384:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var iterate = _dereq_('../internals/iterate');
@@ -25428,7 +25913,7 @@ $({ target: 'Map', stat: true }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/export":231,"../internals/iterate":257}],380:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/export":235,"../internals/iterate":261}],385:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25446,7 +25931,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/an-object":199,"../internals/export":231,"../internals/get-map-iterator":238,"../internals/is-pure":255,"../internals/iterate":257}],381:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/export":235,"../internals/get-map-iterator":242,"../internals/is-pure":259,"../internals/iterate":261}],386:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25474,7 +25959,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/an-object":199,"../internals/bind-context":207,"../internals/export":231,"../internals/get-built-in":235,"../internals/get-map-iterator":238,"../internals/is-pure":255,"../internals/iterate":257,"../internals/species-constructor":297}],382:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/an-object":203,"../internals/bind-context":211,"../internals/export":235,"../internals/get-built-in":239,"../internals/get-map-iterator":242,"../internals/is-pure":259,"../internals/iterate":261,"../internals/species-constructor":301}],387:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25502,7 +25987,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/an-object":199,"../internals/bind-context":207,"../internals/export":231,"../internals/get-built-in":235,"../internals/get-map-iterator":238,"../internals/is-pure":255,"../internals/iterate":257,"../internals/species-constructor":297}],383:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/an-object":203,"../internals/bind-context":211,"../internals/export":235,"../internals/get-built-in":239,"../internals/get-map-iterator":242,"../internals/is-pure":259,"../internals/iterate":261,"../internals/species-constructor":301}],388:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25525,7 +26010,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/an-object":199,"../internals/export":231,"../internals/is-pure":255,"../internals/iterate":257}],384:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/an-object":203,"../internals/export":235,"../internals/is-pure":259,"../internals/iterate":261}],389:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var of = _dereq_('../internals/collection-of');
 
@@ -25535,7 +26020,7 @@ $({ target: 'Map', stat: true }, {
   of: of
 });
 
-},{"../internals/collection-of":214,"../internals/export":231}],385:[function(_dereq_,module,exports){
+},{"../internals/collection-of":218,"../internals/export":235}],390:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25566,7 +26051,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/an-object":199,"../internals/export":231,"../internals/get-map-iterator":238,"../internals/is-pure":255,"../internals/iterate":257}],386:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/an-object":203,"../internals/export":235,"../internals/get-map-iterator":242,"../internals/is-pure":259,"../internals/iterate":261}],391:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25588,7 +26073,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/an-object":199,"../internals/bind-context":207,"../internals/export":231,"../internals/get-map-iterator":238,"../internals/is-pure":255,"../internals/iterate":257}],387:[function(_dereq_,module,exports){
+},{"../internals/an-object":203,"../internals/bind-context":211,"../internals/export":235,"../internals/get-map-iterator":242,"../internals/is-pure":259,"../internals/iterate":261}],392:[function(_dereq_,module,exports){
 'use strict';
 // TODO: remove from `core-js@4`
 var $ = _dereq_('../internals/export');
@@ -25601,7 +26086,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   updateOrInsert: $upsert
 });
 
-},{"../internals/export":231,"../internals/is-pure":255,"../internals/map-upsert":260}],388:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/is-pure":259,"../internals/map-upsert":264}],393:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25625,7 +26110,7 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/a-function":195,"../internals/an-object":199,"../internals/export":231,"../internals/is-pure":255}],389:[function(_dereq_,module,exports){
+},{"../internals/a-function":199,"../internals/an-object":203,"../internals/export":235,"../internals/is-pure":259}],394:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25637,41 +26122,110 @@ $({ target: 'Map', proto: true, real: true, forced: IS_PURE }, {
   upsert: $upsert
 });
 
-},{"../internals/export":231,"../internals/is-pure":255,"../internals/map-upsert":260}],390:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/is-pure":259,"../internals/map-upsert":264}],395:[function(_dereq_,module,exports){
+// TODO: Remove from `core-js@4`
+_dereq_('./es.promise.all-settled.js');
+
+},{"./es.promise.all-settled.js":350}],396:[function(_dereq_,module,exports){
+'use strict';
+var $ = _dereq_('../internals/export');
+var aFunction = _dereq_('../internals/a-function');
+var getBuiltIn = _dereq_('../internals/get-built-in');
+var newPromiseCapabilityModule = _dereq_('../internals/new-promise-capability');
+var perform = _dereq_('../internals/perform');
+var iterate = _dereq_('../internals/iterate');
+
+var PROMISE_ANY_ERROR = 'No one promise resolved';
+
+// `Promise.any` method
+// https://github.com/tc39/proposal-promise-any
+$({ target: 'Promise', stat: true }, {
+  any: function any(iterable) {
+    var C = this;
+    var capability = newPromiseCapabilityModule.f(C);
+    var resolve = capability.resolve;
+    var reject = capability.reject;
+    var result = perform(function () {
+      var promiseResolve = aFunction(C.resolve);
+      var errors = [];
+      var counter = 0;
+      var remaining = 1;
+      var alreadyResolved = false;
+      iterate(iterable, function (promise) {
+        var index = counter++;
+        var alreadyRejected = false;
+        errors.push(undefined);
+        remaining++;
+        promiseResolve.call(C, promise).then(function (value) {
+          if (alreadyRejected || alreadyResolved) return;
+          alreadyResolved = true;
+          resolve(value);
+        }, function (e) {
+          if (alreadyRejected || alreadyResolved) return;
+          alreadyRejected = true;
+          errors[index] = e;
+          --remaining || reject(new (getBuiltIn('AggregateError'))(errors, PROMISE_ANY_ERROR));
+        });
+      });
+      --remaining || reject(new (getBuiltIn('AggregateError'))(errors, PROMISE_ANY_ERROR));
+    });
+    if (result.error) reject(result.value);
+    return capability.promise;
+  }
+});
+
+},{"../internals/a-function":199,"../internals/export":235,"../internals/get-built-in":239,"../internals/iterate":261,"../internals/new-promise-capability":269,"../internals/perform":288}],397:[function(_dereq_,module,exports){
+'use strict';
+var $ = _dereq_('../internals/export');
+var newPromiseCapabilityModule = _dereq_('../internals/new-promise-capability');
+var perform = _dereq_('../internals/perform');
+
+// `Promise.try` method
+// https://github.com/tc39/proposal-promise-try
+$({ target: 'Promise', stat: true }, {
+  'try': function (callbackfn) {
+    var promiseCapability = newPromiseCapabilityModule.f(this);
+    var result = perform(callbackfn);
+    (result.error ? promiseCapability.reject : promiseCapability.resolve)(result.value);
+    return promiseCapability.promise;
+  }
+});
+
+},{"../internals/export":235,"../internals/new-promise-capability":269,"../internals/perform":288}],398:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.asyncDispose` well-known symbol
 // https://github.com/tc39/proposal-using-statement
 defineWellKnownSymbol('asyncDispose');
 
-},{"../internals/define-well-known-symbol":225}],391:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],399:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.dispose` well-known symbol
 // https://github.com/tc39/proposal-using-statement
 defineWellKnownSymbol('dispose');
 
-},{"../internals/define-well-known-symbol":225}],392:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],400:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.observable` well-known symbol
 // https://github.com/tc39/proposal-observable
 defineWellKnownSymbol('observable');
 
-},{"../internals/define-well-known-symbol":225}],393:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],401:[function(_dereq_,module,exports){
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 // `Symbol.patternMatch` well-known symbol
 // https://github.com/tc39/proposal-pattern-matching
 defineWellKnownSymbol('patternMatch');
 
-},{"../internals/define-well-known-symbol":225}],394:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],402:[function(_dereq_,module,exports){
 // TODO: remove from `core-js@4`
 var defineWellKnownSymbol = _dereq_('../internals/define-well-known-symbol');
 
 defineWellKnownSymbol('replaceAll');
 
-},{"../internals/define-well-known-symbol":225}],395:[function(_dereq_,module,exports){
+},{"../internals/define-well-known-symbol":229}],403:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25685,7 +26239,7 @@ $({ target: 'WeakMap', proto: true, real: true, forced: IS_PURE }, {
   }
 });
 
-},{"../internals/collection-delete-all":212,"../internals/export":231,"../internals/is-pure":255}],396:[function(_dereq_,module,exports){
+},{"../internals/collection-delete-all":216,"../internals/export":235,"../internals/is-pure":259}],404:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var from = _dereq_('../internals/collection-from');
 
@@ -25695,7 +26249,7 @@ $({ target: 'WeakMap', stat: true }, {
   from: from
 });
 
-},{"../internals/collection-from":213,"../internals/export":231}],397:[function(_dereq_,module,exports){
+},{"../internals/collection-from":217,"../internals/export":235}],405:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var of = _dereq_('../internals/collection-of');
 
@@ -25705,7 +26259,7 @@ $({ target: 'WeakMap', stat: true }, {
   of: of
 });
 
-},{"../internals/collection-of":214,"../internals/export":231}],398:[function(_dereq_,module,exports){
+},{"../internals/collection-of":218,"../internals/export":235}],406:[function(_dereq_,module,exports){
 'use strict';
 var $ = _dereq_('../internals/export');
 var IS_PURE = _dereq_('../internals/is-pure');
@@ -25717,7 +26271,7 @@ $({ target: 'WeakMap', proto: true, real: true, forced: IS_PURE }, {
   upsert: $upsert
 });
 
-},{"../internals/export":231,"../internals/is-pure":255,"../internals/map-upsert":260}],399:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/is-pure":259,"../internals/map-upsert":264}],407:[function(_dereq_,module,exports){
 _dereq_('./es.array.iterator');
 var DOMIterables = _dereq_('../internals/dom-iterables');
 var global = _dereq_('../internals/global');
@@ -25736,7 +26290,7 @@ for (var COLLECTION_NAME in DOMIterables) {
   Iterators[COLLECTION_NAME] = Iterators.Array;
 }
 
-},{"../internals/create-non-enumerable-property":221,"../internals/dom-iterables":228,"../internals/global":239,"../internals/iterators":259,"../internals/well-known-symbol":312,"./es.array.iterator":323}],400:[function(_dereq_,module,exports){
+},{"../internals/create-non-enumerable-property":225,"../internals/dom-iterables":232,"../internals/global":243,"../internals/iterators":263,"../internals/well-known-symbol":316,"./es.array.iterator":327}],408:[function(_dereq_,module,exports){
 var $ = _dereq_('../internals/export');
 var global = _dereq_('../internals/global');
 var userAgent = _dereq_('../internals/user-agent');
@@ -25766,43 +26320,43 @@ $({ global: true, bind: true, forced: MSIE }, {
   setInterval: wrap(global.setInterval)
 });
 
-},{"../internals/export":231,"../internals/global":239,"../internals/user-agent":310}],401:[function(_dereq_,module,exports){
-arguments[4][178][0].apply(exports,arguments)
-},{"../../es/array/from":127,"dup":178}],402:[function(_dereq_,module,exports){
-arguments[4][179][0].apply(exports,arguments)
-},{"../../es/array/is-array":128,"dup":179}],403:[function(_dereq_,module,exports){
+},{"../internals/export":235,"../internals/global":243,"../internals/user-agent":314}],409:[function(_dereq_,module,exports){
+arguments[4][181][0].apply(exports,arguments)
+},{"../../es/array/from":130,"dup":181}],410:[function(_dereq_,module,exports){
+arguments[4][182][0].apply(exports,arguments)
+},{"../../es/array/is-array":131,"dup":182}],411:[function(_dereq_,module,exports){
 var parent = _dereq_('../../../es/array/virtual/for-each');
 
 module.exports = parent;
 
-},{"../../../es/array/virtual/for-each":132}],404:[function(_dereq_,module,exports){
+},{"../../../es/array/virtual/for-each":135}],412:[function(_dereq_,module,exports){
 var parent = _dereq_('../../../es/array/virtual/keys');
 
 module.exports = parent;
 
-},{"../../../es/array/virtual/keys":135}],405:[function(_dereq_,module,exports){
+},{"../../../es/array/virtual/keys":138}],413:[function(_dereq_,module,exports){
 var parent = _dereq_('../../../es/array/virtual/values');
 
 module.exports = parent;
 
-},{"../../../es/array/virtual/values":141}],406:[function(_dereq_,module,exports){
-arguments[4][181][0].apply(exports,arguments)
-},{"../../es/instance/bind":143,"dup":181}],407:[function(_dereq_,module,exports){
+},{"../../../es/array/virtual/values":144}],414:[function(_dereq_,module,exports){
+arguments[4][184][0].apply(exports,arguments)
+},{"../../es/instance/bind":146,"dup":184}],415:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/concat');
 
 module.exports = parent;
 
-},{"../../es/instance/concat":144}],408:[function(_dereq_,module,exports){
+},{"../../es/instance/concat":147}],416:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/filter');
 
 module.exports = parent;
 
-},{"../../es/instance/filter":145}],409:[function(_dereq_,module,exports){
+},{"../../es/instance/filter":148}],417:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/find');
 
 module.exports = parent;
 
-},{"../../es/instance/find":146}],410:[function(_dereq_,module,exports){
+},{"../../es/instance/find":149}],418:[function(_dereq_,module,exports){
 _dereq_('../../modules/web.dom-collections.iterator');
 var forEach = _dereq_('../array/virtual/for-each');
 var classof = _dereq_('../../internals/classof');
@@ -25820,14 +26374,14 @@ module.exports = function (it) {
     || DOMIterables.hasOwnProperty(classof(it)) ? forEach : own;
 };
 
-},{"../../internals/classof":211,"../../modules/web.dom-collections.iterator":399,"../array/virtual/for-each":403}],411:[function(_dereq_,module,exports){
+},{"../../internals/classof":215,"../../modules/web.dom-collections.iterator":407,"../array/virtual/for-each":411}],419:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/includes');
 
 module.exports = parent;
 
-},{"../../es/instance/includes":147}],412:[function(_dereq_,module,exports){
-arguments[4][182][0].apply(exports,arguments)
-},{"../../es/instance/index-of":148,"dup":182}],413:[function(_dereq_,module,exports){
+},{"../../es/instance/includes":150}],420:[function(_dereq_,module,exports){
+arguments[4][185][0].apply(exports,arguments)
+},{"../../es/instance/index-of":151,"dup":185}],421:[function(_dereq_,module,exports){
 _dereq_('../../modules/web.dom-collections.iterator');
 var keys = _dereq_('../array/virtual/keys');
 var classof = _dereq_('../../internals/classof');
@@ -25845,37 +26399,37 @@ module.exports = function (it) {
     || DOMIterables.hasOwnProperty(classof(it)) ? keys : own;
 };
 
-},{"../../internals/classof":211,"../../modules/web.dom-collections.iterator":399,"../array/virtual/keys":404}],414:[function(_dereq_,module,exports){
+},{"../../internals/classof":215,"../../modules/web.dom-collections.iterator":407,"../array/virtual/keys":412}],422:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/map');
 
 module.exports = parent;
 
-},{"../../es/instance/map":149}],415:[function(_dereq_,module,exports){
+},{"../../es/instance/map":152}],423:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/reduce');
 
 module.exports = parent;
 
-},{"../../es/instance/reduce":150}],416:[function(_dereq_,module,exports){
+},{"../../es/instance/reduce":153}],424:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/slice');
 
 module.exports = parent;
 
-},{"../../es/instance/slice":151}],417:[function(_dereq_,module,exports){
+},{"../../es/instance/slice":154}],425:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/sort');
 
 module.exports = parent;
 
-},{"../../es/instance/sort":152}],418:[function(_dereq_,module,exports){
+},{"../../es/instance/sort":155}],426:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/splice');
 
 module.exports = parent;
 
-},{"../../es/instance/splice":153}],419:[function(_dereq_,module,exports){
+},{"../../es/instance/splice":156}],427:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/instance/starts-with');
 
 module.exports = parent;
 
-},{"../../es/instance/starts-with":154}],420:[function(_dereq_,module,exports){
+},{"../../es/instance/starts-with":157}],428:[function(_dereq_,module,exports){
 _dereq_('../../modules/web.dom-collections.iterator');
 var values = _dereq_('../array/virtual/values');
 var classof = _dereq_('../../internals/classof');
@@ -25893,79 +26447,2806 @@ module.exports = function (it) {
     || DOMIterables.hasOwnProperty(classof(it)) ? values : own;
 };
 
-},{"../../internals/classof":211,"../../modules/web.dom-collections.iterator":399,"../array/virtual/values":405}],421:[function(_dereq_,module,exports){
+},{"../../internals/classof":215,"../../modules/web.dom-collections.iterator":407,"../array/virtual/values":413}],429:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/json/stringify');
 
 module.exports = parent;
 
-},{"../../es/json/stringify":155}],422:[function(_dereq_,module,exports){
+},{"../../es/json/stringify":158}],430:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/map');
 
 module.exports = parent;
 
-},{"../../es/map":156}],423:[function(_dereq_,module,exports){
+},{"../../es/map":159}],431:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/assign');
 
 module.exports = parent;
 
-},{"../../es/object/assign":157}],424:[function(_dereq_,module,exports){
-arguments[4][185][0].apply(exports,arguments)
-},{"../../es/object/create":158,"dup":185}],425:[function(_dereq_,module,exports){
+},{"../../es/object/assign":160}],432:[function(_dereq_,module,exports){
+arguments[4][188][0].apply(exports,arguments)
+},{"../../es/object/create":161,"dup":188}],433:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/define-properties');
 
 module.exports = parent;
 
-},{"../../es/object/define-properties":159}],426:[function(_dereq_,module,exports){
-arguments[4][186][0].apply(exports,arguments)
-},{"../../es/object/define-property":160,"dup":186}],427:[function(_dereq_,module,exports){
+},{"../../es/object/define-properties":162}],434:[function(_dereq_,module,exports){
+arguments[4][189][0].apply(exports,arguments)
+},{"../../es/object/define-property":163,"dup":189}],435:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/freeze');
 
 module.exports = parent;
 
-},{"../../es/object/freeze":161}],428:[function(_dereq_,module,exports){
-arguments[4][187][0].apply(exports,arguments)
-},{"../../es/object/get-own-property-descriptor":162,"dup":187}],429:[function(_dereq_,module,exports){
+},{"../../es/object/freeze":164}],436:[function(_dereq_,module,exports){
+arguments[4][190][0].apply(exports,arguments)
+},{"../../es/object/get-own-property-descriptor":165,"dup":190}],437:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/get-own-property-descriptors');
 
 module.exports = parent;
 
-},{"../../es/object/get-own-property-descriptors":163}],430:[function(_dereq_,module,exports){
+},{"../../es/object/get-own-property-descriptors":166}],438:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/get-own-property-symbols');
 
 module.exports = parent;
 
-},{"../../es/object/get-own-property-symbols":164}],431:[function(_dereq_,module,exports){
+},{"../../es/object/get-own-property-symbols":167}],439:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/object/keys');
 
 module.exports = parent;
 
-},{"../../es/object/keys":166}],432:[function(_dereq_,module,exports){
+},{"../../es/object/keys":169}],440:[function(_dereq_,module,exports){
 var parent = _dereq_('../es/parse-int');
 
 module.exports = parent;
 
-},{"../es/parse-int":168}],433:[function(_dereq_,module,exports){
+},{"../es/parse-int":171}],441:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/promise');
 
 module.exports = parent;
 
-},{"../../es/promise":169}],434:[function(_dereq_,module,exports){
+},{"../../es/promise":172}],442:[function(_dereq_,module,exports){
 _dereq_('../modules/web.timers');
 var path = _dereq_('../internals/path');
 
 module.exports = path.setTimeout;
 
-},{"../internals/path":283,"../modules/web.timers":400}],435:[function(_dereq_,module,exports){
+},{"../internals/path":287,"../modules/web.timers":408}],443:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/set');
 
 module.exports = parent;
 
-},{"../../es/set":172}],436:[function(_dereq_,module,exports){
+},{"../../es/set":175}],444:[function(_dereq_,module,exports){
 var parent = _dereq_('../../es/weak-map');
 
 module.exports = parent;
 
-},{"../../es/weak-map":177}],437:[function(_dereq_,module,exports){
+},{"../../es/weak-map":180}],445:[function(_dereq_,module,exports){
+;(function (root, factory, undef) {
+	if (typeof exports === "object") {
+		// CommonJS
+		module.exports = exports = factory(_dereq_("./core"), _dereq_("./enc-base64"), _dereq_("./md5"), _dereq_("./evpkdf"), _dereq_("./cipher-core"));
+	}
+	else if (typeof define === "function" && define.amd) {
+		// AMD
+		define(["./core", "./enc-base64", "./md5", "./evpkdf", "./cipher-core"], factory);
+	}
+	else {
+		// Global (browser)
+		factory(root.CryptoJS);
+	}
+}(this, function (CryptoJS) {
+
+	(function () {
+	    // Shortcuts
+	    var C = CryptoJS;
+	    var C_lib = C.lib;
+	    var BlockCipher = C_lib.BlockCipher;
+	    var C_algo = C.algo;
+
+	    // Lookup tables
+	    var SBOX = [];
+	    var INV_SBOX = [];
+	    var SUB_MIX_0 = [];
+	    var SUB_MIX_1 = [];
+	    var SUB_MIX_2 = [];
+	    var SUB_MIX_3 = [];
+	    var INV_SUB_MIX_0 = [];
+	    var INV_SUB_MIX_1 = [];
+	    var INV_SUB_MIX_2 = [];
+	    var INV_SUB_MIX_3 = [];
+
+	    // Compute lookup tables
+	    (function () {
+	        // Compute double table
+	        var d = [];
+	        for (var i = 0; i < 256; i++) {
+	            if (i < 128) {
+	                d[i] = i << 1;
+	            } else {
+	                d[i] = (i << 1) ^ 0x11b;
+	            }
+	        }
+
+	        // Walk GF(2^8)
+	        var x = 0;
+	        var xi = 0;
+	        for (var i = 0; i < 256; i++) {
+	            // Compute sbox
+	            var sx = xi ^ (xi << 1) ^ (xi << 2) ^ (xi << 3) ^ (xi << 4);
+	            sx = (sx >>> 8) ^ (sx & 0xff) ^ 0x63;
+	            SBOX[x] = sx;
+	            INV_SBOX[sx] = x;
+
+	            // Compute multiplication
+	            var x2 = d[x];
+	            var x4 = d[x2];
+	            var x8 = d[x4];
+
+	            // Compute sub bytes, mix columns tables
+	            var t = (d[sx] * 0x101) ^ (sx * 0x1010100);
+	            SUB_MIX_0[x] = (t << 24) | (t >>> 8);
+	            SUB_MIX_1[x] = (t << 16) | (t >>> 16);
+	            SUB_MIX_2[x] = (t << 8)  | (t >>> 24);
+	            SUB_MIX_3[x] = t;
+
+	            // Compute inv sub bytes, inv mix columns tables
+	            var t = (x8 * 0x1010101) ^ (x4 * 0x10001) ^ (x2 * 0x101) ^ (x * 0x1010100);
+	            INV_SUB_MIX_0[sx] = (t << 24) | (t >>> 8);
+	            INV_SUB_MIX_1[sx] = (t << 16) | (t >>> 16);
+	            INV_SUB_MIX_2[sx] = (t << 8)  | (t >>> 24);
+	            INV_SUB_MIX_3[sx] = t;
+
+	            // Compute next counter
+	            if (!x) {
+	                x = xi = 1;
+	            } else {
+	                x = x2 ^ d[d[d[x8 ^ x2]]];
+	                xi ^= d[d[xi]];
+	            }
+	        }
+	    }());
+
+	    // Precomputed Rcon lookup
+	    var RCON = [0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36];
+
+	    /**
+	     * AES block cipher algorithm.
+	     */
+	    var AES = C_algo.AES = BlockCipher.extend({
+	        _doReset: function () {
+	            // Skip reset of nRounds has been set before and key did not change
+	            if (this._nRounds && this._keyPriorReset === this._key) {
+	                return;
+	            }
+
+	            // Shortcuts
+	            var key = this._keyPriorReset = this._key;
+	            var keyWords = key.words;
+	            var keySize = key.sigBytes / 4;
+
+	            // Compute number of rounds
+	            var nRounds = this._nRounds = keySize + 6;
+
+	            // Compute number of key schedule rows
+	            var ksRows = (nRounds + 1) * 4;
+
+	            // Compute key schedule
+	            var keySchedule = this._keySchedule = [];
+	            for (var ksRow = 0; ksRow < ksRows; ksRow++) {
+	                if (ksRow < keySize) {
+	                    keySchedule[ksRow] = keyWords[ksRow];
+	                } else {
+	                    var t = keySchedule[ksRow - 1];
+
+	                    if (!(ksRow % keySize)) {
+	                        // Rot word
+	                        t = (t << 8) | (t >>> 24);
+
+	                        // Sub word
+	                        t = (SBOX[t >>> 24] << 24) | (SBOX[(t >>> 16) & 0xff] << 16) | (SBOX[(t >>> 8) & 0xff] << 8) | SBOX[t & 0xff];
+
+	                        // Mix Rcon
+	                        t ^= RCON[(ksRow / keySize) | 0] << 24;
+	                    } else if (keySize > 6 && ksRow % keySize == 4) {
+	                        // Sub word
+	                        t = (SBOX[t >>> 24] << 24) | (SBOX[(t >>> 16) & 0xff] << 16) | (SBOX[(t >>> 8) & 0xff] << 8) | SBOX[t & 0xff];
+	                    }
+
+	                    keySchedule[ksRow] = keySchedule[ksRow - keySize] ^ t;
+	                }
+	            }
+
+	            // Compute inv key schedule
+	            var invKeySchedule = this._invKeySchedule = [];
+	            for (var invKsRow = 0; invKsRow < ksRows; invKsRow++) {
+	                var ksRow = ksRows - invKsRow;
+
+	                if (invKsRow % 4) {
+	                    var t = keySchedule[ksRow];
+	                } else {
+	                    var t = keySchedule[ksRow - 4];
+	                }
+
+	                if (invKsRow < 4 || ksRow <= 4) {
+	                    invKeySchedule[invKsRow] = t;
+	                } else {
+	                    invKeySchedule[invKsRow] = INV_SUB_MIX_0[SBOX[t >>> 24]] ^ INV_SUB_MIX_1[SBOX[(t >>> 16) & 0xff]] ^
+	                                               INV_SUB_MIX_2[SBOX[(t >>> 8) & 0xff]] ^ INV_SUB_MIX_3[SBOX[t & 0xff]];
+	                }
+	            }
+	        },
+
+	        encryptBlock: function (M, offset) {
+	            this._doCryptBlock(M, offset, this._keySchedule, SUB_MIX_0, SUB_MIX_1, SUB_MIX_2, SUB_MIX_3, SBOX);
+	        },
+
+	        decryptBlock: function (M, offset) {
+	            // Swap 2nd and 4th rows
+	            var t = M[offset + 1];
+	            M[offset + 1] = M[offset + 3];
+	            M[offset + 3] = t;
+
+	            this._doCryptBlock(M, offset, this._invKeySchedule, INV_SUB_MIX_0, INV_SUB_MIX_1, INV_SUB_MIX_2, INV_SUB_MIX_3, INV_SBOX);
+
+	            // Inv swap 2nd and 4th rows
+	            var t = M[offset + 1];
+	            M[offset + 1] = M[offset + 3];
+	            M[offset + 3] = t;
+	        },
+
+	        _doCryptBlock: function (M, offset, keySchedule, SUB_MIX_0, SUB_MIX_1, SUB_MIX_2, SUB_MIX_3, SBOX) {
+	            // Shortcut
+	            var nRounds = this._nRounds;
+
+	            // Get input, add round key
+	            var s0 = M[offset]     ^ keySchedule[0];
+	            var s1 = M[offset + 1] ^ keySchedule[1];
+	            var s2 = M[offset + 2] ^ keySchedule[2];
+	            var s3 = M[offset + 3] ^ keySchedule[3];
+
+	            // Key schedule row counter
+	            var ksRow = 4;
+
+	            // Rounds
+	            for (var round = 1; round < nRounds; round++) {
+	                // Shift rows, sub bytes, mix columns, add round key
+	                var t0 = SUB_MIX_0[s0 >>> 24] ^ SUB_MIX_1[(s1 >>> 16) & 0xff] ^ SUB_MIX_2[(s2 >>> 8) & 0xff] ^ SUB_MIX_3[s3 & 0xff] ^ keySchedule[ksRow++];
+	                var t1 = SUB_MIX_0[s1 >>> 24] ^ SUB_MIX_1[(s2 >>> 16) & 0xff] ^ SUB_MIX_2[(s3 >>> 8) & 0xff] ^ SUB_MIX_3[s0 & 0xff] ^ keySchedule[ksRow++];
+	                var t2 = SUB_MIX_0[s2 >>> 24] ^ SUB_MIX_1[(s3 >>> 16) & 0xff] ^ SUB_MIX_2[(s0 >>> 8) & 0xff] ^ SUB_MIX_3[s1 & 0xff] ^ keySchedule[ksRow++];
+	                var t3 = SUB_MIX_0[s3 >>> 24] ^ SUB_MIX_1[(s0 >>> 16) & 0xff] ^ SUB_MIX_2[(s1 >>> 8) & 0xff] ^ SUB_MIX_3[s2 & 0xff] ^ keySchedule[ksRow++];
+
+	                // Update state
+	                s0 = t0;
+	                s1 = t1;
+	                s2 = t2;
+	                s3 = t3;
+	            }
+
+	            // Shift rows, sub bytes, add round key
+	            var t0 = ((SBOX[s0 >>> 24] << 24) | (SBOX[(s1 >>> 16) & 0xff] << 16) | (SBOX[(s2 >>> 8) & 0xff] << 8) | SBOX[s3 & 0xff]) ^ keySchedule[ksRow++];
+	            var t1 = ((SBOX[s1 >>> 24] << 24) | (SBOX[(s2 >>> 16) & 0xff] << 16) | (SBOX[(s3 >>> 8) & 0xff] << 8) | SBOX[s0 & 0xff]) ^ keySchedule[ksRow++];
+	            var t2 = ((SBOX[s2 >>> 24] << 24) | (SBOX[(s3 >>> 16) & 0xff] << 16) | (SBOX[(s0 >>> 8) & 0xff] << 8) | SBOX[s1 & 0xff]) ^ keySchedule[ksRow++];
+	            var t3 = ((SBOX[s3 >>> 24] << 24) | (SBOX[(s0 >>> 16) & 0xff] << 16) | (SBOX[(s1 >>> 8) & 0xff] << 8) | SBOX[s2 & 0xff]) ^ keySchedule[ksRow++];
+
+	            // Set output
+	            M[offset]     = t0;
+	            M[offset + 1] = t1;
+	            M[offset + 2] = t2;
+	            M[offset + 3] = t3;
+	        },
+
+	        keySize: 256/32
+	    });
+
+	    /**
+	     * Shortcut functions to the cipher's object interface.
+	     *
+	     * @example
+	     *
+	     *     var ciphertext = CryptoJS.AES.encrypt(message, key, cfg);
+	     *     var plaintext  = CryptoJS.AES.decrypt(ciphertext, key, cfg);
+	     */
+	    C.AES = BlockCipher._createHelper(AES);
+	}());
+
+
+	return CryptoJS.AES;
+
+}));
+},{"./cipher-core":446,"./core":447,"./enc-base64":448,"./evpkdf":450,"./md5":452}],446:[function(_dereq_,module,exports){
+;(function (root, factory, undef) {
+	if (typeof exports === "object") {
+		// CommonJS
+		module.exports = exports = factory(_dereq_("./core"), _dereq_("./evpkdf"));
+	}
+	else if (typeof define === "function" && define.amd) {
+		// AMD
+		define(["./core", "./evpkdf"], factory);
+	}
+	else {
+		// Global (browser)
+		factory(root.CryptoJS);
+	}
+}(this, function (CryptoJS) {
+
+	/**
+	 * Cipher core components.
+	 */
+	CryptoJS.lib.Cipher || (function (undefined) {
+	    // Shortcuts
+	    var C = CryptoJS;
+	    var C_lib = C.lib;
+	    var Base = C_lib.Base;
+	    var WordArray = C_lib.WordArray;
+	    var BufferedBlockAlgorithm = C_lib.BufferedBlockAlgorithm;
+	    var C_enc = C.enc;
+	    var Utf8 = C_enc.Utf8;
+	    var Base64 = C_enc.Base64;
+	    var C_algo = C.algo;
+	    var EvpKDF = C_algo.EvpKDF;
+
+	    /**
+	     * Abstract base cipher template.
+	     *
+	     * @property {number} keySize This cipher's key size. Default: 4 (128 bits)
+	     * @property {number} ivSize This cipher's IV size. Default: 4 (128 bits)
+	     * @property {number} _ENC_XFORM_MODE A constant representing encryption mode.
+	     * @property {number} _DEC_XFORM_MODE A constant representing decryption mode.
+	     */
+	    var Cipher = C_lib.Cipher = BufferedBlockAlgorithm.extend({
+	        /**
+	         * Configuration options.
+	         *
+	         * @property {WordArray} iv The IV to use for this operation.
+	         */
+	        cfg: Base.extend(),
+
+	        /**
+	         * Creates this cipher in encryption mode.
+	         *
+	         * @param {WordArray} key The key.
+	         * @param {Object} cfg (Optional) The configuration options to use for this operation.
+	         *
+	         * @return {Cipher} A cipher instance.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var cipher = CryptoJS.algo.AES.createEncryptor(keyWordArray, { iv: ivWordArray });
+	         */
+	        createEncryptor: function (key, cfg) {
+	            return this.create(this._ENC_XFORM_MODE, key, cfg);
+	        },
+
+	        /**
+	         * Creates this cipher in decryption mode.
+	         *
+	         * @param {WordArray} key The key.
+	         * @param {Object} cfg (Optional) The configuration options to use for this operation.
+	         *
+	         * @return {Cipher} A cipher instance.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var cipher = CryptoJS.algo.AES.createDecryptor(keyWordArray, { iv: ivWordArray });
+	         */
+	        createDecryptor: function (key, cfg) {
+	            return this.create(this._DEC_XFORM_MODE, key, cfg);
+	        },
+
+	        /**
+	         * Initializes a newly created cipher.
+	         *
+	         * @param {number} xformMode Either the encryption or decryption transormation mode constant.
+	         * @param {WordArray} key The key.
+	         * @param {Object} cfg (Optional) The configuration options to use for this operation.
+	         *
+	         * @example
+	         *
+	         *     var cipher = CryptoJS.algo.AES.create(CryptoJS.algo.AES._ENC_XFORM_MODE, keyWordArray, { iv: ivWordArray });
+	         */
+	        init: function (xformMode, key, cfg) {
+	            // Apply config defaults
+	            this.cfg = this.cfg.extend(cfg);
+
+	            // Store transform mode and key
+	            this._xformMode = xformMode;
+	            this._key = key;
+
+	            // Set initial values
+	            this.reset();
+	        },
+
+	        /**
+	         * Resets this cipher to its initial state.
+	         *
+	         * @example
+	         *
+	         *     cipher.reset();
+	         */
+	        reset: function () {
+	            // Reset data buffer
+	            BufferedBlockAlgorithm.reset.call(this);
+
+	            // Perform concrete-cipher logic
+	            this._doReset();
+	        },
+
+	        /**
+	         * Adds data to be encrypted or decrypted.
+	         *
+	         * @param {WordArray|string} dataUpdate The data to encrypt or decrypt.
+	         *
+	         * @return {WordArray} The data after processing.
+	         *
+	         * @example
+	         *
+	         *     var encrypted = cipher.process('data');
+	         *     var encrypted = cipher.process(wordArray);
+	         */
+	        process: function (dataUpdate) {
+	            // Append
+	            this._append(dataUpdate);
+
+	            // Process available blocks
+	            return this._process();
+	        },
+
+	        /**
+	         * Finalizes the encryption or decryption process.
+	         * Note that the finalize operation is effectively a destructive, read-once operation.
+	         *
+	         * @param {WordArray|string} dataUpdate The final data to encrypt or decrypt.
+	         *
+	         * @return {WordArray} The data after final processing.
+	         *
+	         * @example
+	         *
+	         *     var encrypted = cipher.finalize();
+	         *     var encrypted = cipher.finalize('data');
+	         *     var encrypted = cipher.finalize(wordArray);
+	         */
+	        finalize: function (dataUpdate) {
+	            // Final data update
+	            if (dataUpdate) {
+	                this._append(dataUpdate);
+	            }
+
+	            // Perform concrete-cipher logic
+	            var finalProcessedData = this._doFinalize();
+
+	            return finalProcessedData;
+	        },
+
+	        keySize: 128/32,
+
+	        ivSize: 128/32,
+
+	        _ENC_XFORM_MODE: 1,
+
+	        _DEC_XFORM_MODE: 2,
+
+	        /**
+	         * Creates shortcut functions to a cipher's object interface.
+	         *
+	         * @param {Cipher} cipher The cipher to create a helper for.
+	         *
+	         * @return {Object} An object with encrypt and decrypt shortcut functions.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var AES = CryptoJS.lib.Cipher._createHelper(CryptoJS.algo.AES);
+	         */
+	        _createHelper: (function () {
+	            function selectCipherStrategy(key) {
+	                if (typeof key == 'string') {
+	                    return PasswordBasedCipher;
+	                } else {
+	                    return SerializableCipher;
+	                }
+	            }
+
+	            return function (cipher) {
+	                return {
+	                    encrypt: function (message, key, cfg) {
+	                        return selectCipherStrategy(key).encrypt(cipher, message, key, cfg);
+	                    },
+
+	                    decrypt: function (ciphertext, key, cfg) {
+	                        return selectCipherStrategy(key).decrypt(cipher, ciphertext, key, cfg);
+	                    }
+	                };
+	            };
+	        }())
+	    });
+
+	    /**
+	     * Abstract base stream cipher template.
+	     *
+	     * @property {number} blockSize The number of 32-bit words this cipher operates on. Default: 1 (32 bits)
+	     */
+	    var StreamCipher = C_lib.StreamCipher = Cipher.extend({
+	        _doFinalize: function () {
+	            // Process partial blocks
+	            var finalProcessedBlocks = this._process(!!'flush');
+
+	            return finalProcessedBlocks;
+	        },
+
+	        blockSize: 1
+	    });
+
+	    /**
+	     * Mode namespace.
+	     */
+	    var C_mode = C.mode = {};
+
+	    /**
+	     * Abstract base block cipher mode template.
+	     */
+	    var BlockCipherMode = C_lib.BlockCipherMode = Base.extend({
+	        /**
+	         * Creates this mode for encryption.
+	         *
+	         * @param {Cipher} cipher A block cipher instance.
+	         * @param {Array} iv The IV words.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var mode = CryptoJS.mode.CBC.createEncryptor(cipher, iv.words);
+	         */
+	        createEncryptor: function (cipher, iv) {
+	            return this.Encryptor.create(cipher, iv);
+	        },
+
+	        /**
+	         * Creates this mode for decryption.
+	         *
+	         * @param {Cipher} cipher A block cipher instance.
+	         * @param {Array} iv The IV words.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var mode = CryptoJS.mode.CBC.createDecryptor(cipher, iv.words);
+	         */
+	        createDecryptor: function (cipher, iv) {
+	            return this.Decryptor.create(cipher, iv);
+	        },
+
+	        /**
+	         * Initializes a newly created mode.
+	         *
+	         * @param {Cipher} cipher A block cipher instance.
+	         * @param {Array} iv The IV words.
+	         *
+	         * @example
+	         *
+	         *     var mode = CryptoJS.mode.CBC.Encryptor.create(cipher, iv.words);
+	         */
+	        init: function (cipher, iv) {
+	            this._cipher = cipher;
+	            this._iv = iv;
+	        }
+	    });
+
+	    /**
+	     * Cipher Block Chaining mode.
+	     */
+	    var CBC = C_mode.CBC = (function () {
+	        /**
+	         * Abstract base CBC mode.
+	         */
+	        var CBC = BlockCipherMode.extend();
+
+	        /**
+	         * CBC encryptor.
+	         */
+	        CBC.Encryptor = CBC.extend({
+	            /**
+	             * Processes the data block at offset.
+	             *
+	             * @param {Array} words The data words to operate on.
+	             * @param {number} offset The offset where the block starts.
+	             *
+	             * @example
+	             *
+	             *     mode.processBlock(data.words, offset);
+	             */
+	            processBlock: function (words, offset) {
+	                // Shortcuts
+	                var cipher = this._cipher;
+	                var blockSize = cipher.blockSize;
+
+	                // XOR and encrypt
+	                xorBlock.call(this, words, offset, blockSize);
+	                cipher.encryptBlock(words, offset);
+
+	                // Remember this block to use with next block
+	                this._prevBlock = words.slice(offset, offset + blockSize);
+	            }
+	        });
+
+	        /**
+	         * CBC decryptor.
+	         */
+	        CBC.Decryptor = CBC.extend({
+	            /**
+	             * Processes the data block at offset.
+	             *
+	             * @param {Array} words The data words to operate on.
+	             * @param {number} offset The offset where the block starts.
+	             *
+	             * @example
+	             *
+	             *     mode.processBlock(data.words, offset);
+	             */
+	            processBlock: function (words, offset) {
+	                // Shortcuts
+	                var cipher = this._cipher;
+	                var blockSize = cipher.blockSize;
+
+	                // Remember this block to use with next block
+	                var thisBlock = words.slice(offset, offset + blockSize);
+
+	                // Decrypt and XOR
+	                cipher.decryptBlock(words, offset);
+	                xorBlock.call(this, words, offset, blockSize);
+
+	                // This block becomes the previous block
+	                this._prevBlock = thisBlock;
+	            }
+	        });
+
+	        function xorBlock(words, offset, blockSize) {
+	            // Shortcut
+	            var iv = this._iv;
+
+	            // Choose mixing block
+	            if (iv) {
+	                var block = iv;
+
+	                // Remove IV for subsequent blocks
+	                this._iv = undefined;
+	            } else {
+	                var block = this._prevBlock;
+	            }
+
+	            // XOR blocks
+	            for (var i = 0; i < blockSize; i++) {
+	                words[offset + i] ^= block[i];
+	            }
+	        }
+
+	        return CBC;
+	    }());
+
+	    /**
+	     * Padding namespace.
+	     */
+	    var C_pad = C.pad = {};
+
+	    /**
+	     * PKCS #5/7 padding strategy.
+	     */
+	    var Pkcs7 = C_pad.Pkcs7 = {
+	        /**
+	         * Pads data using the algorithm defined in PKCS #5/7.
+	         *
+	         * @param {WordArray} data The data to pad.
+	         * @param {number} blockSize The multiple that the data should be padded to.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     CryptoJS.pad.Pkcs7.pad(wordArray, 4);
+	         */
+	        pad: function (data, blockSize) {
+	            // Shortcut
+	            var blockSizeBytes = blockSize * 4;
+
+	            // Count padding bytes
+	            var nPaddingBytes = blockSizeBytes - data.sigBytes % blockSizeBytes;
+
+	            // Create padding word
+	            var paddingWord = (nPaddingBytes << 24) | (nPaddingBytes << 16) | (nPaddingBytes << 8) | nPaddingBytes;
+
+	            // Create padding
+	            var paddingWords = [];
+	            for (var i = 0; i < nPaddingBytes; i += 4) {
+	                paddingWords.push(paddingWord);
+	            }
+	            var padding = WordArray.create(paddingWords, nPaddingBytes);
+
+	            // Add padding
+	            data.concat(padding);
+	        },
+
+	        /**
+	         * Unpads data that had been padded using the algorithm defined in PKCS #5/7.
+	         *
+	         * @param {WordArray} data The data to unpad.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     CryptoJS.pad.Pkcs7.unpad(wordArray);
+	         */
+	        unpad: function (data) {
+	            // Get number of padding bytes from last byte
+	            var nPaddingBytes = data.words[(data.sigBytes - 1) >>> 2] & 0xff;
+
+	            // Remove padding
+	            data.sigBytes -= nPaddingBytes;
+	        }
+	    };
+
+	    /**
+	     * Abstract base block cipher template.
+	     *
+	     * @property {number} blockSize The number of 32-bit words this cipher operates on. Default: 4 (128 bits)
+	     */
+	    var BlockCipher = C_lib.BlockCipher = Cipher.extend({
+	        /**
+	         * Configuration options.
+	         *
+	         * @property {Mode} mode The block mode to use. Default: CBC
+	         * @property {Padding} padding The padding strategy to use. Default: Pkcs7
+	         */
+	        cfg: Cipher.cfg.extend({
+	            mode: CBC,
+	            padding: Pkcs7
+	        }),
+
+	        reset: function () {
+	            // Reset cipher
+	            Cipher.reset.call(this);
+
+	            // Shortcuts
+	            var cfg = this.cfg;
+	            var iv = cfg.iv;
+	            var mode = cfg.mode;
+
+	            // Reset block mode
+	            if (this._xformMode == this._ENC_XFORM_MODE) {
+	                var modeCreator = mode.createEncryptor;
+	            } else /* if (this._xformMode == this._DEC_XFORM_MODE) */ {
+	                var modeCreator = mode.createDecryptor;
+	                // Keep at least one block in the buffer for unpadding
+	                this._minBufferSize = 1;
+	            }
+
+	            if (this._mode && this._mode.__creator == modeCreator) {
+	                this._mode.init(this, iv && iv.words);
+	            } else {
+	                this._mode = modeCreator.call(mode, this, iv && iv.words);
+	                this._mode.__creator = modeCreator;
+	            }
+	        },
+
+	        _doProcessBlock: function (words, offset) {
+	            this._mode.processBlock(words, offset);
+	        },
+
+	        _doFinalize: function () {
+	            // Shortcut
+	            var padding = this.cfg.padding;
+
+	            // Finalize
+	            if (this._xformMode == this._ENC_XFORM_MODE) {
+	                // Pad data
+	                padding.pad(this._data, this.blockSize);
+
+	                // Process final blocks
+	                var finalProcessedBlocks = this._process(!!'flush');
+	            } else /* if (this._xformMode == this._DEC_XFORM_MODE) */ {
+	                // Process final blocks
+	                var finalProcessedBlocks = this._process(!!'flush');
+
+	                // Unpad data
+	                padding.unpad(finalProcessedBlocks);
+	            }
+
+	            return finalProcessedBlocks;
+	        },
+
+	        blockSize: 128/32
+	    });
+
+	    /**
+	     * A collection of cipher parameters.
+	     *
+	     * @property {WordArray} ciphertext The raw ciphertext.
+	     * @property {WordArray} key The key to this ciphertext.
+	     * @property {WordArray} iv The IV used in the ciphering operation.
+	     * @property {WordArray} salt The salt used with a key derivation function.
+	     * @property {Cipher} algorithm The cipher algorithm.
+	     * @property {Mode} mode The block mode used in the ciphering operation.
+	     * @property {Padding} padding The padding scheme used in the ciphering operation.
+	     * @property {number} blockSize The block size of the cipher.
+	     * @property {Format} formatter The default formatting strategy to convert this cipher params object to a string.
+	     */
+	    var CipherParams = C_lib.CipherParams = Base.extend({
+	        /**
+	         * Initializes a newly created cipher params object.
+	         *
+	         * @param {Object} cipherParams An object with any of the possible cipher parameters.
+	         *
+	         * @example
+	         *
+	         *     var cipherParams = CryptoJS.lib.CipherParams.create({
+	         *         ciphertext: ciphertextWordArray,
+	         *         key: keyWordArray,
+	         *         iv: ivWordArray,
+	         *         salt: saltWordArray,
+	         *         algorithm: CryptoJS.algo.AES,
+	         *         mode: CryptoJS.mode.CBC,
+	         *         padding: CryptoJS.pad.PKCS7,
+	         *         blockSize: 4,
+	         *         formatter: CryptoJS.format.OpenSSL
+	         *     });
+	         */
+	        init: function (cipherParams) {
+	            this.mixIn(cipherParams);
+	        },
+
+	        /**
+	         * Converts this cipher params object to a string.
+	         *
+	         * @param {Format} formatter (Optional) The formatting strategy to use.
+	         *
+	         * @return {string} The stringified cipher params.
+	         *
+	         * @throws Error If neither the formatter nor the default formatter is set.
+	         *
+	         * @example
+	         *
+	         *     var string = cipherParams + '';
+	         *     var string = cipherParams.toString();
+	         *     var string = cipherParams.toString(CryptoJS.format.OpenSSL);
+	         */
+	        toString: function (formatter) {
+	            return (formatter || this.formatter).stringify(this);
+	        }
+	    });
+
+	    /**
+	     * Format namespace.
+	     */
+	    var C_format = C.format = {};
+
+	    /**
+	     * OpenSSL formatting strategy.
+	     */
+	    var OpenSSLFormatter = C_format.OpenSSL = {
+	        /**
+	         * Converts a cipher params object to an OpenSSL-compatible string.
+	         *
+	         * @param {CipherParams} cipherParams The cipher params object.
+	         *
+	         * @return {string} The OpenSSL-compatible string.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var openSSLString = CryptoJS.format.OpenSSL.stringify(cipherParams);
+	         */
+	        stringify: function (cipherParams) {
+	            // Shortcuts
+	            var ciphertext = cipherParams.ciphertext;
+	            var salt = cipherParams.salt;
+
+	            // Format
+	            if (salt) {
+	                var wordArray = WordArray.create([0x53616c74, 0x65645f5f]).concat(salt).concat(ciphertext);
+	            } else {
+	                var wordArray = ciphertext;
+	            }
+
+	            return wordArray.toString(Base64);
+	        },
+
+	        /**
+	         * Converts an OpenSSL-compatible string to a cipher params object.
+	         *
+	         * @param {string} openSSLStr The OpenSSL-compatible string.
+	         *
+	         * @return {CipherParams} The cipher params object.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var cipherParams = CryptoJS.format.OpenSSL.parse(openSSLString);
+	         */
+	        parse: function (openSSLStr) {
+	            // Parse base64
+	            var ciphertext = Base64.parse(openSSLStr);
+
+	            // Shortcut
+	            var ciphertextWords = ciphertext.words;
+
+	            // Test for salt
+	            if (ciphertextWords[0] == 0x53616c74 && ciphertextWords[1] == 0x65645f5f) {
+	                // Extract salt
+	                var salt = WordArray.create(ciphertextWords.slice(2, 4));
+
+	                // Remove salt from ciphertext
+	                ciphertextWords.splice(0, 4);
+	                ciphertext.sigBytes -= 16;
+	            }
+
+	            return CipherParams.create({ ciphertext: ciphertext, salt: salt });
+	        }
+	    };
+
+	    /**
+	     * A cipher wrapper that returns ciphertext as a serializable cipher params object.
+	     */
+	    var SerializableCipher = C_lib.SerializableCipher = Base.extend({
+	        /**
+	         * Configuration options.
+	         *
+	         * @property {Formatter} format The formatting strategy to convert cipher param objects to and from a string. Default: OpenSSL
+	         */
+	        cfg: Base.extend({
+	            format: OpenSSLFormatter
+	        }),
+
+	        /**
+	         * Encrypts a message.
+	         *
+	         * @param {Cipher} cipher The cipher algorithm to use.
+	         * @param {WordArray|string} message The message to encrypt.
+	         * @param {WordArray} key The key.
+	         * @param {Object} cfg (Optional) The configuration options to use for this operation.
+	         *
+	         * @return {CipherParams} A cipher params object.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var ciphertextParams = CryptoJS.lib.SerializableCipher.encrypt(CryptoJS.algo.AES, message, key);
+	         *     var ciphertextParams = CryptoJS.lib.SerializableCipher.encrypt(CryptoJS.algo.AES, message, key, { iv: iv });
+	         *     var ciphertextParams = CryptoJS.lib.SerializableCipher.encrypt(CryptoJS.algo.AES, message, key, { iv: iv, format: CryptoJS.format.OpenSSL });
+	         */
+	        encrypt: function (cipher, message, key, cfg) {
+	            // Apply config defaults
+	            cfg = this.cfg.extend(cfg);
+
+	            // Encrypt
+	            var encryptor = cipher.createEncryptor(key, cfg);
+	            var ciphertext = encryptor.finalize(message);
+
+	            // Shortcut
+	            var cipherCfg = encryptor.cfg;
+
+	            // Create and return serializable cipher params
+	            return CipherParams.create({
+	                ciphertext: ciphertext,
+	                key: key,
+	                iv: cipherCfg.iv,
+	                algorithm: cipher,
+	                mode: cipherCfg.mode,
+	                padding: cipherCfg.padding,
+	                blockSize: cipher.blockSize,
+	                formatter: cfg.format
+	            });
+	        },
+
+	        /**
+	         * Decrypts serialized ciphertext.
+	         *
+	         * @param {Cipher} cipher The cipher algorithm to use.
+	         * @param {CipherParams|string} ciphertext The ciphertext to decrypt.
+	         * @param {WordArray} key The key.
+	         * @param {Object} cfg (Optional) The configuration options to use for this operation.
+	         *
+	         * @return {WordArray} The plaintext.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var plaintext = CryptoJS.lib.SerializableCipher.decrypt(CryptoJS.algo.AES, formattedCiphertext, key, { iv: iv, format: CryptoJS.format.OpenSSL });
+	         *     var plaintext = CryptoJS.lib.SerializableCipher.decrypt(CryptoJS.algo.AES, ciphertextParams, key, { iv: iv, format: CryptoJS.format.OpenSSL });
+	         */
+	        decrypt: function (cipher, ciphertext, key, cfg) {
+	            // Apply config defaults
+	            cfg = this.cfg.extend(cfg);
+
+	            // Convert string to CipherParams
+	            ciphertext = this._parse(ciphertext, cfg.format);
+
+	            // Decrypt
+	            var plaintext = cipher.createDecryptor(key, cfg).finalize(ciphertext.ciphertext);
+
+	            return plaintext;
+	        },
+
+	        /**
+	         * Converts serialized ciphertext to CipherParams,
+	         * else assumed CipherParams already and returns ciphertext unchanged.
+	         *
+	         * @param {CipherParams|string} ciphertext The ciphertext.
+	         * @param {Formatter} format The formatting strategy to use to parse serialized ciphertext.
+	         *
+	         * @return {CipherParams} The unserialized ciphertext.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var ciphertextParams = CryptoJS.lib.SerializableCipher._parse(ciphertextStringOrParams, format);
+	         */
+	        _parse: function (ciphertext, format) {
+	            if (typeof ciphertext == 'string') {
+	                return format.parse(ciphertext, this);
+	            } else {
+	                return ciphertext;
+	            }
+	        }
+	    });
+
+	    /**
+	     * Key derivation function namespace.
+	     */
+	    var C_kdf = C.kdf = {};
+
+	    /**
+	     * OpenSSL key derivation function.
+	     */
+	    var OpenSSLKdf = C_kdf.OpenSSL = {
+	        /**
+	         * Derives a key and IV from a password.
+	         *
+	         * @param {string} password The password to derive from.
+	         * @param {number} keySize The size in words of the key to generate.
+	         * @param {number} ivSize The size in words of the IV to generate.
+	         * @param {WordArray|string} salt (Optional) A 64-bit salt to use. If omitted, a salt will be generated randomly.
+	         *
+	         * @return {CipherParams} A cipher params object with the key, IV, and salt.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var derivedParams = CryptoJS.kdf.OpenSSL.execute('Password', 256/32, 128/32);
+	         *     var derivedParams = CryptoJS.kdf.OpenSSL.execute('Password', 256/32, 128/32, 'saltsalt');
+	         */
+	        execute: function (password, keySize, ivSize, salt) {
+	            // Generate random salt
+	            if (!salt) {
+	                salt = WordArray.random(64/8);
+	            }
+
+	            // Derive key and IV
+	            var key = EvpKDF.create({ keySize: keySize + ivSize }).compute(password, salt);
+
+	            // Separate key and IV
+	            var iv = WordArray.create(key.words.slice(keySize), ivSize * 4);
+	            key.sigBytes = keySize * 4;
+
+	            // Return params
+	            return CipherParams.create({ key: key, iv: iv, salt: salt });
+	        }
+	    };
+
+	    /**
+	     * A serializable cipher wrapper that derives the key from a password,
+	     * and returns ciphertext as a serializable cipher params object.
+	     */
+	    var PasswordBasedCipher = C_lib.PasswordBasedCipher = SerializableCipher.extend({
+	        /**
+	         * Configuration options.
+	         *
+	         * @property {KDF} kdf The key derivation function to use to generate a key and IV from a password. Default: OpenSSL
+	         */
+	        cfg: SerializableCipher.cfg.extend({
+	            kdf: OpenSSLKdf
+	        }),
+
+	        /**
+	         * Encrypts a message using a password.
+	         *
+	         * @param {Cipher} cipher The cipher algorithm to use.
+	         * @param {WordArray|string} message The message to encrypt.
+	         * @param {string} password The password.
+	         * @param {Object} cfg (Optional) The configuration options to use for this operation.
+	         *
+	         * @return {CipherParams} A cipher params object.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var ciphertextParams = CryptoJS.lib.PasswordBasedCipher.encrypt(CryptoJS.algo.AES, message, 'password');
+	         *     var ciphertextParams = CryptoJS.lib.PasswordBasedCipher.encrypt(CryptoJS.algo.AES, message, 'password', { format: CryptoJS.format.OpenSSL });
+	         */
+	        encrypt: function (cipher, message, password, cfg) {
+	            // Apply config defaults
+	            cfg = this.cfg.extend(cfg);
+
+	            // Derive key and other params
+	            var derivedParams = cfg.kdf.execute(password, cipher.keySize, cipher.ivSize);
+
+	            // Add IV to config
+	            cfg.iv = derivedParams.iv;
+
+	            // Encrypt
+	            var ciphertext = SerializableCipher.encrypt.call(this, cipher, message, derivedParams.key, cfg);
+
+	            // Mix in derived params
+	            ciphertext.mixIn(derivedParams);
+
+	            return ciphertext;
+	        },
+
+	        /**
+	         * Decrypts serialized ciphertext using a password.
+	         *
+	         * @param {Cipher} cipher The cipher algorithm to use.
+	         * @param {CipherParams|string} ciphertext The ciphertext to decrypt.
+	         * @param {string} password The password.
+	         * @param {Object} cfg (Optional) The configuration options to use for this operation.
+	         *
+	         * @return {WordArray} The plaintext.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var plaintext = CryptoJS.lib.PasswordBasedCipher.decrypt(CryptoJS.algo.AES, formattedCiphertext, 'password', { format: CryptoJS.format.OpenSSL });
+	         *     var plaintext = CryptoJS.lib.PasswordBasedCipher.decrypt(CryptoJS.algo.AES, ciphertextParams, 'password', { format: CryptoJS.format.OpenSSL });
+	         */
+	        decrypt: function (cipher, ciphertext, password, cfg) {
+	            // Apply config defaults
+	            cfg = this.cfg.extend(cfg);
+
+	            // Convert string to CipherParams
+	            ciphertext = this._parse(ciphertext, cfg.format);
+
+	            // Derive key and other params
+	            var derivedParams = cfg.kdf.execute(password, cipher.keySize, cipher.ivSize, ciphertext.salt);
+
+	            // Add IV to config
+	            cfg.iv = derivedParams.iv;
+
+	            // Decrypt
+	            var plaintext = SerializableCipher.decrypt.call(this, cipher, ciphertext, derivedParams.key, cfg);
+
+	            return plaintext;
+	        }
+	    });
+	}());
+
+
+}));
+},{"./core":447,"./evpkdf":450}],447:[function(_dereq_,module,exports){
+;(function (root, factory) {
+	if (typeof exports === "object") {
+		// CommonJS
+		module.exports = exports = factory();
+	}
+	else if (typeof define === "function" && define.amd) {
+		// AMD
+		define([], factory);
+	}
+	else {
+		// Global (browser)
+		root.CryptoJS = factory();
+	}
+}(this, function () {
+
+	/**
+	 * CryptoJS core components.
+	 */
+	var CryptoJS = CryptoJS || (function (Math, undefined) {
+	    /*
+	     * Local polyfil of Object.create
+	     */
+	    var create = Object.create || (function () {
+	        function F() {};
+
+	        return function (obj) {
+	            var subtype;
+
+	            F.prototype = obj;
+
+	            subtype = new F();
+
+	            F.prototype = null;
+
+	            return subtype;
+	        };
+	    }())
+
+	    /**
+	     * CryptoJS namespace.
+	     */
+	    var C = {};
+
+	    /**
+	     * Library namespace.
+	     */
+	    var C_lib = C.lib = {};
+
+	    /**
+	     * Base object for prototypal inheritance.
+	     */
+	    var Base = C_lib.Base = (function () {
+
+
+	        return {
+	            /**
+	             * Creates a new object that inherits from this object.
+	             *
+	             * @param {Object} overrides Properties to copy into the new object.
+	             *
+	             * @return {Object} The new object.
+	             *
+	             * @static
+	             *
+	             * @example
+	             *
+	             *     var MyType = CryptoJS.lib.Base.extend({
+	             *         field: 'value',
+	             *
+	             *         method: function () {
+	             *         }
+	             *     });
+	             */
+	            extend: function (overrides) {
+	                // Spawn
+	                var subtype = create(this);
+
+	                // Augment
+	                if (overrides) {
+	                    subtype.mixIn(overrides);
+	                }
+
+	                // Create default initializer
+	                if (!subtype.hasOwnProperty('init') || this.init === subtype.init) {
+	                    subtype.init = function () {
+	                        subtype.$super.init.apply(this, arguments);
+	                    };
+	                }
+
+	                // Initializer's prototype is the subtype object
+	                subtype.init.prototype = subtype;
+
+	                // Reference supertype
+	                subtype.$super = this;
+
+	                return subtype;
+	            },
+
+	            /**
+	             * Extends this object and runs the init method.
+	             * Arguments to create() will be passed to init().
+	             *
+	             * @return {Object} The new object.
+	             *
+	             * @static
+	             *
+	             * @example
+	             *
+	             *     var instance = MyType.create();
+	             */
+	            create: function () {
+	                var instance = this.extend();
+	                instance.init.apply(instance, arguments);
+
+	                return instance;
+	            },
+
+	            /**
+	             * Initializes a newly created object.
+	             * Override this method to add some logic when your objects are created.
+	             *
+	             * @example
+	             *
+	             *     var MyType = CryptoJS.lib.Base.extend({
+	             *         init: function () {
+	             *             // ...
+	             *         }
+	             *     });
+	             */
+	            init: function () {
+	            },
+
+	            /**
+	             * Copies properties into this object.
+	             *
+	             * @param {Object} properties The properties to mix in.
+	             *
+	             * @example
+	             *
+	             *     MyType.mixIn({
+	             *         field: 'value'
+	             *     });
+	             */
+	            mixIn: function (properties) {
+	                for (var propertyName in properties) {
+	                    if (properties.hasOwnProperty(propertyName)) {
+	                        this[propertyName] = properties[propertyName];
+	                    }
+	                }
+
+	                // IE won't copy toString using the loop above
+	                if (properties.hasOwnProperty('toString')) {
+	                    this.toString = properties.toString;
+	                }
+	            },
+
+	            /**
+	             * Creates a copy of this object.
+	             *
+	             * @return {Object} The clone.
+	             *
+	             * @example
+	             *
+	             *     var clone = instance.clone();
+	             */
+	            clone: function () {
+	                return this.init.prototype.extend(this);
+	            }
+	        };
+	    }());
+
+	    /**
+	     * An array of 32-bit words.
+	     *
+	     * @property {Array} words The array of 32-bit words.
+	     * @property {number} sigBytes The number of significant bytes in this word array.
+	     */
+	    var WordArray = C_lib.WordArray = Base.extend({
+	        /**
+	         * Initializes a newly created word array.
+	         *
+	         * @param {Array} words (Optional) An array of 32-bit words.
+	         * @param {number} sigBytes (Optional) The number of significant bytes in the words.
+	         *
+	         * @example
+	         *
+	         *     var wordArray = CryptoJS.lib.WordArray.create();
+	         *     var wordArray = CryptoJS.lib.WordArray.create([0x00010203, 0x04050607]);
+	         *     var wordArray = CryptoJS.lib.WordArray.create([0x00010203, 0x04050607], 6);
+	         */
+	        init: function (words, sigBytes) {
+	            words = this.words = words || [];
+
+	            if (sigBytes != undefined) {
+	                this.sigBytes = sigBytes;
+	            } else {
+	                this.sigBytes = words.length * 4;
+	            }
+	        },
+
+	        /**
+	         * Converts this word array to a string.
+	         *
+	         * @param {Encoder} encoder (Optional) The encoding strategy to use. Default: CryptoJS.enc.Hex
+	         *
+	         * @return {string} The stringified word array.
+	         *
+	         * @example
+	         *
+	         *     var string = wordArray + '';
+	         *     var string = wordArray.toString();
+	         *     var string = wordArray.toString(CryptoJS.enc.Utf8);
+	         */
+	        toString: function (encoder) {
+	            return (encoder || Hex).stringify(this);
+	        },
+
+	        /**
+	         * Concatenates a word array to this word array.
+	         *
+	         * @param {WordArray} wordArray The word array to append.
+	         *
+	         * @return {WordArray} This word array.
+	         *
+	         * @example
+	         *
+	         *     wordArray1.concat(wordArray2);
+	         */
+	        concat: function (wordArray) {
+	            // Shortcuts
+	            var thisWords = this.words;
+	            var thatWords = wordArray.words;
+	            var thisSigBytes = this.sigBytes;
+	            var thatSigBytes = wordArray.sigBytes;
+
+	            // Clamp excess bits
+	            this.clamp();
+
+	            // Concat
+	            if (thisSigBytes % 4) {
+	                // Copy one byte at a time
+	                for (var i = 0; i < thatSigBytes; i++) {
+	                    var thatByte = (thatWords[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+	                    thisWords[(thisSigBytes + i) >>> 2] |= thatByte << (24 - ((thisSigBytes + i) % 4) * 8);
+	                }
+	            } else {
+	                // Copy one word at a time
+	                for (var i = 0; i < thatSigBytes; i += 4) {
+	                    thisWords[(thisSigBytes + i) >>> 2] = thatWords[i >>> 2];
+	                }
+	            }
+	            this.sigBytes += thatSigBytes;
+
+	            // Chainable
+	            return this;
+	        },
+
+	        /**
+	         * Removes insignificant bits.
+	         *
+	         * @example
+	         *
+	         *     wordArray.clamp();
+	         */
+	        clamp: function () {
+	            // Shortcuts
+	            var words = this.words;
+	            var sigBytes = this.sigBytes;
+
+	            // Clamp
+	            words[sigBytes >>> 2] &= 0xffffffff << (32 - (sigBytes % 4) * 8);
+	            words.length = Math.ceil(sigBytes / 4);
+	        },
+
+	        /**
+	         * Creates a copy of this word array.
+	         *
+	         * @return {WordArray} The clone.
+	         *
+	         * @example
+	         *
+	         *     var clone = wordArray.clone();
+	         */
+	        clone: function () {
+	            var clone = Base.clone.call(this);
+	            clone.words = this.words.slice(0);
+
+	            return clone;
+	        },
+
+	        /**
+	         * Creates a word array filled with random bytes.
+	         *
+	         * @param {number} nBytes The number of random bytes to generate.
+	         *
+	         * @return {WordArray} The random word array.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var wordArray = CryptoJS.lib.WordArray.random(16);
+	         */
+	        random: function (nBytes) {
+	            var words = [];
+
+	            var r = (function (m_w) {
+	                var m_w = m_w;
+	                var m_z = 0x3ade68b1;
+	                var mask = 0xffffffff;
+
+	                return function () {
+	                    m_z = (0x9069 * (m_z & 0xFFFF) + (m_z >> 0x10)) & mask;
+	                    m_w = (0x4650 * (m_w & 0xFFFF) + (m_w >> 0x10)) & mask;
+	                    var result = ((m_z << 0x10) + m_w) & mask;
+	                    result /= 0x100000000;
+	                    result += 0.5;
+	                    return result * (Math.random() > .5 ? 1 : -1);
+	                }
+	            });
+
+	            for (var i = 0, rcache; i < nBytes; i += 4) {
+	                var _r = r((rcache || Math.random()) * 0x100000000);
+
+	                rcache = _r() * 0x3ade67b7;
+	                words.push((_r() * 0x100000000) | 0);
+	            }
+
+	            return new WordArray.init(words, nBytes);
+	        }
+	    });
+
+	    /**
+	     * Encoder namespace.
+	     */
+	    var C_enc = C.enc = {};
+
+	    /**
+	     * Hex encoding strategy.
+	     */
+	    var Hex = C_enc.Hex = {
+	        /**
+	         * Converts a word array to a hex string.
+	         *
+	         * @param {WordArray} wordArray The word array.
+	         *
+	         * @return {string} The hex string.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var hexString = CryptoJS.enc.Hex.stringify(wordArray);
+	         */
+	        stringify: function (wordArray) {
+	            // Shortcuts
+	            var words = wordArray.words;
+	            var sigBytes = wordArray.sigBytes;
+
+	            // Convert
+	            var hexChars = [];
+	            for (var i = 0; i < sigBytes; i++) {
+	                var bite = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+	                hexChars.push((bite >>> 4).toString(16));
+	                hexChars.push((bite & 0x0f).toString(16));
+	            }
+
+	            return hexChars.join('');
+	        },
+
+	        /**
+	         * Converts a hex string to a word array.
+	         *
+	         * @param {string} hexStr The hex string.
+	         *
+	         * @return {WordArray} The word array.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var wordArray = CryptoJS.enc.Hex.parse(hexString);
+	         */
+	        parse: function (hexStr) {
+	            // Shortcut
+	            var hexStrLength = hexStr.length;
+
+	            // Convert
+	            var words = [];
+	            for (var i = 0; i < hexStrLength; i += 2) {
+	                words[i >>> 3] |= parseInt(hexStr.substr(i, 2), 16) << (24 - (i % 8) * 4);
+	            }
+
+	            return new WordArray.init(words, hexStrLength / 2);
+	        }
+	    };
+
+	    /**
+	     * Latin1 encoding strategy.
+	     */
+	    var Latin1 = C_enc.Latin1 = {
+	        /**
+	         * Converts a word array to a Latin1 string.
+	         *
+	         * @param {WordArray} wordArray The word array.
+	         *
+	         * @return {string} The Latin1 string.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var latin1String = CryptoJS.enc.Latin1.stringify(wordArray);
+	         */
+	        stringify: function (wordArray) {
+	            // Shortcuts
+	            var words = wordArray.words;
+	            var sigBytes = wordArray.sigBytes;
+
+	            // Convert
+	            var latin1Chars = [];
+	            for (var i = 0; i < sigBytes; i++) {
+	                var bite = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+	                latin1Chars.push(String.fromCharCode(bite));
+	            }
+
+	            return latin1Chars.join('');
+	        },
+
+	        /**
+	         * Converts a Latin1 string to a word array.
+	         *
+	         * @param {string} latin1Str The Latin1 string.
+	         *
+	         * @return {WordArray} The word array.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var wordArray = CryptoJS.enc.Latin1.parse(latin1String);
+	         */
+	        parse: function (latin1Str) {
+	            // Shortcut
+	            var latin1StrLength = latin1Str.length;
+
+	            // Convert
+	            var words = [];
+	            for (var i = 0; i < latin1StrLength; i++) {
+	                words[i >>> 2] |= (latin1Str.charCodeAt(i) & 0xff) << (24 - (i % 4) * 8);
+	            }
+
+	            return new WordArray.init(words, latin1StrLength);
+	        }
+	    };
+
+	    /**
+	     * UTF-8 encoding strategy.
+	     */
+	    var Utf8 = C_enc.Utf8 = {
+	        /**
+	         * Converts a word array to a UTF-8 string.
+	         *
+	         * @param {WordArray} wordArray The word array.
+	         *
+	         * @return {string} The UTF-8 string.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var utf8String = CryptoJS.enc.Utf8.stringify(wordArray);
+	         */
+	        stringify: function (wordArray) {
+	            try {
+	                return decodeURIComponent(escape(Latin1.stringify(wordArray)));
+	            } catch (e) {
+	                throw new Error('Malformed UTF-8 data');
+	            }
+	        },
+
+	        /**
+	         * Converts a UTF-8 string to a word array.
+	         *
+	         * @param {string} utf8Str The UTF-8 string.
+	         *
+	         * @return {WordArray} The word array.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var wordArray = CryptoJS.enc.Utf8.parse(utf8String);
+	         */
+	        parse: function (utf8Str) {
+	            return Latin1.parse(unescape(encodeURIComponent(utf8Str)));
+	        }
+	    };
+
+	    /**
+	     * Abstract buffered block algorithm template.
+	     *
+	     * The property blockSize must be implemented in a concrete subtype.
+	     *
+	     * @property {number} _minBufferSize The number of blocks that should be kept unprocessed in the buffer. Default: 0
+	     */
+	    var BufferedBlockAlgorithm = C_lib.BufferedBlockAlgorithm = Base.extend({
+	        /**
+	         * Resets this block algorithm's data buffer to its initial state.
+	         *
+	         * @example
+	         *
+	         *     bufferedBlockAlgorithm.reset();
+	         */
+	        reset: function () {
+	            // Initial values
+	            this._data = new WordArray.init();
+	            this._nDataBytes = 0;
+	        },
+
+	        /**
+	         * Adds new data to this block algorithm's buffer.
+	         *
+	         * @param {WordArray|string} data The data to append. Strings are converted to a WordArray using UTF-8.
+	         *
+	         * @example
+	         *
+	         *     bufferedBlockAlgorithm._append('data');
+	         *     bufferedBlockAlgorithm._append(wordArray);
+	         */
+	        _append: function (data) {
+	            // Convert string to WordArray, else assume WordArray already
+	            if (typeof data == 'string') {
+	                data = Utf8.parse(data);
+	            }
+
+	            // Append
+	            this._data.concat(data);
+	            this._nDataBytes += data.sigBytes;
+	        },
+
+	        /**
+	         * Processes available data blocks.
+	         *
+	         * This method invokes _doProcessBlock(offset), which must be implemented by a concrete subtype.
+	         *
+	         * @param {boolean} doFlush Whether all blocks and partial blocks should be processed.
+	         *
+	         * @return {WordArray} The processed data.
+	         *
+	         * @example
+	         *
+	         *     var processedData = bufferedBlockAlgorithm._process();
+	         *     var processedData = bufferedBlockAlgorithm._process(!!'flush');
+	         */
+	        _process: function (doFlush) {
+	            // Shortcuts
+	            var data = this._data;
+	            var dataWords = data.words;
+	            var dataSigBytes = data.sigBytes;
+	            var blockSize = this.blockSize;
+	            var blockSizeBytes = blockSize * 4;
+
+	            // Count blocks ready
+	            var nBlocksReady = dataSigBytes / blockSizeBytes;
+	            if (doFlush) {
+	                // Round up to include partial blocks
+	                nBlocksReady = Math.ceil(nBlocksReady);
+	            } else {
+	                // Round down to include only full blocks,
+	                // less the number of blocks that must remain in the buffer
+	                nBlocksReady = Math.max((nBlocksReady | 0) - this._minBufferSize, 0);
+	            }
+
+	            // Count words ready
+	            var nWordsReady = nBlocksReady * blockSize;
+
+	            // Count bytes ready
+	            var nBytesReady = Math.min(nWordsReady * 4, dataSigBytes);
+
+	            // Process blocks
+	            if (nWordsReady) {
+	                for (var offset = 0; offset < nWordsReady; offset += blockSize) {
+	                    // Perform concrete-algorithm logic
+	                    this._doProcessBlock(dataWords, offset);
+	                }
+
+	                // Remove processed words
+	                var processedWords = dataWords.splice(0, nWordsReady);
+	                data.sigBytes -= nBytesReady;
+	            }
+
+	            // Return processed words
+	            return new WordArray.init(processedWords, nBytesReady);
+	        },
+
+	        /**
+	         * Creates a copy of this object.
+	         *
+	         * @return {Object} The clone.
+	         *
+	         * @example
+	         *
+	         *     var clone = bufferedBlockAlgorithm.clone();
+	         */
+	        clone: function () {
+	            var clone = Base.clone.call(this);
+	            clone._data = this._data.clone();
+
+	            return clone;
+	        },
+
+	        _minBufferSize: 0
+	    });
+
+	    /**
+	     * Abstract hasher template.
+	     *
+	     * @property {number} blockSize The number of 32-bit words this hasher operates on. Default: 16 (512 bits)
+	     */
+	    var Hasher = C_lib.Hasher = BufferedBlockAlgorithm.extend({
+	        /**
+	         * Configuration options.
+	         */
+	        cfg: Base.extend(),
+
+	        /**
+	         * Initializes a newly created hasher.
+	         *
+	         * @param {Object} cfg (Optional) The configuration options to use for this hash computation.
+	         *
+	         * @example
+	         *
+	         *     var hasher = CryptoJS.algo.SHA256.create();
+	         */
+	        init: function (cfg) {
+	            // Apply config defaults
+	            this.cfg = this.cfg.extend(cfg);
+
+	            // Set initial values
+	            this.reset();
+	        },
+
+	        /**
+	         * Resets this hasher to its initial state.
+	         *
+	         * @example
+	         *
+	         *     hasher.reset();
+	         */
+	        reset: function () {
+	            // Reset data buffer
+	            BufferedBlockAlgorithm.reset.call(this);
+
+	            // Perform concrete-hasher logic
+	            this._doReset();
+	        },
+
+	        /**
+	         * Updates this hasher with a message.
+	         *
+	         * @param {WordArray|string} messageUpdate The message to append.
+	         *
+	         * @return {Hasher} This hasher.
+	         *
+	         * @example
+	         *
+	         *     hasher.update('message');
+	         *     hasher.update(wordArray);
+	         */
+	        update: function (messageUpdate) {
+	            // Append
+	            this._append(messageUpdate);
+
+	            // Update the hash
+	            this._process();
+
+	            // Chainable
+	            return this;
+	        },
+
+	        /**
+	         * Finalizes the hash computation.
+	         * Note that the finalize operation is effectively a destructive, read-once operation.
+	         *
+	         * @param {WordArray|string} messageUpdate (Optional) A final message update.
+	         *
+	         * @return {WordArray} The hash.
+	         *
+	         * @example
+	         *
+	         *     var hash = hasher.finalize();
+	         *     var hash = hasher.finalize('message');
+	         *     var hash = hasher.finalize(wordArray);
+	         */
+	        finalize: function (messageUpdate) {
+	            // Final message update
+	            if (messageUpdate) {
+	                this._append(messageUpdate);
+	            }
+
+	            // Perform concrete-hasher logic
+	            var hash = this._doFinalize();
+
+	            return hash;
+	        },
+
+	        blockSize: 512/32,
+
+	        /**
+	         * Creates a shortcut function to a hasher's object interface.
+	         *
+	         * @param {Hasher} hasher The hasher to create a helper for.
+	         *
+	         * @return {Function} The shortcut function.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var SHA256 = CryptoJS.lib.Hasher._createHelper(CryptoJS.algo.SHA256);
+	         */
+	        _createHelper: function (hasher) {
+	            return function (message, cfg) {
+	                return new hasher.init(cfg).finalize(message);
+	            };
+	        },
+
+	        /**
+	         * Creates a shortcut function to the HMAC's object interface.
+	         *
+	         * @param {Hasher} hasher The hasher to use in this HMAC helper.
+	         *
+	         * @return {Function} The shortcut function.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var HmacSHA256 = CryptoJS.lib.Hasher._createHmacHelper(CryptoJS.algo.SHA256);
+	         */
+	        _createHmacHelper: function (hasher) {
+	            return function (message, key) {
+	                return new C_algo.HMAC.init(hasher, key).finalize(message);
+	            };
+	        }
+	    });
+
+	    /**
+	     * Algorithm namespace.
+	     */
+	    var C_algo = C.algo = {};
+
+	    return C;
+	}(Math));
+
+
+	return CryptoJS;
+
+}));
+},{}],448:[function(_dereq_,module,exports){
+;(function (root, factory) {
+	if (typeof exports === "object") {
+		// CommonJS
+		module.exports = exports = factory(_dereq_("./core"));
+	}
+	else if (typeof define === "function" && define.amd) {
+		// AMD
+		define(["./core"], factory);
+	}
+	else {
+		// Global (browser)
+		factory(root.CryptoJS);
+	}
+}(this, function (CryptoJS) {
+
+	(function () {
+	    // Shortcuts
+	    var C = CryptoJS;
+	    var C_lib = C.lib;
+	    var WordArray = C_lib.WordArray;
+	    var C_enc = C.enc;
+
+	    /**
+	     * Base64 encoding strategy.
+	     */
+	    var Base64 = C_enc.Base64 = {
+	        /**
+	         * Converts a word array to a Base64 string.
+	         *
+	         * @param {WordArray} wordArray The word array.
+	         *
+	         * @return {string} The Base64 string.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var base64String = CryptoJS.enc.Base64.stringify(wordArray);
+	         */
+	        stringify: function (wordArray) {
+	            // Shortcuts
+	            var words = wordArray.words;
+	            var sigBytes = wordArray.sigBytes;
+	            var map = this._map;
+
+	            // Clamp excess bits
+	            wordArray.clamp();
+
+	            // Convert
+	            var base64Chars = [];
+	            for (var i = 0; i < sigBytes; i += 3) {
+	                var byte1 = (words[i >>> 2]       >>> (24 - (i % 4) * 8))       & 0xff;
+	                var byte2 = (words[(i + 1) >>> 2] >>> (24 - ((i + 1) % 4) * 8)) & 0xff;
+	                var byte3 = (words[(i + 2) >>> 2] >>> (24 - ((i + 2) % 4) * 8)) & 0xff;
+
+	                var triplet = (byte1 << 16) | (byte2 << 8) | byte3;
+
+	                for (var j = 0; (j < 4) && (i + j * 0.75 < sigBytes); j++) {
+	                    base64Chars.push(map.charAt((triplet >>> (6 * (3 - j))) & 0x3f));
+	                }
+	            }
+
+	            // Add padding
+	            var paddingChar = map.charAt(64);
+	            if (paddingChar) {
+	                while (base64Chars.length % 4) {
+	                    base64Chars.push(paddingChar);
+	                }
+	            }
+
+	            return base64Chars.join('');
+	        },
+
+	        /**
+	         * Converts a Base64 string to a word array.
+	         *
+	         * @param {string} base64Str The Base64 string.
+	         *
+	         * @return {WordArray} The word array.
+	         *
+	         * @static
+	         *
+	         * @example
+	         *
+	         *     var wordArray = CryptoJS.enc.Base64.parse(base64String);
+	         */
+	        parse: function (base64Str) {
+	            // Shortcuts
+	            var base64StrLength = base64Str.length;
+	            var map = this._map;
+	            var reverseMap = this._reverseMap;
+
+	            if (!reverseMap) {
+	                    reverseMap = this._reverseMap = [];
+	                    for (var j = 0; j < map.length; j++) {
+	                        reverseMap[map.charCodeAt(j)] = j;
+	                    }
+	            }
+
+	            // Ignore padding
+	            var paddingChar = map.charAt(64);
+	            if (paddingChar) {
+	                var paddingIndex = base64Str.indexOf(paddingChar);
+	                if (paddingIndex !== -1) {
+	                    base64StrLength = paddingIndex;
+	                }
+	            }
+
+	            // Convert
+	            return parseLoop(base64Str, base64StrLength, reverseMap);
+
+	        },
+
+	        _map: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
+	    };
+
+	    function parseLoop(base64Str, base64StrLength, reverseMap) {
+	      var words = [];
+	      var nBytes = 0;
+	      for (var i = 0; i < base64StrLength; i++) {
+	          if (i % 4) {
+	              var bits1 = reverseMap[base64Str.charCodeAt(i - 1)] << ((i % 4) * 2);
+	              var bits2 = reverseMap[base64Str.charCodeAt(i)] >>> (6 - (i % 4) * 2);
+	              words[nBytes >>> 2] |= (bits1 | bits2) << (24 - (nBytes % 4) * 8);
+	              nBytes++;
+	          }
+	      }
+	      return WordArray.create(words, nBytes);
+	    }
+	}());
+
+
+	return CryptoJS.enc.Base64;
+
+}));
+},{"./core":447}],449:[function(_dereq_,module,exports){
+;(function (root, factory) {
+	if (typeof exports === "object") {
+		// CommonJS
+		module.exports = exports = factory(_dereq_("./core"));
+	}
+	else if (typeof define === "function" && define.amd) {
+		// AMD
+		define(["./core"], factory);
+	}
+	else {
+		// Global (browser)
+		factory(root.CryptoJS);
+	}
+}(this, function (CryptoJS) {
+
+	return CryptoJS.enc.Utf8;
+
+}));
+},{"./core":447}],450:[function(_dereq_,module,exports){
+;(function (root, factory, undef) {
+	if (typeof exports === "object") {
+		// CommonJS
+		module.exports = exports = factory(_dereq_("./core"), _dereq_("./sha1"), _dereq_("./hmac"));
+	}
+	else if (typeof define === "function" && define.amd) {
+		// AMD
+		define(["./core", "./sha1", "./hmac"], factory);
+	}
+	else {
+		// Global (browser)
+		factory(root.CryptoJS);
+	}
+}(this, function (CryptoJS) {
+
+	(function () {
+	    // Shortcuts
+	    var C = CryptoJS;
+	    var C_lib = C.lib;
+	    var Base = C_lib.Base;
+	    var WordArray = C_lib.WordArray;
+	    var C_algo = C.algo;
+	    var MD5 = C_algo.MD5;
+
+	    /**
+	     * This key derivation function is meant to conform with EVP_BytesToKey.
+	     * www.openssl.org/docs/crypto/EVP_BytesToKey.html
+	     */
+	    var EvpKDF = C_algo.EvpKDF = Base.extend({
+	        /**
+	         * Configuration options.
+	         *
+	         * @property {number} keySize The key size in words to generate. Default: 4 (128 bits)
+	         * @property {Hasher} hasher The hash algorithm to use. Default: MD5
+	         * @property {number} iterations The number of iterations to perform. Default: 1
+	         */
+	        cfg: Base.extend({
+	            keySize: 128/32,
+	            hasher: MD5,
+	            iterations: 1
+	        }),
+
+	        /**
+	         * Initializes a newly created key derivation function.
+	         *
+	         * @param {Object} cfg (Optional) The configuration options to use for the derivation.
+	         *
+	         * @example
+	         *
+	         *     var kdf = CryptoJS.algo.EvpKDF.create();
+	         *     var kdf = CryptoJS.algo.EvpKDF.create({ keySize: 8 });
+	         *     var kdf = CryptoJS.algo.EvpKDF.create({ keySize: 8, iterations: 1000 });
+	         */
+	        init: function (cfg) {
+	            this.cfg = this.cfg.extend(cfg);
+	        },
+
+	        /**
+	         * Derives a key from a password.
+	         *
+	         * @param {WordArray|string} password The password.
+	         * @param {WordArray|string} salt A salt.
+	         *
+	         * @return {WordArray} The derived key.
+	         *
+	         * @example
+	         *
+	         *     var key = kdf.compute(password, salt);
+	         */
+	        compute: function (password, salt) {
+	            // Shortcut
+	            var cfg = this.cfg;
+
+	            // Init hasher
+	            var hasher = cfg.hasher.create();
+
+	            // Initial values
+	            var derivedKey = WordArray.create();
+
+	            // Shortcuts
+	            var derivedKeyWords = derivedKey.words;
+	            var keySize = cfg.keySize;
+	            var iterations = cfg.iterations;
+
+	            // Generate key
+	            while (derivedKeyWords.length < keySize) {
+	                if (block) {
+	                    hasher.update(block);
+	                }
+	                var block = hasher.update(password).finalize(salt);
+	                hasher.reset();
+
+	                // Iterations
+	                for (var i = 1; i < iterations; i++) {
+	                    block = hasher.finalize(block);
+	                    hasher.reset();
+	                }
+
+	                derivedKey.concat(block);
+	            }
+	            derivedKey.sigBytes = keySize * 4;
+
+	            return derivedKey;
+	        }
+	    });
+
+	    /**
+	     * Derives a key from a password.
+	     *
+	     * @param {WordArray|string} password The password.
+	     * @param {WordArray|string} salt A salt.
+	     * @param {Object} cfg (Optional) The configuration options to use for this computation.
+	     *
+	     * @return {WordArray} The derived key.
+	     *
+	     * @static
+	     *
+	     * @example
+	     *
+	     *     var key = CryptoJS.EvpKDF(password, salt);
+	     *     var key = CryptoJS.EvpKDF(password, salt, { keySize: 8 });
+	     *     var key = CryptoJS.EvpKDF(password, salt, { keySize: 8, iterations: 1000 });
+	     */
+	    C.EvpKDF = function (password, salt, cfg) {
+	        return EvpKDF.create(cfg).compute(password, salt);
+	    };
+	}());
+
+
+	return CryptoJS.EvpKDF;
+
+}));
+},{"./core":447,"./hmac":451,"./sha1":453}],451:[function(_dereq_,module,exports){
+;(function (root, factory) {
+	if (typeof exports === "object") {
+		// CommonJS
+		module.exports = exports = factory(_dereq_("./core"));
+	}
+	else if (typeof define === "function" && define.amd) {
+		// AMD
+		define(["./core"], factory);
+	}
+	else {
+		// Global (browser)
+		factory(root.CryptoJS);
+	}
+}(this, function (CryptoJS) {
+
+	(function () {
+	    // Shortcuts
+	    var C = CryptoJS;
+	    var C_lib = C.lib;
+	    var Base = C_lib.Base;
+	    var C_enc = C.enc;
+	    var Utf8 = C_enc.Utf8;
+	    var C_algo = C.algo;
+
+	    /**
+	     * HMAC algorithm.
+	     */
+	    var HMAC = C_algo.HMAC = Base.extend({
+	        /**
+	         * Initializes a newly created HMAC.
+	         *
+	         * @param {Hasher} hasher The hash algorithm to use.
+	         * @param {WordArray|string} key The secret key.
+	         *
+	         * @example
+	         *
+	         *     var hmacHasher = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, key);
+	         */
+	        init: function (hasher, key) {
+	            // Init hasher
+	            hasher = this._hasher = new hasher.init();
+
+	            // Convert string to WordArray, else assume WordArray already
+	            if (typeof key == 'string') {
+	                key = Utf8.parse(key);
+	            }
+
+	            // Shortcuts
+	            var hasherBlockSize = hasher.blockSize;
+	            var hasherBlockSizeBytes = hasherBlockSize * 4;
+
+	            // Allow arbitrary length keys
+	            if (key.sigBytes > hasherBlockSizeBytes) {
+	                key = hasher.finalize(key);
+	            }
+
+	            // Clamp excess bits
+	            key.clamp();
+
+	            // Clone key for inner and outer pads
+	            var oKey = this._oKey = key.clone();
+	            var iKey = this._iKey = key.clone();
+
+	            // Shortcuts
+	            var oKeyWords = oKey.words;
+	            var iKeyWords = iKey.words;
+
+	            // XOR keys with pad constants
+	            for (var i = 0; i < hasherBlockSize; i++) {
+	                oKeyWords[i] ^= 0x5c5c5c5c;
+	                iKeyWords[i] ^= 0x36363636;
+	            }
+	            oKey.sigBytes = iKey.sigBytes = hasherBlockSizeBytes;
+
+	            // Set initial values
+	            this.reset();
+	        },
+
+	        /**
+	         * Resets this HMAC to its initial state.
+	         *
+	         * @example
+	         *
+	         *     hmacHasher.reset();
+	         */
+	        reset: function () {
+	            // Shortcut
+	            var hasher = this._hasher;
+
+	            // Reset
+	            hasher.reset();
+	            hasher.update(this._iKey);
+	        },
+
+	        /**
+	         * Updates this HMAC with a message.
+	         *
+	         * @param {WordArray|string} messageUpdate The message to append.
+	         *
+	         * @return {HMAC} This HMAC instance.
+	         *
+	         * @example
+	         *
+	         *     hmacHasher.update('message');
+	         *     hmacHasher.update(wordArray);
+	         */
+	        update: function (messageUpdate) {
+	            this._hasher.update(messageUpdate);
+
+	            // Chainable
+	            return this;
+	        },
+
+	        /**
+	         * Finalizes the HMAC computation.
+	         * Note that the finalize operation is effectively a destructive, read-once operation.
+	         *
+	         * @param {WordArray|string} messageUpdate (Optional) A final message update.
+	         *
+	         * @return {WordArray} The HMAC.
+	         *
+	         * @example
+	         *
+	         *     var hmac = hmacHasher.finalize();
+	         *     var hmac = hmacHasher.finalize('message');
+	         *     var hmac = hmacHasher.finalize(wordArray);
+	         */
+	        finalize: function (messageUpdate) {
+	            // Shortcut
+	            var hasher = this._hasher;
+
+	            // Compute HMAC
+	            var innerHash = hasher.finalize(messageUpdate);
+	            hasher.reset();
+	            var hmac = hasher.finalize(this._oKey.clone().concat(innerHash));
+
+	            return hmac;
+	        }
+	    });
+	}());
+
+
+}));
+},{"./core":447}],452:[function(_dereq_,module,exports){
+;(function (root, factory) {
+	if (typeof exports === "object") {
+		// CommonJS
+		module.exports = exports = factory(_dereq_("./core"));
+	}
+	else if (typeof define === "function" && define.amd) {
+		// AMD
+		define(["./core"], factory);
+	}
+	else {
+		// Global (browser)
+		factory(root.CryptoJS);
+	}
+}(this, function (CryptoJS) {
+
+	(function (Math) {
+	    // Shortcuts
+	    var C = CryptoJS;
+	    var C_lib = C.lib;
+	    var WordArray = C_lib.WordArray;
+	    var Hasher = C_lib.Hasher;
+	    var C_algo = C.algo;
+
+	    // Constants table
+	    var T = [];
+
+	    // Compute constants
+	    (function () {
+	        for (var i = 0; i < 64; i++) {
+	            T[i] = (Math.abs(Math.sin(i + 1)) * 0x100000000) | 0;
+	        }
+	    }());
+
+	    /**
+	     * MD5 hash algorithm.
+	     */
+	    var MD5 = C_algo.MD5 = Hasher.extend({
+	        _doReset: function () {
+	            this._hash = new WordArray.init([
+	                0x67452301, 0xefcdab89,
+	                0x98badcfe, 0x10325476
+	            ]);
+	        },
+
+	        _doProcessBlock: function (M, offset) {
+	            // Swap endian
+	            for (var i = 0; i < 16; i++) {
+	                // Shortcuts
+	                var offset_i = offset + i;
+	                var M_offset_i = M[offset_i];
+
+	                M[offset_i] = (
+	                    (((M_offset_i << 8)  | (M_offset_i >>> 24)) & 0x00ff00ff) |
+	                    (((M_offset_i << 24) | (M_offset_i >>> 8))  & 0xff00ff00)
+	                );
+	            }
+
+	            // Shortcuts
+	            var H = this._hash.words;
+
+	            var M_offset_0  = M[offset + 0];
+	            var M_offset_1  = M[offset + 1];
+	            var M_offset_2  = M[offset + 2];
+	            var M_offset_3  = M[offset + 3];
+	            var M_offset_4  = M[offset + 4];
+	            var M_offset_5  = M[offset + 5];
+	            var M_offset_6  = M[offset + 6];
+	            var M_offset_7  = M[offset + 7];
+	            var M_offset_8  = M[offset + 8];
+	            var M_offset_9  = M[offset + 9];
+	            var M_offset_10 = M[offset + 10];
+	            var M_offset_11 = M[offset + 11];
+	            var M_offset_12 = M[offset + 12];
+	            var M_offset_13 = M[offset + 13];
+	            var M_offset_14 = M[offset + 14];
+	            var M_offset_15 = M[offset + 15];
+
+	            // Working varialbes
+	            var a = H[0];
+	            var b = H[1];
+	            var c = H[2];
+	            var d = H[3];
+
+	            // Computation
+	            a = FF(a, b, c, d, M_offset_0,  7,  T[0]);
+	            d = FF(d, a, b, c, M_offset_1,  12, T[1]);
+	            c = FF(c, d, a, b, M_offset_2,  17, T[2]);
+	            b = FF(b, c, d, a, M_offset_3,  22, T[3]);
+	            a = FF(a, b, c, d, M_offset_4,  7,  T[4]);
+	            d = FF(d, a, b, c, M_offset_5,  12, T[5]);
+	            c = FF(c, d, a, b, M_offset_6,  17, T[6]);
+	            b = FF(b, c, d, a, M_offset_7,  22, T[7]);
+	            a = FF(a, b, c, d, M_offset_8,  7,  T[8]);
+	            d = FF(d, a, b, c, M_offset_9,  12, T[9]);
+	            c = FF(c, d, a, b, M_offset_10, 17, T[10]);
+	            b = FF(b, c, d, a, M_offset_11, 22, T[11]);
+	            a = FF(a, b, c, d, M_offset_12, 7,  T[12]);
+	            d = FF(d, a, b, c, M_offset_13, 12, T[13]);
+	            c = FF(c, d, a, b, M_offset_14, 17, T[14]);
+	            b = FF(b, c, d, a, M_offset_15, 22, T[15]);
+
+	            a = GG(a, b, c, d, M_offset_1,  5,  T[16]);
+	            d = GG(d, a, b, c, M_offset_6,  9,  T[17]);
+	            c = GG(c, d, a, b, M_offset_11, 14, T[18]);
+	            b = GG(b, c, d, a, M_offset_0,  20, T[19]);
+	            a = GG(a, b, c, d, M_offset_5,  5,  T[20]);
+	            d = GG(d, a, b, c, M_offset_10, 9,  T[21]);
+	            c = GG(c, d, a, b, M_offset_15, 14, T[22]);
+	            b = GG(b, c, d, a, M_offset_4,  20, T[23]);
+	            a = GG(a, b, c, d, M_offset_9,  5,  T[24]);
+	            d = GG(d, a, b, c, M_offset_14, 9,  T[25]);
+	            c = GG(c, d, a, b, M_offset_3,  14, T[26]);
+	            b = GG(b, c, d, a, M_offset_8,  20, T[27]);
+	            a = GG(a, b, c, d, M_offset_13, 5,  T[28]);
+	            d = GG(d, a, b, c, M_offset_2,  9,  T[29]);
+	            c = GG(c, d, a, b, M_offset_7,  14, T[30]);
+	            b = GG(b, c, d, a, M_offset_12, 20, T[31]);
+
+	            a = HH(a, b, c, d, M_offset_5,  4,  T[32]);
+	            d = HH(d, a, b, c, M_offset_8,  11, T[33]);
+	            c = HH(c, d, a, b, M_offset_11, 16, T[34]);
+	            b = HH(b, c, d, a, M_offset_14, 23, T[35]);
+	            a = HH(a, b, c, d, M_offset_1,  4,  T[36]);
+	            d = HH(d, a, b, c, M_offset_4,  11, T[37]);
+	            c = HH(c, d, a, b, M_offset_7,  16, T[38]);
+	            b = HH(b, c, d, a, M_offset_10, 23, T[39]);
+	            a = HH(a, b, c, d, M_offset_13, 4,  T[40]);
+	            d = HH(d, a, b, c, M_offset_0,  11, T[41]);
+	            c = HH(c, d, a, b, M_offset_3,  16, T[42]);
+	            b = HH(b, c, d, a, M_offset_6,  23, T[43]);
+	            a = HH(a, b, c, d, M_offset_9,  4,  T[44]);
+	            d = HH(d, a, b, c, M_offset_12, 11, T[45]);
+	            c = HH(c, d, a, b, M_offset_15, 16, T[46]);
+	            b = HH(b, c, d, a, M_offset_2,  23, T[47]);
+
+	            a = II(a, b, c, d, M_offset_0,  6,  T[48]);
+	            d = II(d, a, b, c, M_offset_7,  10, T[49]);
+	            c = II(c, d, a, b, M_offset_14, 15, T[50]);
+	            b = II(b, c, d, a, M_offset_5,  21, T[51]);
+	            a = II(a, b, c, d, M_offset_12, 6,  T[52]);
+	            d = II(d, a, b, c, M_offset_3,  10, T[53]);
+	            c = II(c, d, a, b, M_offset_10, 15, T[54]);
+	            b = II(b, c, d, a, M_offset_1,  21, T[55]);
+	            a = II(a, b, c, d, M_offset_8,  6,  T[56]);
+	            d = II(d, a, b, c, M_offset_15, 10, T[57]);
+	            c = II(c, d, a, b, M_offset_6,  15, T[58]);
+	            b = II(b, c, d, a, M_offset_13, 21, T[59]);
+	            a = II(a, b, c, d, M_offset_4,  6,  T[60]);
+	            d = II(d, a, b, c, M_offset_11, 10, T[61]);
+	            c = II(c, d, a, b, M_offset_2,  15, T[62]);
+	            b = II(b, c, d, a, M_offset_9,  21, T[63]);
+
+	            // Intermediate hash value
+	            H[0] = (H[0] + a) | 0;
+	            H[1] = (H[1] + b) | 0;
+	            H[2] = (H[2] + c) | 0;
+	            H[3] = (H[3] + d) | 0;
+	        },
+
+	        _doFinalize: function () {
+	            // Shortcuts
+	            var data = this._data;
+	            var dataWords = data.words;
+
+	            var nBitsTotal = this._nDataBytes * 8;
+	            var nBitsLeft = data.sigBytes * 8;
+
+	            // Add padding
+	            dataWords[nBitsLeft >>> 5] |= 0x80 << (24 - nBitsLeft % 32);
+
+	            var nBitsTotalH = Math.floor(nBitsTotal / 0x100000000);
+	            var nBitsTotalL = nBitsTotal;
+	            dataWords[(((nBitsLeft + 64) >>> 9) << 4) + 15] = (
+	                (((nBitsTotalH << 8)  | (nBitsTotalH >>> 24)) & 0x00ff00ff) |
+	                (((nBitsTotalH << 24) | (nBitsTotalH >>> 8))  & 0xff00ff00)
+	            );
+	            dataWords[(((nBitsLeft + 64) >>> 9) << 4) + 14] = (
+	                (((nBitsTotalL << 8)  | (nBitsTotalL >>> 24)) & 0x00ff00ff) |
+	                (((nBitsTotalL << 24) | (nBitsTotalL >>> 8))  & 0xff00ff00)
+	            );
+
+	            data.sigBytes = (dataWords.length + 1) * 4;
+
+	            // Hash final blocks
+	            this._process();
+
+	            // Shortcuts
+	            var hash = this._hash;
+	            var H = hash.words;
+
+	            // Swap endian
+	            for (var i = 0; i < 4; i++) {
+	                // Shortcut
+	                var H_i = H[i];
+
+	                H[i] = (((H_i << 8)  | (H_i >>> 24)) & 0x00ff00ff) |
+	                       (((H_i << 24) | (H_i >>> 8))  & 0xff00ff00);
+	            }
+
+	            // Return final computed hash
+	            return hash;
+	        },
+
+	        clone: function () {
+	            var clone = Hasher.clone.call(this);
+	            clone._hash = this._hash.clone();
+
+	            return clone;
+	        }
+	    });
+
+	    function FF(a, b, c, d, x, s, t) {
+	        var n = a + ((b & c) | (~b & d)) + x + t;
+	        return ((n << s) | (n >>> (32 - s))) + b;
+	    }
+
+	    function GG(a, b, c, d, x, s, t) {
+	        var n = a + ((b & d) | (c & ~d)) + x + t;
+	        return ((n << s) | (n >>> (32 - s))) + b;
+	    }
+
+	    function HH(a, b, c, d, x, s, t) {
+	        var n = a + (b ^ c ^ d) + x + t;
+	        return ((n << s) | (n >>> (32 - s))) + b;
+	    }
+
+	    function II(a, b, c, d, x, s, t) {
+	        var n = a + (c ^ (b | ~d)) + x + t;
+	        return ((n << s) | (n >>> (32 - s))) + b;
+	    }
+
+	    /**
+	     * Shortcut function to the hasher's object interface.
+	     *
+	     * @param {WordArray|string} message The message to hash.
+	     *
+	     * @return {WordArray} The hash.
+	     *
+	     * @static
+	     *
+	     * @example
+	     *
+	     *     var hash = CryptoJS.MD5('message');
+	     *     var hash = CryptoJS.MD5(wordArray);
+	     */
+	    C.MD5 = Hasher._createHelper(MD5);
+
+	    /**
+	     * Shortcut function to the HMAC's object interface.
+	     *
+	     * @param {WordArray|string} message The message to hash.
+	     * @param {WordArray|string} key The secret key.
+	     *
+	     * @return {WordArray} The HMAC.
+	     *
+	     * @static
+	     *
+	     * @example
+	     *
+	     *     var hmac = CryptoJS.HmacMD5(message, key);
+	     */
+	    C.HmacMD5 = Hasher._createHmacHelper(MD5);
+	}(Math));
+
+
+	return CryptoJS.MD5;
+
+}));
+},{"./core":447}],453:[function(_dereq_,module,exports){
+;(function (root, factory) {
+	if (typeof exports === "object") {
+		// CommonJS
+		module.exports = exports = factory(_dereq_("./core"));
+	}
+	else if (typeof define === "function" && define.amd) {
+		// AMD
+		define(["./core"], factory);
+	}
+	else {
+		// Global (browser)
+		factory(root.CryptoJS);
+	}
+}(this, function (CryptoJS) {
+
+	(function () {
+	    // Shortcuts
+	    var C = CryptoJS;
+	    var C_lib = C.lib;
+	    var WordArray = C_lib.WordArray;
+	    var Hasher = C_lib.Hasher;
+	    var C_algo = C.algo;
+
+	    // Reusable object
+	    var W = [];
+
+	    /**
+	     * SHA-1 hash algorithm.
+	     */
+	    var SHA1 = C_algo.SHA1 = Hasher.extend({
+	        _doReset: function () {
+	            this._hash = new WordArray.init([
+	                0x67452301, 0xefcdab89,
+	                0x98badcfe, 0x10325476,
+	                0xc3d2e1f0
+	            ]);
+	        },
+
+	        _doProcessBlock: function (M, offset) {
+	            // Shortcut
+	            var H = this._hash.words;
+
+	            // Working variables
+	            var a = H[0];
+	            var b = H[1];
+	            var c = H[2];
+	            var d = H[3];
+	            var e = H[4];
+
+	            // Computation
+	            for (var i = 0; i < 80; i++) {
+	                if (i < 16) {
+	                    W[i] = M[offset + i] | 0;
+	                } else {
+	                    var n = W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16];
+	                    W[i] = (n << 1) | (n >>> 31);
+	                }
+
+	                var t = ((a << 5) | (a >>> 27)) + e + W[i];
+	                if (i < 20) {
+	                    t += ((b & c) | (~b & d)) + 0x5a827999;
+	                } else if (i < 40) {
+	                    t += (b ^ c ^ d) + 0x6ed9eba1;
+	                } else if (i < 60) {
+	                    t += ((b & c) | (b & d) | (c & d)) - 0x70e44324;
+	                } else /* if (i < 80) */ {
+	                    t += (b ^ c ^ d) - 0x359d3e2a;
+	                }
+
+	                e = d;
+	                d = c;
+	                c = (b << 30) | (b >>> 2);
+	                b = a;
+	                a = t;
+	            }
+
+	            // Intermediate hash value
+	            H[0] = (H[0] + a) | 0;
+	            H[1] = (H[1] + b) | 0;
+	            H[2] = (H[2] + c) | 0;
+	            H[3] = (H[3] + d) | 0;
+	            H[4] = (H[4] + e) | 0;
+	        },
+
+	        _doFinalize: function () {
+	            // Shortcuts
+	            var data = this._data;
+	            var dataWords = data.words;
+
+	            var nBitsTotal = this._nDataBytes * 8;
+	            var nBitsLeft = data.sigBytes * 8;
+
+	            // Add padding
+	            dataWords[nBitsLeft >>> 5] |= 0x80 << (24 - nBitsLeft % 32);
+	            dataWords[(((nBitsLeft + 64) >>> 9) << 4) + 14] = Math.floor(nBitsTotal / 0x100000000);
+	            dataWords[(((nBitsLeft + 64) >>> 9) << 4) + 15] = nBitsTotal;
+	            data.sigBytes = dataWords.length * 4;
+
+	            // Hash final blocks
+	            this._process();
+
+	            // Return final computed hash
+	            return this._hash;
+	        },
+
+	        clone: function () {
+	            var clone = Hasher.clone.call(this);
+	            clone._hash = this._hash.clone();
+
+	            return clone;
+	        }
+	    });
+
+	    /**
+	     * Shortcut function to the hasher's object interface.
+	     *
+	     * @param {WordArray|string} message The message to hash.
+	     *
+	     * @return {WordArray} The hash.
+	     *
+	     * @static
+	     *
+	     * @example
+	     *
+	     *     var hash = CryptoJS.SHA1('message');
+	     *     var hash = CryptoJS.SHA1(wordArray);
+	     */
+	    C.SHA1 = Hasher._createHelper(SHA1);
+
+	    /**
+	     * Shortcut function to the HMAC's object interface.
+	     *
+	     * @param {WordArray|string} message The message to hash.
+	     * @param {WordArray|string} key The secret key.
+	     *
+	     * @return {WordArray} The HMAC.
+	     *
+	     * @static
+	     *
+	     * @example
+	     *
+	     *     var hmac = CryptoJS.HmacSHA1(message, key);
+	     */
+	    C.HmacSHA1 = Hasher._createHmacHelper(SHA1);
+	}());
+
+
+	return CryptoJS.SHA1;
+
+}));
+},{"./core":447}],454:[function(_dereq_,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26490,7 +29771,7 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],438:[function(_dereq_,module,exports){
+},{}],455:[function(_dereq_,module,exports){
 /**
  * Convert array of 16 byte values to UUID string format of the form:
  * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
@@ -26516,7 +29797,7 @@ function bytesToUuid(buf, offset) {
 
 module.exports = bytesToUuid;
 
-},{}],439:[function(_dereq_,module,exports){
+},{}],456:[function(_dereq_,module,exports){
 // Unique ID creation requires a high quality random # generator.  In the
 // browser this is a little complicated due to unknown quality of Math.random()
 // and inconsistent support for the `crypto` API.  We do the best we can via
@@ -26552,7 +29833,7 @@ if (getRandomValues) {
   };
 }
 
-},{}],440:[function(_dereq_,module,exports){
+},{}],457:[function(_dereq_,module,exports){
 var rng = _dereq_('./lib/rng');
 var bytesToUuid = _dereq_('./lib/bytesToUuid');
 
@@ -26583,5 +29864,5 @@ function v4(options, buf, offset) {
 
 module.exports = v4;
 
-},{"./lib/bytesToUuid":438,"./lib/rng":439}]},{},[15])(15)
+},{"./lib/bytesToUuid":455,"./lib/rng":456}]},{},[16])(16)
 });
