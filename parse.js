@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.12.0
+ * Parse JavaScript SDK v2.13.0
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -613,6 +613,8 @@ var _forEach = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-st
   upgradeToRevocableSession: (user: ParseUser, options: RequestOptions) => Promise;
   linkWith: (user: ParseUser, authData: AuthData) => Promise;
   removeUserFromDisk: () => Promise;
+  verifyPassword: (username: string, password: string, options: RequestOptions) => Promise;
+  requestEmailVerification: (email: string, options: RequestOptions) => Promise;
 };*/
 
 /*:: type HooksController = {
@@ -666,7 +668,7 @@ var config
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
   ENCRYPTED_KEY: null,
-  VERSION: 'js' + "2.12.0",
+  VERSION: 'js' + "2.13.0",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -914,7 +916,7 @@ module.exports = {
   setUserController: function (controller
   /*: UserController*/
   ) {
-    requireMethods('UserController', ['setCurrentUser', 'currentUser', 'currentUserAsync', 'signUp', 'logIn', 'become', 'logOut', 'me', 'requestPasswordReset', 'upgradeToRevocableSession', 'linkWith'], controller);
+    requireMethods('UserController', ['setCurrentUser', 'currentUser', 'currentUserAsync', 'signUp', 'logIn', 'become', 'logOut', 'me', 'requestPasswordReset', 'upgradeToRevocableSession', 'requestEmailVerification', 'verifyPassword', 'linkWith'], controller);
     config['UserController'] = controller;
   },
   getUserController: function ()
@@ -1367,11 +1369,11 @@ var _createClass2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpe
 
 var _assertThisInitialized2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/assertThisInitialized"));
 
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
+
 var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/getPrototypeOf"));
-
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
 
 var _defineProperty2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/defineProperty"));
 
@@ -1910,7 +1912,9 @@ var LiveQueryClient = /*#__PURE__*/function (_EventEmitter) {
           if (subscription) {
             subscription.subscribed = true;
             subscription.subscribePromise.resolve();
-            subscription.emit(SUBSCRIPTION_EMMITER_TYPES.OPEN, response);
+            (0, _setTimeout2.default)(function () {
+              return subscription.emit(SUBSCRIPTION_EMMITER_TYPES.OPEN, response);
+            }, 200);
           }
 
           break;
@@ -2087,11 +2091,11 @@ var _classCallCheck2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/he
 
 var _createClass2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/createClass"));
 
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
+
 var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/getPrototypeOf"));
-
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
 
 var _EventEmitter2 = _interopRequireDefault(_dereq_("./EventEmitter"));
 
@@ -5563,11 +5567,11 @@ var _createClass2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpe
 
 var _assertThisInitialized2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/assertThisInitialized"));
 
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
+
 var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/getPrototypeOf"));
-
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
 
 var _wrapNativeSuper2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/wrapNativeSuper"));
 
@@ -6513,7 +6517,17 @@ var ParseFile = /*#__PURE__*/function () {
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *     behalf of a specific user.
-     *   <li>progress: In Browser only, callback for upload progress
+     *   <li>progress: In Browser only, callback for upload progress. For example:
+     * <pre>
+     * let parseFile = new Parse.File(name, file);
+     * parseFile.save({
+     *   progress: (progressValue, loaded, total, { type }) => {
+     *     if (type === "upload" && progressValue !== null) {
+     *       // Update the UI using progressValue
+     *     }
+     *   }
+     * });
+     * </pre>
      * </ul>
      * @return {Promise} Promise that is resolved when the save finishes.
      */
@@ -7210,11 +7224,11 @@ var _typeof2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/ty
 
 var _classCallCheck2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/classCallCheck"));
 
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
+
 var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/getPrototypeOf"));
-
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
 
 var _ParseObject2 = _interopRequireDefault(_dereq_("./ParseObject"));
 
@@ -9212,6 +9226,7 @@ var ParseObject = /*#__PURE__*/function () {
      *       <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      *       <li>cascadeSave: If `false`, nested objects will not be saved (default is `true`).
+     *       <li>context: A dictionary that is accessible in Cloud Code `beforeSave` and `afterSave` triggers.
      *     </ul>
      *   </li>
      * </ul>
@@ -9225,6 +9240,7 @@ var ParseObject = /*#__PURE__*/function () {
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      *   <li>cascadeSave: If `false`, nested objects will not be saved (default is `true`).
+     *   <li>context: A dictionary that is accessible in Cloud Code `beforeSave` and `afterSave` triggers.
      * </ul>
      *
      * @return {Promise} A promise that is fulfilled when the save
@@ -9302,6 +9318,10 @@ var ParseObject = /*#__PURE__*/function () {
 
       if (options.hasOwnProperty('installationId') && typeof options.installationId === 'string') {
         saveOptions.installationId = options.installationId;
+      }
+
+      if (options.hasOwnProperty('context') && (0, _typeof2.default)(options.context) === 'object') {
+        saveOptions.context = options.context;
       }
 
       var controller = _CoreManager.default.getObjectController();
@@ -10655,9 +10675,10 @@ var DefaultController = {
                   }, options).then(function (results) {
                     for (var i = 0; i < results.length; i++) {
                       if (results[i] && results[i].hasOwnProperty('error')) {
-                        var err = new _ParseError.default(results[i].error.code, results[i].error.error);
-                        err.object = batch[i];
-                        errors.push(err);
+                        var _err = new _ParseError.default(results[i].error.code, results[i].error.error);
+
+                        _err.object = batch[i];
+                        errors.push(_err);
                       }
                     }
                   });
@@ -11028,11 +11049,11 @@ var _forEach = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-st
 
 var _assertThisInitialized2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/assertThisInitialized"));
 
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
+
 var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/getPrototypeOf"));
-
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
 
 var _defineProperty2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/defineProperty"));
 
@@ -13039,7 +13060,8 @@ var ParseQuery = /*#__PURE__*/function () {
       var params = {
         pipeline: pipeline,
         hint: this._hint,
-        explain: this._explain
+        explain: this._explain,
+        readPreference: this._readPreference
       };
       return controller.aggregate(this.className, params, aggregateOptions).then(function (results) {
         return results.results;
@@ -15126,11 +15148,11 @@ var _createClass2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpe
 
 var _get2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/get"));
 
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
+
 var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/getPrototypeOf"));
-
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
 
 var _ParseACL = _interopRequireDefault(_dereq_("./ParseACL"));
 
@@ -16016,11 +16038,11 @@ var _classCallCheck2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/he
 
 var _createClass2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/createClass"));
 
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
+
 var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/getPrototypeOf"));
-
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
 
 var _CoreManager = _interopRequireDefault(_dereq_("./CoreManager"));
 
@@ -16234,11 +16256,11 @@ var _createClass2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpe
 
 var _get2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/get"));
 
+var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
+
 var _possibleConstructorReturn2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/getPrototypeOf"));
-
-var _inherits2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/inherits"));
 
 var _AnonymousUtils = _interopRequireDefault(_dereq_("./AnonymousUtils"));
 
@@ -16941,6 +16963,27 @@ var ParseUser = /*#__PURE__*/function (_ParseObject) {
         return _this7;
       });
     }
+    /**
+     * Verify whether a given password is the password of the current user.
+     *
+     * @param {String} password A password to be verified
+     * @param {Object} options
+     * @return {Promise} A promise that is fulfilled with a user
+     *  when the password is correct.
+     */
+
+  }, {
+    key: "verifyPassword",
+    value: function (password
+    /*: string*/
+    , options
+    /*:: ?: RequestOptions*/
+    )
+    /*: Promise<ParseUser>*/
+    {
+      var username = this.getUsername() || '';
+      return ParseUser.verifyPassword(username, password, options);
+    }
   }], [{
     key: "readOnlyAttributes",
     value: function () {
@@ -17267,6 +17310,75 @@ var ParseUser = /*#__PURE__*/function (_ParseObject) {
       var controller = _CoreManager.default.getUserController();
 
       return controller.requestPasswordReset(email, requestOptions);
+    }
+    /**
+     * Request an email verification.
+     *
+     * <p>Calls options.success or options.error on completion.</p>
+     *
+     * @param {String} email The email address associated with the user that
+     *     forgot their password.
+     * @param {Object} options
+     * @static
+     * @returns {Promise}
+     */
+
+  }, {
+    key: "requestEmailVerification",
+    value: function (email
+    /*: string*/
+    , options
+    /*:: ?: RequestOptions*/
+    ) {
+      options = options || {};
+      var requestOptions = {};
+
+      if (options.hasOwnProperty('useMasterKey')) {
+        requestOptions.useMasterKey = options.useMasterKey;
+      }
+
+      var controller = _CoreManager.default.getUserController();
+
+      return controller.requestEmailVerification(email, requestOptions);
+    }
+    /**
+     * Verify whether a given password is the password of the current user.
+     *
+     * @param {String} username  A username to be used for identificaiton
+     * @param {String} password A password to be verified
+     * @param {Object} options
+     * @static
+     * @returns {Promise} A promise that is fulfilled with a user
+     *  when the password is correct.
+     */
+
+  }, {
+    key: "verifyPassword",
+    value: function (username
+    /*: string*/
+    , password
+    /*: string*/
+    , options
+    /*:: ?: RequestOptions*/
+    ) {
+      if (typeof username !== 'string') {
+        return _promise.default.reject(new _ParseError.default(_ParseError.default.OTHER_CAUSE, 'Username must be a string.'));
+      }
+
+      if (typeof password !== 'string') {
+        return _promise.default.reject(new _ParseError.default(_ParseError.default.OTHER_CAUSE, 'Password must be a string.'));
+      }
+
+      options = options || {};
+      var verificationOption = {};
+
+      if (options.hasOwnProperty('useMasterKey')) {
+        verificationOption.useMasterKey = options.useMasterKey;
+      }
+
+      var controller = _CoreManager.default.getUserController();
+
+      return controller.verifyPassword(username, password, verificationOption);
     }
     /**
      * Allow someone to define a custom User class without className
@@ -17808,6 +17920,31 @@ var DefaultController = {
 
       return user;
     });
+  },
+  verifyPassword: function (username
+  /*: string*/
+  , password
+  /*: string*/
+  , options
+  /*: RequestOptions*/
+  ) {
+    var RESTController = _CoreManager.default.getRESTController();
+
+    return RESTController.request('GET', 'verifyPassword', {
+      username: username,
+      password: password
+    }, options);
+  },
+  requestEmailVerification: function (email
+  /*: string*/
+  , options
+  /*: RequestOptions*/
+  ) {
+    var RESTController = _CoreManager.default.getRESTController();
+
+    return RESTController.request('POST', 'verificationEmailRequest', {
+      email: email
+    }, options);
   }
 };
 
@@ -18163,15 +18300,29 @@ var RESTController = {
         headers[key] = customHeaders[key];
       }
 
-      xhr.onprogress = function (event) {
+      function handleProgress(type, event) {
         if (options && typeof options.progress === 'function') {
           if (event.lengthComputable) {
-            options.progress(event.loaded / event.total, event.loaded, event.total);
+            options.progress(event.loaded / event.total, event.loaded, event.total, {
+              type: type
+            });
           } else {
-            options.progress(null);
+            options.progress(null, null, null, {
+              type: type
+            });
           }
         }
+      }
+
+      xhr.onprogress = function (event) {
+        handleProgress('download', event);
       };
+
+      if (xhr.upload) {
+        xhr.upload.onprogress = function (event) {
+          handleProgress('upload', event);
+        };
+      }
 
       xhr.open(method, url, true);
 
@@ -18223,6 +18374,14 @@ var RESTController = {
       for (var k in data) {
         payload[k] = data[k];
       }
+    } // Add context
+
+
+    var context = options.context;
+
+    if (context !== undefined) {
+      payload._context = context;
+      delete options.context;
     }
 
     if (method !== 'POST') {
@@ -23799,7 +23958,13 @@ if (!set || !clear) {
     defer = bind(port.postMessage, port, 1);
   // Browsers with postMessage, skip WebWorkers
   // IE8 has postMessage, but it's sync & typeof its postMessage is 'object'
-  } else if (global.addEventListener && typeof postMessage == 'function' && !global.importScripts && !fails(post)) {
+  } else if (
+    global.addEventListener &&
+    typeof postMessage == 'function' &&
+    !global.importScripts &&
+    !fails(post) &&
+    location.protocol !== 'file:'
+  ) {
     defer = post;
     global.addEventListener('message', listener, false);
   // IE8-
