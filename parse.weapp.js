@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.13.0
+ * Parse JavaScript SDK v2.14.0
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -342,6 +342,10 @@ function run(name
     requestOptions.sessionToken = options.sessionToken;
   }
 
+  if (options.context && (0, _typeof2.default)(options.context) === 'object') {
+    requestOptions.context = options.context;
+  }
+
   return _CoreManager.default.getCloudController().run(name, data, requestOptions);
 }
 /**
@@ -668,7 +672,7 @@ var config
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
   ENCRYPTED_KEY: null,
-  VERSION: 'js' + "2.13.0",
+  VERSION: 'js' + "2.14.0",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -1387,9 +1391,12 @@ var _LiveQuerySubscription = _interopRequireDefault(_dereq_("./LiveQuerySubscrip
 
 var _promiseUtils = _dereq_("./promiseUtils");
 
-function _createForOfIteratorHelper(o) {
+function _createForOfIteratorHelper(o, allowArrayLike) {
+  var it;
+
   if (typeof _symbol.default === "undefined" || (0, _getIteratorMethod2.default)(o) == null) {
-    if ((0, _isArray.default)(o) || (o = _unsupportedIterableToArray(o))) {
+    if ((0, _isArray.default)(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
       var i = 0;
 
       var F = function () {};
@@ -1415,8 +1422,7 @@ function _createForOfIteratorHelper(o) {
     throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  var it,
-      normalCompletion = true,
+  var normalCompletion = true,
       didErr = false,
       err;
   return {
@@ -1449,7 +1455,7 @@ function _unsupportedIterableToArray(o, minLen) {
   if (typeof o === "string") return _arrayLikeToArray(o, minLen);
   var n = (0, _slice.default)(_context6 = Object.prototype.toString.call(o)).call(_context6, 8, -1);
   if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return (0, _from.default)(n);
+  if (n === "Map" || n === "Set") return (0, _from.default)(o);
   if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
 }
 
@@ -1464,11 +1470,13 @@ function _arrayLikeToArray(arr, len) {
 }
 
 function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
   return function () {
     var Super = (0, _getPrototypeOf2.default)(Derived),
         result;
 
-    if (_isNativeReflectConstruct()) {
+    if (hasNativeReflectConstruct) {
       var NewTarget = (0, _getPrototypeOf2.default)(this).constructor;
       result = (0, _construct.default)(Super, arguments, NewTarget);
     } else {
@@ -2104,11 +2112,13 @@ var _CoreManager = _interopRequireDefault(_dereq_("./CoreManager"));
 var _promiseUtils = _dereq_("./promiseUtils");
 
 function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
   return function () {
     var Super = (0, _getPrototypeOf2.default)(Derived),
         result;
 
-    if (_isNativeReflectConstruct()) {
+    if (hasNativeReflectConstruct) {
       var NewTarget = (0, _getPrototypeOf2.default)(this).constructor;
       result = (0, _construct.default)(Super, arguments, NewTarget);
     } else {
@@ -2320,9 +2330,12 @@ var _ParseQuery = _interopRequireDefault(_dereq_("./ParseQuery"));
 
 var _LocalDatastoreUtils = _dereq_("./LocalDatastoreUtils");
 
-function _createForOfIteratorHelper(o) {
+function _createForOfIteratorHelper(o, allowArrayLike) {
+  var it;
+
   if (typeof _symbol.default === "undefined" || (0, _getIteratorMethod2.default)(o) == null) {
-    if ((0, _isArray.default)(o) || (o = _unsupportedIterableToArray(o))) {
+    if ((0, _isArray.default)(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
       var i = 0;
 
       var F = function () {};
@@ -2348,8 +2361,7 @@ function _createForOfIteratorHelper(o) {
     throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  var it,
-      normalCompletion = true,
+  var normalCompletion = true,
       didErr = false,
       err;
   return {
@@ -2382,7 +2394,7 @@ function _unsupportedIterableToArray(o, minLen) {
   if (typeof o === "string") return _arrayLikeToArray(o, minLen);
   var n = (0, _slice.default)(_context18 = Object.prototype.toString.call(o)).call(_context18, 8, -1);
   if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return (0, _from.default)(n);
+  if (n === "Map" || n === "Set") return (0, _from.default)(o);
   if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
 }
 
@@ -3253,9 +3265,12 @@ var _LocalDatastoreUtils = _dereq_("./LocalDatastoreUtils");
 
 var _Storage = _interopRequireDefault(_dereq_("./Storage"));
 
-function _createForOfIteratorHelper(o) {
+function _createForOfIteratorHelper(o, allowArrayLike) {
+  var it;
+
   if (typeof _symbol.default === "undefined" || (0, _getIteratorMethod2.default)(o) == null) {
-    if ((0, _isArray.default)(o) || (o = _unsupportedIterableToArray(o))) {
+    if ((0, _isArray.default)(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
       var i = 0;
 
       var F = function () {};
@@ -3281,8 +3296,7 @@ function _createForOfIteratorHelper(o) {
     throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  var it,
-      normalCompletion = true,
+  var normalCompletion = true,
       didErr = false,
       err;
   return {
@@ -3315,7 +3329,7 @@ function _unsupportedIterableToArray(o, minLen) {
   if (typeof o === "string") return _arrayLikeToArray(o, minLen);
   var n = (0, _slice.default)(_context7 = Object.prototype.toString.call(o)).call(_context7, 8, -1);
   if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return (0, _from.default)(n);
+  if (n === "Map" || n === "Set") return (0, _from.default)(o);
   if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
 }
 
@@ -3851,9 +3865,12 @@ var _isArray = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-st
 
 var _indexOf = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/index-of"));
 
-function _createForOfIteratorHelper(o) {
+function _createForOfIteratorHelper(o, allowArrayLike) {
+  var it;
+
   if (typeof _symbol.default === "undefined" || (0, _getIteratorMethod2.default)(o) == null) {
-    if ((0, _isArray.default)(o) || (o = _unsupportedIterableToArray(o))) {
+    if ((0, _isArray.default)(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
       var i = 0;
 
       var F = function () {};
@@ -3879,8 +3896,7 @@ function _createForOfIteratorHelper(o) {
     throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  var it,
-      normalCompletion = true,
+  var normalCompletion = true,
       didErr = false,
       err;
   return {
@@ -3913,7 +3929,7 @@ function _unsupportedIterableToArray(o, minLen) {
   if (typeof o === "string") return _arrayLikeToArray(o, minLen);
   var n = (0, _slice.default)(_context5 = Object.prototype.toString.call(o)).call(_context5, 8, -1);
   if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return (0, _from.default)(n);
+  if (n === "Map" || n === "Set") return (0, _from.default)(o);
   if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
 }
 
@@ -5568,11 +5584,13 @@ var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/he
 var _wrapNativeSuper2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/wrapNativeSuper"));
 
 function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
   return function () {
     var Super = (0, _getPrototypeOf2.default)(Derived),
         result;
 
-    if (_isNativeReflectConstruct()) {
+    if (hasNativeReflectConstruct) {
       var NewTarget = (0, _getPrototypeOf2.default)(this).constructor;
       result = (0, _construct.default)(Super, arguments, NewTarget);
     } else {
@@ -7227,11 +7245,13 @@ var _getPrototypeOf2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/he
 var _ParseObject2 = _interopRequireDefault(_dereq_("./ParseObject"));
 
 function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
   return function () {
     var Super = (0, _getPrototypeOf2.default)(Derived),
         result;
 
-    if (_isNativeReflectConstruct()) {
+    if (hasNativeReflectConstruct) {
       var NewTarget = (0, _getPrototypeOf2.default)(this).constructor;
       result = (0, _construct.default)(Super, arguments, NewTarget);
     } else {
@@ -7606,9 +7626,12 @@ var UniqueInstanceStateController = _interopRequireWildcard(_dereq_("./UniqueIns
 
 var _unsavedChildren = _interopRequireDefault(_dereq_("./unsavedChildren"));
 
-function _createForOfIteratorHelper(o) {
+function _createForOfIteratorHelper(o, allowArrayLike) {
+  var it;
+
   if (typeof _symbol.default === "undefined" || (0, _getIteratorMethod2.default)(o) == null) {
-    if ((0, _isArray.default)(o) || (o = _unsupportedIterableToArray(o))) {
+    if ((0, _isArray.default)(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
       var i = 0;
 
       var F = function () {};
@@ -7634,8 +7657,7 @@ function _createForOfIteratorHelper(o) {
     throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  var it,
-      normalCompletion = true,
+  var normalCompletion = true,
       didErr = false,
       err;
   return {
@@ -7668,7 +7690,7 @@ function _unsupportedIterableToArray(o, minLen) {
   if (typeof o === "string") return _arrayLikeToArray(o, minLen);
   var n = (0, _slice.default)(_context7 = Object.prototype.toString.call(o)).call(_context7, 8, -1);
   if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return (0, _from.default)(n);
+  if (n === "Map" || n === "Set") return (0, _from.default)(o);
   if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
 }
 
@@ -9100,6 +9122,7 @@ var ParseObject = /*#__PURE__*/function () {
      *       behalf of a specific user.
      *   <li>include: The name(s) of the key(s) to include. Can be a string, an array of strings,
      *       or an array of array of strings.
+     *   <li>context: A dictionary that is accessible in Cloud Code `beforeFind` trigger.
      * </ul>
      * @return {Promise} A promise that is fulfilled when the fetch
      *     completes.
@@ -9121,6 +9144,10 @@ var ParseObject = /*#__PURE__*/function () {
 
       if (options.hasOwnProperty('sessionToken')) {
         fetchOptions.sessionToken = options.sessionToken;
+      }
+
+      if (options.hasOwnProperty('context') && (0, _typeof2.default)(options.context) === 'object') {
+        fetchOptions.context = options.context;
       }
 
       if (options.hasOwnProperty('include')) {
@@ -9334,6 +9361,7 @@ var ParseObject = /*#__PURE__*/function () {
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
+     *   <li>context: A dictionary that is accessible in Cloud Code `beforeDelete` and `afterDelete` triggers.
      * </ul>
      * @return {Promise} A promise that is fulfilled when the destroy
      *     completes.
@@ -9355,6 +9383,10 @@ var ParseObject = /*#__PURE__*/function () {
 
       if (options.hasOwnProperty('sessionToken')) {
         destroyOptions.sessionToken = options.sessionToken;
+      }
+
+      if (options.hasOwnProperty('context') && (0, _typeof2.default)(options.context) === 'object') {
+        destroyOptions.context = options.context;
       }
 
       if (!this.id) {
@@ -9856,6 +9888,7 @@ var ParseObject = /*#__PURE__*/function () {
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      *   <li>batchSize: Number of objects to process per request
+     *   <li>context: A dictionary that is accessible in Cloud Code `beforeDelete` and `afterDelete` triggers.
      * </ul>
      * @return {Promise} A promise that is fulfilled when the destroyAll
      *     completes.
@@ -9879,6 +9912,10 @@ var ParseObject = /*#__PURE__*/function () {
 
       if (options.hasOwnProperty('batchSize') && typeof options.batchSize === 'number') {
         destroyOptions.batchSize = options.batchSize;
+      }
+
+      if (options.hasOwnProperty('context') && (0, _typeof2.default)(options.context) === 'object') {
+        destroyOptions.context = options.context;
       }
 
       return _CoreManager.default.getObjectController().destroy(list, destroyOptions);
@@ -9905,6 +9942,7 @@ var ParseObject = /*#__PURE__*/function () {
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
      *   <li>batchSize: Number of objects to process per request
+     *   <li>context: A dictionary that is accessible in Cloud Code `beforeSave` and `afterSave` triggers.
      * </ul>
      */
 
@@ -9928,6 +9966,10 @@ var ParseObject = /*#__PURE__*/function () {
 
       if (options.hasOwnProperty('batchSize') && typeof options.batchSize === 'number') {
         saveOptions.batchSize = options.batchSize;
+      }
+
+      if (options.hasOwnProperty('context') && (0, _typeof2.default)(options.context) === 'object') {
+        saveOptions.context = options.context;
       }
 
       return _CoreManager.default.getObjectController().save(list, saveOptions);
@@ -11072,11 +11114,13 @@ var _ParseRelation = _interopRequireDefault(_dereq_("./ParseRelation"));
 var _unique = _interopRequireDefault(_dereq_("./unique"));
 
 function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
   return function () {
     var Super = (0, _getPrototypeOf2.default)(Derived),
         result;
 
-    if (_isNativeReflectConstruct()) {
+    if (hasNativeReflectConstruct) {
       var NewTarget = (0, _getPrototypeOf2.default)(this).constructor;
       result = (0, _construct.default)(Super, arguments, NewTarget);
     } else {
@@ -12087,13 +12131,15 @@ _Object$defineProperty(exports, "__esModule", {
 
 exports.default = void 0;
 
-var _typeof2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/typeof"));
+var _slicedToArray2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/slicedToArray"));
 
 var _isArray = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/array/is-array"));
 
 var _find = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/instance/find"));
 
 var _promise = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/core-js-stable/promise"));
+
+var _typeof2 = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/helpers/typeof"));
 
 var _regenerator = _interopRequireDefault(_dereq_("@babel/runtime-corejs3/regenerator"));
 
@@ -12808,6 +12854,7 @@ var ParseQuery = /*#__PURE__*/function () {
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
+     *   <li>context: A dictionary that is accessible in Cloud Code `beforeFind` trigger.
      * </ul>
      *
      * @return {Promise} A promise that is resolved with the result when
@@ -12831,6 +12878,10 @@ var ParseQuery = /*#__PURE__*/function () {
         firstOptions.sessionToken = options.sessionToken;
       }
 
+      if (options && options.hasOwnProperty('context') && (0, _typeof2.default)(options.context) === 'object') {
+        firstOptions.context = options.context;
+      }
+
       return this.first(firstOptions).then(function (response) {
         if (response) {
           return response;
@@ -12851,6 +12902,7 @@ var ParseQuery = /*#__PURE__*/function () {
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
+     *   <li>context: A dictionary that is accessible in Cloud Code `beforeFind` trigger.
      * </ul>
      *
      * @return {Promise} A promise that is resolved with the results when
@@ -12875,6 +12927,10 @@ var ParseQuery = /*#__PURE__*/function () {
 
       if (options.hasOwnProperty('sessionToken')) {
         findOptions.sessionToken = options.sessionToken;
+      }
+
+      if (options.hasOwnProperty('context') && (0, _typeof2.default)(options.context) === 'object') {
+        findOptions.context = options.context;
       }
 
       this._setRequestTask(findOptions);
@@ -13051,6 +13107,13 @@ var ParseQuery = /*#__PURE__*/function () {
         throw new Error('Invalid pipeline must be Array or Object');
       }
 
+      if ((0, _keys2.default)(this._where || {}).length) {
+        if (!(0, _isArray.default)(pipeline)) pipeline = [pipeline];
+        pipeline.unshift({
+          match: this._where
+        });
+      }
+
       var params = {
         pipeline: pipeline,
         hint: this._hint,
@@ -13072,6 +13135,7 @@ var ParseQuery = /*#__PURE__*/function () {
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
+     *   <li>context: A dictionary that is accessible in Cloud Code `beforeFind` trigger.
      * </ul>
      *
      * @return {Promise} A promise that is resolved with the object when
@@ -13096,6 +13160,10 @@ var ParseQuery = /*#__PURE__*/function () {
 
       if (options.hasOwnProperty('sessionToken')) {
         findOptions.sessionToken = options.sessionToken;
+      }
+
+      if (options.hasOwnProperty('context') && (0, _typeof2.default)(options.context) === 'object') {
+        findOptions.context = options.context;
       }
 
       this._setRequestTask(findOptions);
@@ -13152,6 +13220,7 @@ var ParseQuery = /*#__PURE__*/function () {
      *     be used for this request.
      *   <li>sessionToken: A valid session token, used for making a request on
      *       behalf of a specific user.
+     *   <li>context: A dictionary that is accessible in Cloud Code `beforeFind` trigger.
      * </ul>
      * @return {Promise} A promise that will be fulfilled once the
      *     iteration has completed.
@@ -13221,20 +13290,63 @@ var ParseQuery = /*#__PURE__*/function () {
         findOptions.sessionToken = options.sessionToken;
       }
 
+      if (options.hasOwnProperty('context') && (0, _typeof2.default)(options.context) === 'object') {
+        findOptions.context = options.context;
+      }
+
       var finished = false;
+      var previousResults = [];
       return (0, _promiseUtils.continueWhile)(function () {
         return !finished;
-      }, function () {
-        return (0, _find.default)(query).call(query, findOptions).then(function (results) {
-          return _promise.default.resolve(callback(results)).then(function () {
-            if (results.length >= query._limit) {
-              query.greaterThan('objectId', results[results.length - 1].id);
-            } else {
-              finished = true;
+      }, /*#__PURE__*/(0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee2() {
+        var _yield$Promise$all, _yield$Promise$all2, results;
+
+        return _regenerator.default.wrap(function (_context8) {
+          while (1) {
+            switch (_context8.prev = _context8.next) {
+              case 0:
+                _context8.next = 2;
+                return _promise.default.all([(0, _find.default)(query).call(query, findOptions), _promise.default.resolve(previousResults.length > 0 && callback(previousResults))]);
+
+              case 2:
+                _yield$Promise$all = _context8.sent;
+                _yield$Promise$all2 = (0, _slicedToArray2.default)(_yield$Promise$all, 1);
+                results = _yield$Promise$all2[0];
+
+                if (!(results.length >= query._limit)) {
+                  _context8.next = 10;
+                  break;
+                }
+
+                query.greaterThan('objectId', results[results.length - 1].id);
+                previousResults = results;
+                _context8.next = 17;
+                break;
+
+              case 10:
+                if (!(results.length > 0)) {
+                  _context8.next = 16;
+                  break;
+                }
+
+                _context8.next = 13;
+                return _promise.default.resolve(callback(results));
+
+              case 13:
+                finished = true;
+                _context8.next = 17;
+                break;
+
+              case 16:
+                finished = true;
+
+              case 17:
+              case "end":
+                return _context8.stop();
             }
-          });
-        });
-      });
+          }
+        }, _callee2);
+      })));
     }
     /**
      * Iterates over each result of a query, calling a callback for each one. If
@@ -13345,7 +13457,7 @@ var ParseQuery = /*#__PURE__*/function () {
   }, {
     key: "map",
     value: function () {
-      var _map = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee2(callback
+      var _map = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee3(callback
       /*: (currentObject: ParseObject, index: number, query: ParseQuery) => any*/
       , options
       /*:: ?: BatchOptions*/
@@ -13353,13 +13465,13 @@ var ParseQuery = /*#__PURE__*/function () {
         var _this5 = this;
 
         var array, index;
-        return _regenerator.default.wrap(function (_context8) {
+        return _regenerator.default.wrap(function (_context9) {
           while (1) {
-            switch (_context8.prev = _context8.next) {
+            switch (_context9.prev = _context9.next) {
               case 0:
                 array = [];
                 index = 0;
-                _context8.next = 4;
+                _context9.next = 4;
                 return this.each(function (object) {
                   return _promise.default.resolve(callback(object, index, _this5)).then(function (result) {
                     array.push(result);
@@ -13368,14 +13480,14 @@ var ParseQuery = /*#__PURE__*/function () {
                 }, options);
 
               case 4:
-                return _context8.abrupt("return", array);
+                return _context9.abrupt("return", array);
 
               case 5:
               case "end":
-                return _context8.stop();
+                return _context9.stop();
             }
           }
-        }, _callee2, this);
+        }, _callee3, this);
       }));
 
       return function () {
@@ -13408,7 +13520,7 @@ var ParseQuery = /*#__PURE__*/function () {
   }, {
     key: "reduce",
     value: function () {
-      var _reduce = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee3(callback
+      var _reduce = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee4(callback
       /*: (accumulator: any, currentObject: ParseObject, index: number) => any*/
       , initialValue
       /*: any*/
@@ -13416,13 +13528,13 @@ var ParseQuery = /*#__PURE__*/function () {
       /*:: ?: BatchOptions*/
       ) {
         var accumulator, index;
-        return _regenerator.default.wrap(function (_context9) {
+        return _regenerator.default.wrap(function (_context10) {
           while (1) {
-            switch (_context9.prev = _context9.next) {
+            switch (_context10.prev = _context10.next) {
               case 0:
                 accumulator = initialValue;
                 index = 0;
-                _context9.next = 4;
+                _context10.next = 4;
                 return this.each(function (object) {
                   // If no initial value was given, we take the first object from the query
                   // as the initial value and don't call the callback with it.
@@ -13440,21 +13552,21 @@ var ParseQuery = /*#__PURE__*/function () {
 
               case 4:
                 if (!(index === 0 && initialValue === undefined)) {
-                  _context9.next = 6;
+                  _context10.next = 6;
                   break;
                 }
 
                 throw new TypeError("Reducing empty query result set with no initial value");
 
               case 6:
-                return _context9.abrupt("return", accumulator);
+                return _context10.abrupt("return", accumulator);
 
               case 7:
               case "end":
-                return _context9.stop();
+                return _context10.stop();
             }
           }
-        }, _callee3, this);
+        }, _callee4, this);
       }));
 
       return function () {
@@ -13487,7 +13599,7 @@ var ParseQuery = /*#__PURE__*/function () {
   }, {
     key: "filter",
     value: function () {
-      var _filter = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee4(callback
+      var _filter = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee5(callback
       /*: (currentObject: ParseObject, index: number, query: ParseQuery) => boolean*/
       , options
       /*:: ?: BatchOptions*/
@@ -13495,13 +13607,13 @@ var ParseQuery = /*#__PURE__*/function () {
         var _this6 = this;
 
         var array, index;
-        return _regenerator.default.wrap(function (_context10) {
+        return _regenerator.default.wrap(function (_context11) {
           while (1) {
-            switch (_context10.prev = _context10.next) {
+            switch (_context11.prev = _context11.next) {
               case 0:
                 array = [];
                 index = 0;
-                _context10.next = 4;
+                _context11.next = 4;
                 return this.each(function (object) {
                   return _promise.default.resolve(callback(object, index, _this6)).then(function (flag) {
                     if (flag) {
@@ -13513,14 +13625,14 @@ var ParseQuery = /*#__PURE__*/function () {
                 }, options);
 
               case 4:
-                return _context10.abrupt("return", array);
+                return _context11.abrupt("return", array);
 
               case 5:
               case "end":
-                return _context10.stop();
+                return _context11.stop();
             }
           }
-        }, _callee4, this);
+        }, _callee5, this);
       }));
 
       return function () {
@@ -14339,13 +14451,13 @@ var ParseQuery = /*#__PURE__*/function () {
       }
 
       (0, _forEach.default)(keys).call(keys, function (key) {
-        var _context11;
+        var _context12;
 
         if ((0, _isArray.default)(key)) {
           key = key.join();
         }
 
-        _this7._order = (0, _concat.default)(_context11 = _this7._order).call(_context11, key.replace(/\s/g, '').split(','));
+        _this7._order = (0, _concat.default)(_context12 = _this7._order).call(_context12, key.replace(/\s/g, '').split(','));
       });
       return this;
     }
@@ -14395,13 +14507,13 @@ var ParseQuery = /*#__PURE__*/function () {
       }
 
       (0, _forEach.default)(keys).call(keys, function (key) {
-        var _context12, _context13;
+        var _context13, _context14;
 
         if ((0, _isArray.default)(key)) {
           key = key.join();
         }
 
-        _this8._order = (0, _concat.default)(_context12 = _this8._order).call(_context12, (0, _map2.default)(_context13 = key.replace(/\s/g, '').split(',')).call(_context13, function (k) {
+        _this8._order = (0, _concat.default)(_context13 = _this8._order).call(_context13, (0, _map2.default)(_context14 = key.replace(/\s/g, '').split(',')).call(_context14, function (k) {
           return '-' + k;
         }));
       });
@@ -14502,9 +14614,9 @@ var ParseQuery = /*#__PURE__*/function () {
 
       (0, _forEach.default)(keys).call(keys, function (key) {
         if ((0, _isArray.default)(key)) {
-          var _context14;
+          var _context15;
 
-          _this9._include = (0, _concat.default)(_context14 = _this9._include).call(_context14, key);
+          _this9._include = (0, _concat.default)(_context15 = _this9._include).call(_context15, key);
         } else {
           _this9._include.push(key);
         }
@@ -14551,9 +14663,9 @@ var ParseQuery = /*#__PURE__*/function () {
 
       (0, _forEach.default)(keys).call(keys, function (key) {
         if ((0, _isArray.default)(key)) {
-          var _context15;
+          var _context16;
 
-          _this10._select = (0, _concat.default)(_context15 = _this10._select).call(_context15, key);
+          _this10._select = (0, _concat.default)(_context16 = _this10._select).call(_context16, key);
         } else {
           _this10._select.push(key);
         }
@@ -14583,9 +14695,9 @@ var ParseQuery = /*#__PURE__*/function () {
 
       (0, _forEach.default)(keys).call(keys, function (key) {
         if ((0, _isArray.default)(key)) {
-          var _context16;
+          var _context17;
 
-          _this11._exclude = (0, _concat.default)(_context16 = _this11._exclude).call(_context16, key);
+          _this11._exclude = (0, _concat.default)(_context17 = _this11._exclude).call(_context17, key);
         } else {
           _this11._exclude.push(key);
         }
@@ -14627,45 +14739,45 @@ var ParseQuery = /*#__PURE__*/function () {
   }, {
     key: "subscribe",
     value: function () {
-      var _subscribe = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee5(sessionToken
+      var _subscribe = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee6(sessionToken
       /*:: ?: string*/
       ) {
         var currentUser, liveQueryClient, subscription;
-        return _regenerator.default.wrap(function (_context17) {
+        return _regenerator.default.wrap(function (_context18) {
           while (1) {
-            switch (_context17.prev = _context17.next) {
+            switch (_context18.prev = _context18.next) {
               case 0:
-                _context17.next = 2;
+                _context18.next = 2;
                 return _CoreManager.default.getUserController().currentUserAsync();
 
               case 2:
-                currentUser = _context17.sent;
+                currentUser = _context18.sent;
 
                 if (!sessionToken) {
                   sessionToken = currentUser ? currentUser.getSessionToken() : undefined;
                 }
 
-                _context17.next = 6;
+                _context18.next = 6;
                 return _CoreManager.default.getLiveQueryController().getDefaultLiveQueryClient();
 
               case 6:
-                liveQueryClient = _context17.sent;
+                liveQueryClient = _context18.sent;
 
                 if (liveQueryClient.shouldOpen()) {
                   liveQueryClient.open();
                 }
 
                 subscription = liveQueryClient.subscribe(this, sessionToken);
-                return _context17.abrupt("return", subscription.subscribePromise.then(function () {
+                return _context18.abrupt("return", subscription.subscribePromise.then(function () {
                   return subscription;
                 }));
 
               case 10:
               case "end":
-                return _context17.stop();
+                return _context18.stop();
             }
           }
-        }, _callee5, this);
+        }, _callee6, this);
       }));
 
       return function () {
@@ -14912,7 +15024,7 @@ _CoreManager.default.setQueryController(DefaultController);
 
 var _default = ParseQuery;
 exports.default = _default;
-},{"./CoreManager":4,"./LocalDatastoreUtils":13,"./OfflineQuery":15,"./ParseError":19,"./ParseGeoPoint":21,"./ParseObject":24,"./encode":45,"./promiseUtils":50,"@babel/runtime-corejs3/core-js-stable/array/is-array":54,"@babel/runtime-corejs3/core-js-stable/instance/concat":56,"@babel/runtime-corejs3/core-js-stable/instance/filter":57,"@babel/runtime-corejs3/core-js-stable/instance/find":58,"@babel/runtime-corejs3/core-js-stable/instance/for-each":59,"@babel/runtime-corejs3/core-js-stable/instance/includes":60,"@babel/runtime-corejs3/core-js-stable/instance/index-of":61,"@babel/runtime-corejs3/core-js-stable/instance/keys":62,"@babel/runtime-corejs3/core-js-stable/instance/map":63,"@babel/runtime-corejs3/core-js-stable/instance/slice":65,"@babel/runtime-corejs3/core-js-stable/instance/sort":66,"@babel/runtime-corejs3/core-js-stable/instance/splice":67,"@babel/runtime-corejs3/core-js-stable/object/define-property":75,"@babel/runtime-corejs3/core-js-stable/object/keys":80,"@babel/runtime-corejs3/core-js-stable/promise":82,"@babel/runtime-corejs3/helpers/asyncToGenerator":112,"@babel/runtime-corejs3/helpers/classCallCheck":113,"@babel/runtime-corejs3/helpers/createClass":115,"@babel/runtime-corejs3/helpers/defineProperty":116,"@babel/runtime-corejs3/helpers/interopRequireDefault":120,"@babel/runtime-corejs3/helpers/typeof":133,"@babel/runtime-corejs3/regenerator":136}],28:[function(_dereq_,module,exports){
+},{"./CoreManager":4,"./LocalDatastoreUtils":13,"./OfflineQuery":15,"./ParseError":19,"./ParseGeoPoint":21,"./ParseObject":24,"./encode":45,"./promiseUtils":50,"@babel/runtime-corejs3/core-js-stable/array/is-array":54,"@babel/runtime-corejs3/core-js-stable/instance/concat":56,"@babel/runtime-corejs3/core-js-stable/instance/filter":57,"@babel/runtime-corejs3/core-js-stable/instance/find":58,"@babel/runtime-corejs3/core-js-stable/instance/for-each":59,"@babel/runtime-corejs3/core-js-stable/instance/includes":60,"@babel/runtime-corejs3/core-js-stable/instance/index-of":61,"@babel/runtime-corejs3/core-js-stable/instance/keys":62,"@babel/runtime-corejs3/core-js-stable/instance/map":63,"@babel/runtime-corejs3/core-js-stable/instance/slice":65,"@babel/runtime-corejs3/core-js-stable/instance/sort":66,"@babel/runtime-corejs3/core-js-stable/instance/splice":67,"@babel/runtime-corejs3/core-js-stable/object/define-property":75,"@babel/runtime-corejs3/core-js-stable/object/keys":80,"@babel/runtime-corejs3/core-js-stable/promise":82,"@babel/runtime-corejs3/helpers/asyncToGenerator":112,"@babel/runtime-corejs3/helpers/classCallCheck":113,"@babel/runtime-corejs3/helpers/createClass":115,"@babel/runtime-corejs3/helpers/defineProperty":116,"@babel/runtime-corejs3/helpers/interopRequireDefault":120,"@babel/runtime-corejs3/helpers/slicedToArray":130,"@babel/runtime-corejs3/helpers/typeof":133,"@babel/runtime-corejs3/regenerator":136}],28:[function(_dereq_,module,exports){
 "use strict";
 
 var _interopRequireDefault = _dereq_("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -15155,11 +15267,13 @@ var _ParseError = _interopRequireDefault(_dereq_("./ParseError"));
 var _ParseObject2 = _interopRequireDefault(_dereq_("./ParseObject"));
 
 function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
   return function () {
     var Super = (0, _getPrototypeOf2.default)(Derived),
         result;
 
-    if (_isNativeReflectConstruct()) {
+    if (hasNativeReflectConstruct) {
       var NewTarget = (0, _getPrototypeOf2.default)(this).constructor;
       result = (0, _construct.default)(Super, arguments, NewTarget);
     } else {
@@ -16047,11 +16161,13 @@ var _ParseObject2 = _interopRequireDefault(_dereq_("./ParseObject"));
 var _ParseUser = _interopRequireDefault(_dereq_("./ParseUser"));
 
 function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
   return function () {
     var Super = (0, _getPrototypeOf2.default)(Derived),
         result;
 
-    if (_isNativeReflectConstruct()) {
+    if (hasNativeReflectConstruct) {
       var NewTarget = (0, _getPrototypeOf2.default)(this).constructor;
       result = (0, _construct.default)(Super, arguments, NewTarget);
     } else {
@@ -16271,11 +16387,13 @@ var _ParseSession = _interopRequireDefault(_dereq_("./ParseSession"));
 var _Storage = _interopRequireDefault(_dereq_("./Storage"));
 
 function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
   return function () {
     var Super = (0, _getPrototypeOf2.default)(Derived),
         result;
 
-    if (_isNativeReflectConstruct()) {
+    if (hasNativeReflectConstruct) {
       var NewTarget = (0, _getPrototypeOf2.default)(this).constructor;
       result = (0, _construct.default)(Super, arguments, NewTarget);
     } else {
@@ -18376,7 +18494,6 @@ var RESTController = {
 
     if (context !== undefined) {
       payload._context = context;
-      delete options.context;
     }
 
     if (method !== 'POST') {
@@ -18452,7 +18569,7 @@ var RESTController = {
             status = _ref.status;
 
         if (options.returnStatus) {
-          return _objectSpread({}, response, {
+          return _objectSpread(_objectSpread({}, response), {}, {
             _status: status
           });
         } else {
@@ -20949,7 +21066,7 @@ function _unsupportedIterableToArray(o, minLen) {
   var n = _sliceInstanceProperty(_context = Object.prototype.toString.call(o)).call(_context, 8, -1);
 
   if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return _Array$from(n);
+  if (n === "Map" || n === "Set") return _Array$from(o);
   if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
 }
 
