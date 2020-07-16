@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.14.0
+ * Parse JavaScript SDK v2.15.0
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -672,7 +672,7 @@ var config
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
   ENCRYPTED_KEY: null,
-  VERSION: 'js' + "2.14.0",
+  VERSION: 'js' + "2.15.0",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -1931,7 +1931,9 @@ var LiveQueryClient = /*#__PURE__*/function (_EventEmitter) {
           if (data.requestId) {
             if (subscription) {
               subscription.subscribePromise.resolve();
-              subscription.emit(SUBSCRIPTION_EMMITER_TYPES.ERROR, data.error);
+              (0, _setTimeout2.default)(function () {
+                return subscription.emit(SUBSCRIPTION_EMMITER_TYPES.ERROR, data.error);
+              }, 200);
             }
           } else {
             this.emit(CLIENT_EMMITER_TYPES.ERROR, data.error);
@@ -5984,6 +5986,15 @@ ParseError.FILE_DELETE_ERROR = 153;
 
 ParseError.REQUEST_LIMIT_EXCEEDED = 155;
 /**
+ * Error code indicating that the request was a duplicate and has been discarded due to
+ * idempotency rules.
+ * @property DUPLICATE_REQUEST
+ * @static
+ * @final
+ */
+
+ParseError.DUPLICATE_REQUEST = 159;
+/**
  * Error code indicating an invalid event name.
  * @property INVALID_EVENT_NAME
  * @static
@@ -8164,8 +8175,8 @@ var ParseObject = /*#__PURE__*/function () {
 
   }, {
     key: "initialize",
-    value: function () {} // NOOP
-
+    value: function () {// NOOP
+    }
     /**
      * Returns a JSON version of the object suitable for saving to Parse.
      * @return {Object}
@@ -31064,14 +31075,16 @@ function bytesToUuid(buf, offset) {
   var i = offset || 0;
   var bth = byteToHex;
   // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
-  return ([bth[buf[i++]], bth[buf[i++]], 
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]],
-	bth[buf[i++]], bth[buf[i++]],
-	bth[buf[i++]], bth[buf[i++]]]).join('');
+  return ([
+    bth[buf[i++]], bth[buf[i++]],
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]],
+    bth[buf[i++]], bth[buf[i++]],
+    bth[buf[i++]], bth[buf[i++]]
+  ]).join('');
 }
 
 module.exports = bytesToUuid;
