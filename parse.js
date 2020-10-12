@@ -1,5 +1,5 @@
 /**
- * Parse JavaScript SDK v2.16.0
+ * Parse JavaScript SDK v2.17.0
  *
  * The source tree of this library can be found at
  *   https://github.com/ParsePlatform/Parse-SDK-JS
@@ -672,7 +672,7 @@ var config
   SERVER_AUTH_TOKEN: null,
   LIVEQUERY_SERVER_URL: null,
   ENCRYPTED_KEY: null,
-  VERSION: 'js' + "2.16.0",
+  VERSION: 'js' + "2.17.0",
   APPLICATION_ID: null,
   JAVASCRIPT_KEY: null,
   MASTER_KEY: null,
@@ -4473,7 +4473,6 @@ var _RESTController = _interopRequireDefault(_dereq_("./RESTController"));
 var Parse = {
   /**
    * Call this method first to set up your authentication tokens for Parse.
-   * You can get your keys from the Data Browser on parse.com.
    * @param {String} applicationId Your Parse Application ID.
    * @param {String} javaScriptKey (optional) Your Parse JavaScript Key (Not needed for parse-server)
    * @param {String} masterKey (optional) Your Parse Master Key. (Node.js only!)
@@ -5695,8 +5694,6 @@ var ParseError = /*#__PURE__*/function (_Error) {
 ParseError.OTHER_CAUSE = -1;
 /**
  * Error code indicating that something has gone wrong with the server.
- * If you get this error code, it is Parse's fault. Contact us at
- * https://parse.com/help
  * @property INTERNAL_SERVER_ERROR
  * @static
  * @final
@@ -17042,6 +17039,10 @@ var ParseUser = /*#__PURE__*/function (_ParseObject) {
         loginOptions.installationId = options.installationId;
       }
 
+      if (options.hasOwnProperty('usePost')) {
+        loginOptions.usePost = options.usePost;
+      }
+
       var controller = _CoreManager.default.getUserController();
 
       return controller.logIn(this, loginOptions);
@@ -17924,7 +17925,7 @@ var DefaultController = {
       username: user.get('username'),
       password: user.get('password')
     };
-    return RESTController.request('GET', 'login', auth, options).then(function (response) {
+    return RESTController.request(options.usePost ? 'POST' : 'GET', 'login', auth, options).then(function (response) {
       user._migrateId(response.objectId);
 
       user._setExisted(true);
